@@ -28,6 +28,11 @@ app = Flask(__name__)
 app.config['DB_PATH'] = os.environ.get('DB_PATH', 'danzona_pos.db')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-me-set-a-real-secret-key')
 
+# Ensure database directory exists
+_db_dir = os.path.dirname(app.config['DB_PATH'])
+if _db_dir and not os.path.exists(_db_dir):
+    os.makedirs(_db_dir, exist_ok=True)
+
 # ---------- Database ----------
 
 def get_db():
@@ -505,7 +510,17 @@ def check_auth():
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'ok'}), 200
+    try:
+        db = get_db()
+        db.execute('SELECT 1').fetchone()
+        db_status = 'ok'
+    except Exception as e:
+        db_status = f'error: {str(e)}'
+    return jsonify({
+        'status': 'ok',
+        'database': db_status,
+        'db_path': app.config['DB_PATH']
+    }), 200
 
 # ---------- Generic CRUD helper ----------
 
@@ -518,44 +533,52 @@ def table_response(table, extra_filter='', params=()):
     return jsonify([dict(r) for r in rows])
 
 def table_create(table, data):
-    db = get_db()
-    keys = list(data.keys())
-    placeholders = ['?'] * len(keys)
-    values = list(data.values())
+    try:
+        db = get_db()
+        keys = list(data.keys())
+        placeholders = ['?'] * len(keys)
+        values = list(data.values())
 
-    # Remove id if present, let auto-increment handle it
-    if 'id' in keys:
-        idx = keys.index('id')
-        keys.pop(idx)
-        values.pop(idx)
+        if 'id' in keys:
+            idx = keys.index('id')
+            keys.pop(idx)
+            values.pop(idx)
 
-    sql = f"INSERT INTO {table} ({', '.join(keys)}) VALUES ({', '.join(placeholders)})"
-    cursor = db.execute(sql, values)
-    db.commit()
-    data['id'] = cursor.lastrowid
-    data['pharmacy_id'] = g.pharmacy_id
-    return jsonify(data), 201
+        sql = f"INSERT INTO {table} ({', '.join(keys)}) VALUES ({', '.join(placeholders)})"
+        cursor = db.execute(sql, values)
+        db.commit()
+        data['id'] = cursor.lastrowid
+        data['pharmacy_id'] = g.pharmacy_id
+        return jsonify(data), 201
+    except Exception as e:
+        return jsonify({'error': f'Database insert failed: {str(e)}'}), 500
 
 def table_update(table, record_id, data):
-    db = get_db()
-    sets = []
-    values = []
-    for k, v in data.items():
-        if k != 'id':
-            sets.append(f'{k} = ?')
-            values.append(v)
-    values.append(g.pharmacy_id)
-    values.append(record_id)
-    sql = f"UPDATE {table} SET {', '.join(sets)} WHERE pharmacy_id = ? AND id = ?"
-    db.execute(sql, values)
-    db.commit()
-    return jsonify({'id': record_id, 'updated': True})
+    try:
+        db = get_db()
+        sets = []
+        values = []
+        for k, v in data.items():
+            if k != 'id':
+                sets.append(f'{k} = ?')
+                values.append(v)
+        values.append(g.pharmacy_id)
+        values.append(record_id)
+        sql = f"UPDATE {table} SET {', '.join(sets)} WHERE pharmacy_id = ? AND id = ?"
+        db.execute(sql, values)
+        db.commit()
+        return jsonify({'id': record_id, 'updated': True})
+    except Exception as e:
+        return jsonify({'error': f'Database update failed: {str(e)}'}), 500
 
 def table_delete(table, record_id):
-    db = get_db()
-    db.execute(f'DELETE FROM {table} WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, record_id))
-    db.commit()
-    return jsonify({'deleted': True})
+    try:
+        db = get_db()
+        db.execute(f'DELETE FROM {table} WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, record_id))
+        db.commit()
+        return jsonify({'deleted': True})
+    except Exception as e:
+        return jsonify({'error': f'Database delete failed: {str(e)}'}), 500
 
 # ========== API Routes ==========
 
