@@ -1,408 +1,395 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employees - SHEDS POS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="common.css">
-    <script src="api.js"></script>
-    <script src="common.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employees - SHEDS POS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
+<script src="api.js"></script>
+<script src="common.js"></script>
 </head>
 <body>
 <div class="sidebar" id="sidebar"></div>
 <div class="main-content">
-    <div class="header">
-        <h2><i class="fas fa-user-tie"></i> Employees</h2>
-        <div id="userMenu"></div>
-        <div class="header-clock" id="topClock"></div>
-    </div>
-    <div class="content">
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label"><i class="fas fa-users"></i> Total Employees</div>
-                <div class="kpi-value" id="totalEmployees">0</div>
-                <div class="kpi-sub">All staff</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i class="fas fa-circle-check"></i> Active</div>
-                <div class="kpi-value" style="color:#10b981;" id="activeEmployees">0</div>
-                <div class="kpi-sub">Currently employed</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i class="fas fa-times-circle"></i> Inactive</div>
-                <div class="kpi-value" style="color:#ef4444;" id="inactiveEmployees">0</div>
-                <div class="kpi-sub">No longer active</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i class="fas fa-money-bill"></i> Monthly Payroll</div>
-                <div class="kpi-value" id="monthlyPayroll">?0.00</div>
-                <div class="kpi-sub">Total salaries</div>
-            </div>
-        </div>
-        <div class="page-head">
-            <div>
-                <h3>Employee Management</h3>
-                <p>Manage staff records, roles, salaries and employment details.</p>
-            </div>
-            <div class="actions">
-                <button class="btn btn-primary" onclick="showAddEmployeeForm()"><i class="fas fa-plus"></i> Add Employee</button>
-                <button class="btn btn-secondary" onclick="printEmployeeList()"><i class="fas fa-print"></i> Print</button>
-            </div>
-        </div>
-        <div class="panel">
-            <div class="toolbar">
-                <input type="text" id="searchInput" class="search-input" placeholder="Search employees..." oninput="filterEmployees()">
-                <select id="departmentFilter" class="form-select" onchange="filterEmployees()">
-                    <option value="">All Departments</option>
-                    <option value="management">Management</option>
-                    <option value="pharmacy">Pharmacy</option>
-                    <option value="sales">Sales</option>
-                    <option value="admin">Administration</option>
-                    <option value="security">Security</option>
-                </select>
-                <select id="statusFilter" class="form-select" onchange="filterEmployees()">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-                <button class="btn btn-info" onclick="exportEmployeesCSV()"><i class="fas fa-file-export"></i> Export CSV</button>
-                <button class="btn btn-secondary" onclick="clearFilters()"><i class="fas fa-times"></i> Clear</button>
-            </div>
-        </div>
-        <div id="addEmployeeForm" class="modal-overlay">
-            <div class="modal modal-lg">
-                <div class="modal-header">
-                    <h3 id="employeeFormTitle">Add New Employee</h3>
-                    <button class="modal-close" onclick="POS.closeModal('addEmployeeForm')">&times;</button>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required">First Name</label>
-                        <input type="text" id="firstName" class="form-control" placeholder="Enter first name">
-                    </div>
-                    <div class="form-group">
-                        <label class="required">Last Name</label>
-                        <input type="text" id="lastName" class="form-control" placeholder="Enter last name">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="emailAddress" class="form-control" placeholder="Email address">
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" id="phoneNumber" class="form-control" placeholder="Phone number">
-                    </div>
-                    <div class="form-group">
-                        <label>Position</label>
-                        <input type="text" id="position" class="form-control" placeholder="Job position">
-                    </div>
-                    <div class="form-group">
-                        <label>Department</label>
-                        <select id="department" class="form-select">
-                            <option value="">Select Department</option>
-                            <option value="management">Management</option>
-                            <option value="pharmacy">Pharmacy</option>
-                            <option value="sales">Sales</option>
-                            <option value="admin">Administration</option>
-                            <option value="security">Security</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Salary (?)</label>
-                        <input type="number" id="salary" class="form-control" placeholder="Monthly salary">
-                    </div>
-                    <div class="form-group">
-                        <label>Hire Date</label>
-                        <input type="date" id="hireDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Employment Type</label>
-                        <select id="employmentType" class="form-select">
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
-                            <option value="contract">Contract</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="password" class="form-control" placeholder="Login password">
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="POS.closeModal('addEmployeeForm')">Cancel</button>
-                    <button class="btn btn-success" id="employeeSubmitBtn" onclick="addEmployee()">Add Employee</button>
-                </div>
-            </div>
-        </div>
-        <div class="table-panel">
-            <div class="table-top">
-                <strong><i class="fas fa-list"></i> Employee Directory</strong>
-                <span id="employeeCount">0 employees</span>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Employee ID</th>
-                            <th>Full Name</th>
-                            <th>Position</th>
-                            <th>Department</th>
-                            <th>Phone</th>
-                            <th>Salary</th>
-                            <th>Hire Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeesTableBody">
-                        <tr><td colspan="9" class="empty-state">Loading employees...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="header">
+<h2><i class="fas fa-user-tie"></i> Employees</h2>
+<div id="userMenu"></div>
+<div class="header-clock" id="topClock"></div>
+</div>
+<div class="content">
+<div class="kpi-grid">
+<div class="kpi-card">
+<div class="kpi-label"><i class="fas fa-users"></i> Total Employees</div>
+<div class="kpi-value" id="totalEmployees">0</div>
+<div class="kpi-sub">All staff</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-label"><i class="fas fa-circle-check"></i> Active</div>
+<div class="kpi-value" style="color:#10b981;" id="activeEmployees">0</div>
+<div class="kpi-sub">Currently employed</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-label"><i class="fas fa-times-circle"></i> Inactive</div>
+<div class="kpi-value" style="color:#ef4444;" id="inactiveEmployees">0</div>
+<div class="kpi-sub">No longer active</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-label"><i class="fas fa-money-bill"></i> Monthly Payroll</div>
+<div class="kpi-value" id="monthlyPayroll">₦0.00</div>
+<div class="kpi-sub">Total salaries</div>
+</div>
+</div>
+<div class="page-head">
+<div>
+<h3>Employee Management</h3>
+<p>Manage staff records, roles, salaries and employment details.</p>
+</div>
+<div class="actions">
+<button class="btn btn-primary" onclick="showAddEmployeeForm()"><i class="fas fa-plus"></i> Add Employee</button>
+<button class="btn btn-secondary" onclick="printEmployeeList()"><i class="fas fa-print"></i> Print</button>
+</div>
+</div>
+<div class="panel">
+<div class="toolbar">
+<input type="text" id="searchInput" class="search-input" placeholder="Search employees..." oninput="filterEmployees()">
+<select id="departmentFilter" class="form-select" onchange="filterEmployees()">
+<option value="">All Departments</option>
+<option value="management">Management</option>
+<option value="pharmacy">Pharmacy</option>
+<option value="sales">Sales</option>
+<option value="admin">Administration</option>
+<option value="security">Security</option>
+</select>
+<select id="statusFilter" class="form-select" onchange="filterEmployees()">
+<option value="">All Status</option>
+<option value="active">Active</option>
+<option value="inactive">Inactive</option>
+</select>
+<button class="btn btn-info" onclick="exportEmployeesCSV()"><i class="fas fa-file-export"></i> Export CSV</button>
+<button class="btn btn-secondary" onclick="clearFilters()"><i class="fas fa-times"></i> Clear</button>
+</div>
+</div>
+<div id="addEmployeeForm" class="modal-overlay">
+<div class="modal modal-lg">
+<div class="modal-header">
+<h3 id="employeeFormTitle">Add New Employee</h3>
+<button class="modal-close" onclick="closeModal('addEmployeeForm')">&times;</button>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="required">First Name</label>
+<input type="text" id="firstName" class="form-control" placeholder="Enter first name">
+</div>
+<div class="form-group">
+<label class="required">Last Name</label>
+<input type="text" id="lastName" class="form-control" placeholder="Enter last name">
+</div>
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="emailAddress" class="form-control" placeholder="Email address">
+</div>
+<div class="form-group">
+<label>Phone Number</label>
+<input type="tel" id="phoneNumber" class="form-control" placeholder="Phone number">
+</div>
+<div class="form-group">
+<label>Position</label>
+<input type="text" id="position" class="form-control" placeholder="Job position">
+</div>
+<div class="form-group">
+<label>Department</label>
+<select id="department" class="form-select">
+<option value="">Select Department</option>
+<option value="management">Management</option>
+<option value="pharmacy">Pharmacy</option>
+<option value="sales">Sales</option>
+<option value="admin">Administration</option>
+<option value="security">Security</option>
+</select>
+</div>
+<div class="form-group">
+<label>Salary (₦)</label>
+<input type="number" id="salary" class="form-control" placeholder="Monthly salary" step="0.01">
+</div>
+<div class="form-group">
+<label>Hire Date</label>
+<input type="date" id="hireDate" class="form-control">
+</div>
+<div class="form-group">
+<label>Employment Type</label>
+<select id="employmentType" class="form-select">
+<option value="full-time">Full-time</option>
+<option value="part-time">Part-time</option>
+<option value="contract">Contract</option>
+</select>
+</div>
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="password" class="form-control" placeholder="Login password">
+</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal('addEmployeeForm')">Cancel</button>
+<button class="btn btn-success" id="employeeSubmitBtn" onclick="saveEmployee()">Add Employee</button>
+</div>
+</div>
+</div>
+<div class="table-panel">
+<div class="table-top">
+<strong><i class="fas fa-list"></i> Employee Directory</strong>
+<span id="employeeCount">0 employees</span>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Employee ID</th>
+<th>Full Name</th>
+<th>Position</th>
+<th>Department</th>
+<th>Phone</th>
+<th>Salary</th>
+<th>Hire Date</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="employeesTableBody">
+<tr><td colspan="9" class="empty-state">Loading employees...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
-function $(id){return document.getElementById(id);}
-var employees = [];
-var editEmployeeId = null;
-var filteredEmployees = [];
-function showToast(msg, isError) {
-    var t = $('toast');
-    t.textContent = msg;
-    t.className = 'toast' + (isError ? ' error' : '');
-    t.style.display = 'block';
-    setTimeout(function() { t.style.display = 'none'; }, 3000);
-}
-function updateKPIStats() {
-    $('totalEmployees').textContent = employees.length;
-    $('activeEmployees').textContent = employees.filter(function(e) { return e.status === 'active'; }).length;
-    $('inactiveEmployees').textContent = employees.filter(function(e) { return e.status === 'inactive'; }).length;
-    var payroll = employees.reduce(function(sum, e) { return sum + (parseFloat(e.salary) || 0); }, 0);
-    $('monthlyPayroll').textContent = POS.formatCurrency(payroll);
-}
-function showAddEmployeeForm() {
-    editEmployeeId = null;
-    $('addEmployeeForm').classList.add('open');
-    $('employeeFormTitle').textContent = 'Add New Employee';
-    $('employeeSubmitBtn').textContent = 'Add Employee';
-    $('firstName').value = '';
-    $('lastName').value = '';
-    $('emailAddress').value = '';
-    $('phoneNumber').value = '';
-    $('position').value = '';
-    $('department').value = '';
-    $('salary').value = '';
-    $('hireDate').value = '';
-    $('employmentType').value = 'full-time';
-    $('password').value = '';
-}
-async function addEmployee() {
-    var firstName = $('firstName').value.trim();
-    var lastName = $('lastName').value.trim();
-    if (!firstName || !lastName) {
-        POS.showToast('Please enter first and last name', true);
-        return;
-    }
-    try {
-        if (editEmployeeId !== null) {
-            var updateData = {
-                firstName: firstName,
-                lastName: lastName,
-                email: $('emailAddress').value.trim(),
-                phone: $('phoneNumber').value.trim(),
-                position: $('position').value.trim(),
-                department: $('department').value,
-                salary: parseFloat($('salary').value) || 0,
-                hireDate: $('hireDate').value,
-                employmentType: $('employmentType').value
-            };
-            await API.updateEmployee(editEmployeeId, updateData);
-            POS.showToast('Employee updated!');
-        } else {
-            var newId = employees.length > 0 ? Math.max.apply(null, employees.map(function(e) { return parseInt(e.id); })) + 1 : 1;
-            var empId = 'EMP-' + String(newId).padStart(3, '0');
-            await API.saveEmployee({
-                id: newId,
-                empId: empId,
-                firstName: firstName,
-                lastName: lastName,
-                email: $('emailAddress').value.trim(),
-                phone: $('phoneNumber').value.trim(),
-                position: $('position').value.trim(),
-                department: $('department').value,
-                status: 'active',
-                salary: parseFloat($('salary').value) || 0,
-                hireDate: $('hireDate').value,
-                employmentType: $('employmentType').value,
-                password: $('password').value || '123456'
-            });
-            POS.showToast('Employee added successfully!');
-        }
-        POS.closeModal('addEmployeeForm');
-        loadEmployees();
-    } catch (err) {
-        POS.showToast(err.message || 'Operation failed', true);
-    }
-}
-function viewEmployee(id) {
-    var emp = employees.find(function(e) { return e.id == id || String(e.id) === String(id); });
-    if (!emp) return;
-    var modalHtml = '<div class="modal-overlay open" id="viewModal">' +
-        '<div class="modal"><div class="modal-header"><h3>Employee Details</h3><button class="modal-close" onclick="POS.closeModal(\'viewModal\')">&times;</button></div>' +
-        '<div class="kpi-grid">' +
-        '<div class="kpi-card"><div class="kpi-label">Name</div><div class="kpi-value">' + POS.esc(emp.firstName + ' ' + emp.lastName) + '</div></div>' +
-        '<div class="kpi-card"><div class="kpi-label">Employee ID</div><div class="kpi-value">' + POS.esc(emp.empId || '') + '</div></div>' +
-        '<div class="kpi-card"><div class="kpi-label">Department</div><div class="kpi-value">' + POS.esc(emp.department ? emp.department.charAt(0).toUpperCase() + emp.department.slice(1) : '-') + '</div></div>' +
-        '</div>' +
-        '<div class="form-row" style="margin-top:15px;">' +
-        '<div class="form-group"><label>Phone</label><span>' + POS.esc(emp.phone || '-') + '</span></div>' +
-        '<div class="form-group"><label>Email</label><span>' + POS.esc(emp.email || '-') + '</span></div>' +
-        '<div class="form-group"><label>Salary</label><span>' + POS.formatCurrency(emp.salary || 0) + '</span></div>' +
-        '<div class="form-group"><label>Status</label><div>' + POS.statusBadge(emp.status || 'active') + '</div></div>' +
-        '</div>' +
-        '<div class="modal-actions">' +
-        '<button class="btn btn-warning" onclick="editEmployee(' + emp.id + '); POS.closeModal(\'viewModal\')"><i class="fas fa-edit"></i> Edit</button>' +
-        '<button class="btn btn-secondary" onclick="POS.closeModal(\'viewModal\')">Close</button>' +
-        '</div></div></div>';
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-function editEmployee(id) {
-    var emp = employees.find(function(e) { return e.id == id || String(e.id) === String(id); });
-    if (!emp) return;
-    editEmployeeId = id;
-    $('addEmployeeForm').classList.add('open');
-    $('employeeFormTitle').textContent = 'Edit Employee';
-    $('employeeSubmitBtn').textContent = 'Update Employee';
-    $('firstName').value = emp.firstName || '';
-    $('lastName').value = emp.lastName || '';
-    $('emailAddress').value = emp.email || '';
-    $('phoneNumber').value = emp.phone || '';
-    $('position').value = emp.position || '';
-    $('department').value = emp.department || '';
-    $('salary').value = emp.salary || '';
-    $('hireDate').value = emp.hireDate || '';
-    $('employmentType').value = emp.employmentType || 'full-time';
-    $('password').value = '';
-}
-async function deleteEmployee(id) {
-    if (!confirm('Delete this employee?')) return;
-    try {
-        await API.deleteEmployee(id);
-        POS.showToast('Employee deleted!');
-        loadEmployees();
-    } catch (err) {
-        POS.showToast(err.message || 'Delete failed', true);
-    }
-}
-function filterEmployees() {
-    var search = $('searchInput').value.toLowerCase();
-    var dept = $('departmentFilter').value;
-    var status = $('statusFilter').value;
-    filteredEmployees = employees.filter(function(e) {
-        var matchesSearch = (e.firstName || '').toLowerCase().includes(search) ||
-            (e.lastName || '').toLowerCase().includes(search) ||
-            (e.empId || '').toLowerCase().includes(search) ||
-            (e.position || '').toLowerCase().includes(search);
-        var matchesDept = !dept || e.department === dept;
-        var matchesStatus = !status || e.status === status;
-        return matchesSearch && matchesDept && matchesStatus;
-    });
-    renderEmployees();
-}
-function renderEmployees() {
-    var tbody = $('employeesTableBody');
-    var data = filteredEmployees.length > 0 ? filteredEmployees : employees;
-    $('employeeCount').textContent = (data.length || 0) + ' employees';
-    updateKPIStats();
-    if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No employees found</td></tr>';
-        return;
-    }
-    tbody.innerHTML = data.map(function(e) {
-        return '<tr>' +
-            '<td>' + POS.esc(e.empId || '') + '</td>' +
-            '<td><strong>' + POS.esc(e.firstName + ' ' + e.lastName) + '</strong></td>' +
-            '<td>' + POS.esc(e.position || '-') + '</td>' +
-            '<td>' + POS.esc(e.department ? e.department.charAt(0).toUpperCase() + e.department.slice(1) : '-') + '</td>' +
-            '<td>' + POS.esc(e.phone || '') + '</td>' +
-            '<td>' + POS.formatCurrency(e.salary || 0) + '</td>' +
-            '<td>' + POS.formatDate(e.hireDate) + '</td>' +
-            '<td>' + POS.statusBadge(e.status || 'active') + '</td>' +
-            '<td class="action-btns">' +
-            '<button class="icon-btn view" onclick="viewEmployee(' + e.id + ')"><i class="fas fa-eye"></i></button>' +
-            '<button class="icon-btn edit" onclick="editEmployee(' + e.id + ')"><i class="fas fa-edit"></i></button>' +
-            '<button class="icon-btn delete" onclick="deleteEmployee(' + e.id + ')"><i class="fas fa-trash"></i></button>' +
-            '</td></tr>';
-    }).join('');
-}
-function exportEmployeesCSV() {
-    var data = filteredEmployees.length > 0 ? filteredEmployees : employees;
-    if (!data.length) {
-        POS.showToast('No employees to export', true);
-        return;
-    }
-    POS.exportCSV('employees_' + POS.today() + '.csv',
-        ['Employee ID', 'Full Name', 'Email', 'Phone', 'Position', 'Department', 'Salary', 'Hire Date', 'Status', 'Employment Type'],
-        data.map(function(e) {
-            return {
-                'Employee ID': e.empId || '',
-                'Full Name': e.firstName + ' ' + e.lastName,
-                'Email': e.email || '',
-                'Phone': e.phone || '',
-                'Position': e.position || '',
-                'Department': e.department || '',
-                'Salary': e.salary || 0,
-                'Hire Date': e.hireDate || '',
-                'Status': e.status || 'active',
-                'Employment Type': e.employmentType || ''
-            };
-        })
-    );
-}
-function printEmployeeList() {
-    var data = filteredEmployees.length > 0 ? filteredEmployees : employees;
-    POS.printTable('Employee List - SHEDS POS',
-        ['Employee ID', 'Name', 'Position', 'Department', 'Phone', 'Salary', 'Hire Date', 'Status'],
-        data.map(function(e) {
-            return {
-                'Employee ID': e.empId || '',
-                'Name': e.firstName + ' ' + e.lastName,
-                'Position': e.position || '',
-                'Department': e.department || '',
-                'Phone': e.phone || '',
-                'Salary': POS.formatCurrency(e.salary || 0),
-                'Hire Date': e.hireDate || '',
-                'Status': e.status || 'active'
-            };
-        })
-    );
-}
-function clearFilters() {
-    $('searchInput').value = '';
-    $('departmentFilter').value = '';
-    $('statusFilter').value = '';
-    filterEmployees();
-}
-async function loadEmployees() {
-    try {
-        employees = await API.getEmployees() || [];
-        filteredEmployees = [...employees];
-        renderEmployees();
-    } catch (err) {
-        POS.showToast(err.message || 'Failed to load employees', true);
-        $('employeesTableBody').innerHTML = '<tr><td colspan="9" class="empty-state">Failed to load employees</td></tr>';
-    }
-}
-document.addEventListener('DOMContentLoaded', function() {
-    if (!POS.requireAuth()) return;
-    POS.renderSidebar();
-    POS.renderUserMenu();
-    loadEmployees();
-});
+(function(){
+  var employees = [];
+  var editId = null;
+
+  function $(id){return document.getElementById(id);}
+
+  function safeGet(k,fb){try{var v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch(e){return fb;}}
+
+  function showToast(msg, isError) {
+      var t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isError ? ' error' : '');
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 3000);
+  }
+
+  function updateKPIs() {
+      var list = employees || [];
+      $('totalEmployees').textContent = list.length;
+      $('activeEmployees').textContent = list.filter(function(e){return e.status==='active';}).length;
+      $('inactiveEmployees').textContent = list.filter(function(e){return e.status==='inactive';}).length;
+      var payroll = list.reduce(function(s,e){return s+(parseFloat(e.salary)||0);},0);
+      $('monthlyPayroll').textContent = '₦' + payroll.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function showAddForm() {
+      editId = null;
+      $('employeeFormTitle').textContent = 'Add New Employee';
+      $('employeeSubmitBtn').textContent = 'Add Employee';
+      $('firstName').value = '';
+      $('lastName').value = '';
+      $('emailAddress').value = '';
+      $('phoneNumber').value = '';
+      $('position').value = '';
+      $('department').value = '';
+      $('salary').value = '';
+      $('hireDate').value = '';
+      $('employmentType').value = 'full-time';
+      $('password').value = '';
+      $('addEmployeeForm').classList.add('open');
+  }
+
+  async function saveEmployee() {
+      var fn = $('firstName').value.trim();
+      var ln = $('lastName').value.trim();
+      if (!fn || !ln) { showToast('First and last name required', true); return; }
+      try {
+          var data = {
+              firstName: fn,
+              lastName: ln,
+              email: $('emailAddress').value.trim(),
+              phone: $('phoneNumber').value.trim(),
+              position: $('position').value.trim(),
+              department: $('department').value,
+              salary: parseFloat($('salary').value) || 0,
+              hireDate: $('hireDate').value,
+              employmentType: $('employmentType').value,
+              status: 'active'
+          };
+          if (editId !== null) {
+              await API.updateEmployee(editId, data);
+              showToast('Employee updated!');
+          } else {
+              var newId = employees.length > 0 ? Math.max.apply(null, employees.map(function(e){return parseInt(e.id)||0;})) + 1 : 1;
+              data.id = newId;
+              data.empId = 'EMP-' + String(newId).padStart(3, '0');
+              data.password = $('password').value || '123456';
+              await API.saveEmployee(data);
+              showToast('Employee added!');
+          }
+          closeModal('addEmployeeForm');
+          loadEmployees();
+      } catch (err) {
+          showToast(err.message || 'Save failed', true);
+      }
+  }
+
+  function viewEmployee(id) {
+      var emp = employees.find(function(e){return String(e.id)===String(id);});
+      if (!emp) return;
+      var html = '<div class="modal-overlay open" id="viewModal">' +
+          '<div class="modal"><div class="modal-header"><h3>Employee Details</h3><button class="modal-close" onclick="closeModal(\'viewModal\')">&times;</button></div>' +
+          '<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Name</div><div class="kpi-value">' + POS.esc(emp.firstName+' '+emp.lastName) + '</div></div>' +
+          '<div class="kpi-card"><div class="kpi-label">Employee ID</div><div class="kpi-value">' + POS.esc(emp.empId||'') + '</div></div>' +
+          '<div class="kpi-card"><div class="kpi-label">Department</div><div class="kpi-value">' + POS.esc(emp.department||'-') + '</div></div></div>' +
+          '<div class="form-row" style="margin-top:15px;"><div class="form-group"><label>Phone</label><span>' + POS.esc(emp.phone||'-') + '</span></div>' +
+          '<div class="form-group"><label>Email</label><span>' + POS.esc(emp.email||'-') + '</span></div>' +
+          '<div class="form-group"><label>Salary</label><span>' + POS.formatCurrency(emp.salary||0) + '</span></div>' +
+          '<div class="form-group"><label>Status</label><div>' + POS.statusBadge(emp.status||'active') + '</div></div></div>' +
+          '<div class="modal-actions"><button class="btn btn-warning" onclick="editEmployee(' + emp.id + ');closeModal(\'viewModal\')"><i class="fas fa-edit"></i> Edit</button>' +
+          '<button class="btn btn-secondary" onclick="closeModal(\'viewModal\')">Close</button></div></div></div>';
+      document.body.insertAdjacentHTML('beforeend', html);
+  }
+
+  function editEmployee(id) {
+      var emp = employees.find(function(e){return String(e.id)===String(id);});
+      if (!emp) return;
+      editId = id;
+      $('employeeFormTitle').textContent = 'Edit Employee';
+      $('employeeSubmitBtn').textContent = 'Update Employee';
+      $('firstName').value = emp.firstName || '';
+      $('lastName').value = emp.lastName || '';
+      $('emailAddress').value = emp.email || '';
+      $('phoneNumber').value = emp.phone || '';
+      $('position').value = emp.position || '';
+      $('department').value = emp.department || '';
+      $('salary').value = emp.salary || '';
+      $('hireDate').value = emp.hireDate || '';
+      $('employmentType').value = emp.employmentType || 'full-time';
+      $('password').value = '';
+      $('addEmployeeForm').classList.add('open');
+  }
+
+  async function deleteEmployee(id) {
+      if (!confirm('Delete this employee?')) return;
+      try {
+          await API.deleteEmployee(id);
+          showToast('Employee deleted!');
+          loadEmployees();
+      } catch (err) {
+          showToast(err.message || 'Delete failed', true);
+      }
+  }
+
+  function filterEmployees() {
+      var q = ($('searchInput').value || '').toLowerCase();
+      var dept = $('departmentFilter').value;
+      var status = $('statusFilter').value;
+      employees = employees || [];
+      var list = employees.filter(function(e) {
+          var txt = [(e.firstName||''),(e.lastName||''),(e.empId||''),(e.position||'')].join(' ').toLowerCase();
+          return (!q || txt.indexOf(q) > -1) && (!dept || e.department === dept) && (!status || e.status === status);
+      });
+      renderEmployees(list);
+  }
+
+  function renderEmployees(list) {
+      list = list || employees || [];
+      var tbody = $('employeesTableBody');
+      $('employeeCount').textContent = list.length + ' employee' + (list.length===1?'':'s');
+      updateKPIs();
+      if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No employees found</td></tr>';
+          return;
+      }
+      tbody.innerHTML = list.map(function(e) {
+          return '<tr><td>' + POS.esc(e.empId||'') + '</td><td><strong>' + POS.esc((e.firstName||'')+' '+(e.lastName||'')) + '</strong></td>' +
+              '<td>' + POS.esc(e.position||'-') + '</td><td>' + POS.esc(e.department||'-') + '</td>' +
+              '<td>' + POS.esc(e.phone||'') + '</td><td>' + POS.formatCurrency(e.salary||0) + '</td>' +
+              '<td>' + POS.formatDate(e.hireDate) + '</td><td>' + POS.statusBadge(e.status||'active') + '</td>' +
+              '<td class="action-btns"><button class="icon-btn view" onclick="viewEmployee(' + e.id + ')"><i class="fas fa-eye"></i></button>' +
+              '<button class="icon-btn edit" onclick="editEmployee(' + e.id + ')"><i class="fas fa-edit"></i></button>' +
+              '<button class="icon-btn delete" onclick="deleteEmployee(' + e.id + ')"><i class="fas fa-trash"></i></button></td></tr>';
+      }).join('');
+  }
+
+  function exportEmployeesCSV() {
+      var data = employees || [];
+      if (!data.length) { showToast('No employees to export', true); return; }
+      POS.exportCSV('employees_' + POS.today() + '.csv',
+          ['Employee ID','Full Name','Email','Phone','Position','Department','Salary','Hire Date','Status','Employment Type'],
+          data.map(function(e){return {
+              'Employee ID': e.empId||'', 'Full Name': (e.firstName||'')+' '+(e.lastName||''), 'Email': e.email||'',
+              'Phone': e.phone||'', 'Position': e.position||'', 'Department': e.department||'',
+              'Salary': e.salary||0, 'Hire Date': e.hireDate||'', 'Status': e.status||'active',
+              'Employment Type': e.employmentType||''
+          };})
+      );
+  }
+
+  function printEmployeeList() {
+      var data = employees || [];
+      POS.printTable('Employee List - SHEDS POS',
+          ['Employee ID','Name','Position','Department','Phone','Salary','Hire Date','Status'],
+          data.map(function(e){return {
+              'Employee ID': e.empId||'', 'Name': (e.firstName||'')+' '+(e.lastName||''), 'Position': e.position||'',
+              'Department': e.department||'', 'Phone': e.phone||'', 'Salary': POS.formatCurrency(e.salary||0),
+              'Hire Date': e.hireDate||'', 'Status': e.status||'active'
+          };})
+      );
+  }
+
+  function clearFilters() {
+      $('searchInput').value = '';
+      $('departmentFilter').value = '';
+      $('statusFilter').value = '';
+      filterEmployees();
+  }
+
+  function closeModal(id) {
+      var el = $('addEmployeeForm');
+      if (el) el.classList.remove('open');
+      var vm = $('viewModal');
+      if (vm) vm.remove();
+  }
+
+  async function loadEmployees() {
+      try {
+          var data = await API.getEmployees();
+          employees = Array.isArray(data) ? data : [];
+      } catch (err) {
+          employees = safeGet('danzona_employees', []);
+      }
+      if (!employees.length) employees = safeGet('danzona_employees', []);
+      filterEmployees();
+  }
+
+  function initPage() {
+      try {
+          POS.renderSidebar();
+          POS.renderUserMenu();
+          POS.startClock();
+          loadEmployees();
+      } catch (err) {
+          console.error('Employees init error:', err);
+          $('employeesTableBody').innerHTML = '<tr><td colspan="9" class="empty-state" style="color:#ef4444;">Error: ' + err.message + '</td></tr>';
+      }
+  }
+
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPage);
+  } else {
+      initPage();
+  }
+})();
 </script>
 </body>
 </html>
-

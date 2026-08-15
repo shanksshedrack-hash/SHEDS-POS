@@ -1,120 +1,146 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Roles & Permissions - SHEDS POS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="common.css">
-    <script src="api.js"></script>
-    <script src="common.js"></script>
-    <style>
-        .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 4px 12px rgba(0,0,0,.04)}
-        .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px}
-        .form-group{display:flex;flex-direction:column;gap:6px}
-        .form-group label{font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.3px}
-        .form-control{padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff}
-        .form-control:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
-        .btn{padding:10px 14px;border:0;border-radius:8px;cursor:pointer;font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:8px;transition:.2s}
-        .btn-primary{background:#10b981;color:#fff}
-        .btn-outline{background:#fff;color:#111827;border:1px solid #d1d5db}
-        .btn-danger{background:#ef4444;color:#fff}
-        .checkbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:6px}
-        .checkbox-item{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb}
-        table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:14px}
-        th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
-        th{background:#f8fafc;color:#334155;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:800}
-        tr:last-child td{border-bottom:none}
-        .badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.2px}
-        .empty-state{text-align:center;color:#64748b;padding:36px 16px;font-size:14px}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Roles & Accounts - SHEDS POS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
+<script src="api.js"></script>
+<script src="common.js"></script>
+<style>
+.panel{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.3px}
+.form-control{padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff}
+.btn{padding:8px 12px;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px}
+.btn-primary{background:#10b981;color:#fff}
+.btn-outline{background:#fff;color:#374151;border:1px solid #d1d5db}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-success{background:#10b981;color:#fff}
+.table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-size:13px}
+.table th,.table td{padding:8px 10px;border-bottom:1px solid #e5e7eb}
+.table th{background:#f8fafc;color:#4a5568;font-size:11px;text-transform:uppercase;font-weight:600}
+.badge{padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600;text-transform:uppercase}
+.badge-success{background:#d1fae5;color:#065f46}
+.badge-info{background:#dbeafe;color:#1e40af}
+.badge-muted{background:#f3f4f6;color:#6b7280}
+.empty-state{text-align:center;color:#94a3b8;padding:40px 16px;font-size:14px}
+.toast{position:fixed;top:20px;right:20px;background:#48bb78;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:1000}
+.toast.error{background:#ef4444}
+</style>
 </head>
 <body>
 <div class="sidebar" id="sidebar"></div>
 <div class="main-content">
-    <div class="header">
-        <h2><i class="fas fa-user-shield"></i> User Roles & Permissions</h2>
-        <div id="userMenu"></div>
-        <div class="header-clock" id="topClock"></div>
-    </div>
-    <div class="content">
-        <div class="panel">
-            <h3><i class="fas fa-plus"></i> New Role</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Role Name</label>
-                    <input type="text" id="roleName" class="form-control" placeholder="e.g. Pharmacist, Cashier">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" id="roleDesc" class="form-control" placeholder="Short description">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Permissions</label>
-                <div class="checkbox-grid">
-                    <div class="checkbox-item"><input type="checkbox" value="sales" class="rolePerm"> <span>Sales / POS</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="inventory" class="rolePerm"> <span>Inventory</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="reports" class="rolePerm"> <span>Reports</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="customers" class="rolePerm"> <span>Customers</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="suppliers" class="rolePerm"> <span>Suppliers</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="expenses" class="rolePerm"> <span>Expenses</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="employees" class="rolePerm"> <span>Employees</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="settings" class="rolePerm"> <span>Settings / Config</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="audit" class="rolePerm"> <span>Audit Log</span></div>
-                    <div class="checkbox-item"><input type="checkbox" value="pharmacy" class="rolePerm"> <span>Pharmacy (Rx / Batch)</span></div>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="saveRole()"><i class="fas fa-save"></i> Save Role</button>
-        </div>
-        <div class="panel">
-            <h3><i class="fas fa-list"></i> Roles</h3>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Role</th><th>Description</th><th>Permissions</th><th>Action</th></tr>
-                    </thead>
-                    <tbody id="rolesBody">
-                        <tr><td colspan="4" class="empty-state">No roles defined</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="header"><h2><i class="fas fa-user-shield"></i> User Roles & Accounts</h2><div id="userMenu"></div><div class="header-clock" id="topClock"></div></div>
+<div class="content">
+<div style="display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #e5e7eb">
+<button class="btn btn-outline active" onclick="switchTab('roles',this)" id="tabBtn-roles"><i class="fas fa-shield-alt"></i> Roles</button>
+<button class="btn btn-outline" onclick="switchTab('accounts',this)" id="tabBtn-accounts"><i class="fas fa-users"></i> Accounts</button>
+<button class="btn btn-outline" onclick="switchTab('pending',this)" id="tabBtn-pending"><i class="fas fa-user-clock"></i> Pending <span id="pendingBadge" class="badge badge-info">0</span></button>
 </div>
+
+<div id="tab-roles" class="tab-pane" style="display:block;">
+<div class="panel">
+<h3><i class="fas fa-plus"></i> Create Role</h3>
+<div class="form-row">
+<div class="form-group"><label>Name</label><input type="text" id="roleName" class="form-control"></div>
+<div class="form-group"><label>Description</label><input type="text" id="roleDesc" class="form-control"></div>
+</div>
+<div style="margin:10px 0;">
+<label style="font-weight:600;margin-bottom:5px;display:block;">Permissions</label>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:8px;">
+<label><input type="checkbox" value="sales"> Sales</label>
+<label><input type="checkbox" value="inventory"> Inventory</label>
+<label><input type="checkbox" value="reports"> Reports</label>
+<label><input type="checkbox" value="customers"> Customers</label>
+<label><input type="checkbox" value="suppliers"> Suppliers</label>
+<label><input type="checkbox" value="employees"> Employees</label>
+<label><input type="checkbox" value="settings"> Settings</label>
+<label><input type="checkbox" value="audit"> Audit</label>
+</div>
+</div>
+<button class="btn btn-primary" onclick="saveRole()"><i class="fas fa-save"></i> Save</button>
+</div>
+<div class="panel">
+<h3><i class="fas fa-list"></i> Roles</h3>
+<table class="table"><thead><tr><th>Name</th><th>Desc</th><th>Perms</th><th>Users</th><th>Actions</th></tr></thead>
+<tbody id="rolesBody"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody></table>
+</div>
+</div>
+
+<div id="tab-accounts" class="tab-pane" style="display:none;">
+<div class="panel">
+<h3><i class="fas fa-user-plus"></i> Create Account</h3>
+<div class="form-row">
+<div class="form-group"><label>Full Name</label><input type="text" id="userFullName" class="form-control"></div>
+<div class="form-group"><label>Username</label><input type="text" id="userName" class="form-control"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Password</label><input type="password" id="userPassword" class="form-control"></div>
+<div class="form-group"><label>Role</label><select id="userRole" class="form-control"><option value="">Select</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Phone</label><input type="tel" id="userPhone" class="form-control"></div>
+<div class="form-group"><label>Email</label><input type="email" id="userEmail" class="form-control"></div>
+</div>
+<label style="margin:10px 0;display:block;"><input type="checkbox" id="userActive" checked> Active</label>
+<button class="btn btn-primary" onclick="saveAccount()"><i class="fas fa-save"></i> Create</button>
+<button onclick="testData()" class="btn" style="margin-left:10px;background:#6b7280;color:#fff;"><i class="fas fa-vial"></i> Test Data</button>
+</div>
+<div class="panel">
+<h3><i class="fas fa-users"></i> Accounts</h3>
+<table class="table"><thead><tr><th>Name</th><th>User</th><th>Role</th><th>Phone</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+<tbody id="accountsBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody></table>
+</div>
+</div>
+
+<div id="tab-pending" class="tab-pane" style="display:none;">
+<div class="panel">
+<h3><i class="fas fa-user-clock"></i> Pending Requests</h3>
+<p style="color:#64748b;font-size:13px;margin-bottom:12px;">Requests from create-account.html appear here.</p>
+<button class="btn btn-outline" onclick="loadPending();showToast('Refreshed')"><i class="fas fa-sync-alt"></i> Refresh</button>
+<table class="table" style="margin-top:12px;"><thead><tr><th>Date</th><th>Name</th><th>User</th><th>Role</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+<tbody id="pendingBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody></table>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
+</div>
+</div>
 <script>
+(function(){
+var DB={roles:[],accounts:[],pending:[]};
 function $(id){return document.getElementById(id);}
-var roles=[];
-function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
-function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){t.style.display='none';},3000); }
-function saveRole(){
-    var name=$('roleName').value.trim();
-    var desc=$('roleDesc').value.trim();
-    if(!name){ showToast('Role name is required', true); return; }
-    var perms=[];
-    document.querySelectorAll('.rolePerm:checked').forEach(function(c){ perms.push(c.value); });
-    var record={ id:'ROL-'+Date.now(), name:name, desc:desc, perms:perms };
-    roles.unshift(record);
-    try{ localStorage.setItem('SHEDS_roles', JSON.stringify(roles)); }catch(e){}
-    showToast('Role saved');
-    resetRoleForm();
-    renderRoles();
-}
-function resetRoleForm(){ $('roleName').value='';$('roleDesc').value=''; document.querySelectorAll('.rolePerm').forEach(function(c){c.checked=false;}); }
-function renderRoles(){
-    var tbody=$('rolesBody');
-    if(!roles.length){ tbody.innerHTML='<tr><td colspan="4" class="empty-state">No roles defined</td></tr>'; return; }
-    tbody.innerHTML=roles.map(function(r){
-        var perms=(r.perms||[]).join(', ') || 'None';
-        return '<tr><td><strong>'+esc(r.name)+'</strong></td><td>'+esc(r.desc||'-')+'</td><td>'+esc(perms)+'</td><td><button class="btn btn-danger" style="padding:6px 10px;font-size:11px;" onclick="deleteRole(\''+r.id+'\')"><i class="fas fa-trash"></i> Delete</button></td></tr>';
-    }).join('');
-}
-function deleteRole(id){ if(!confirm('Delete role?')) return; roles=roles.filter(function(r){return r.id!==id;}); try{ localStorage.setItem('SHEDS_roles',JSON.stringify(roles)); }catch(e){} renderRoles(); showToast('Deleted'); }
-function loadRoles(){ try{ roles=JSON.parse(localStorage.getItem('SHEDS_roles')||'[]'); if(!Array.isArray(roles)) roles=[]; }catch(e){ roles=[]; } renderRoles(); }
-document.addEventListener('DOMContentLoaded', function(){ if(!POS.requireAuth()) return; loadRoles(); });
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return m=='&'?'&amp;':m=='<'?'&lt;':m=='>'?'&gt;':m=='"'?'&quot;':'&#39;';});}
+function showToast(msg,err){var t=$('toast');t.textContent=msg;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
+window.switchTab=function(tab,el){document.querySelectorAll('[id^=tabBtn-]').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.tab-pane').forEach(function(p){p.style.display='none';});if(el)el.classList.add('active');$('tab-'+tab).style.display='block';if(tab==='pending')loadPending();if(tab==='accounts')populateRoleDropdown();};
+function loadRoles(){try{DB.roles=JSON.parse(localStorage.getItem('danzona_roles')||'[]');}catch(e){DB.roles=[];}if(!DB.roles.length){DB.roles=[{id:'ROL-1',name:'Administrator',desc:'Full system access with all permissions',perms:['sales','inventory','reports','customers','suppliers','employees','settings','audit']},{id:'ROL-2',name:'Pharmacist',desc:'Pharmacy operations, dispensing, and inventory oversight',perms:['sales','inventory','reports','customers','suppliers','employees','audit']},{id:'ROL-3',name:'Cashier',desc:'Sales transactions and customer service at counter',perms:['sales','customers']},{id:'ROL-4',name:'Sales Representative',desc:'Customer management, sales outreach, and reporting',perms:['sales','customers','reports']}];saveRoles();}renderRoles();populateRoleDropdown();}
+function saveRoles(){localStorage.setItem('danzona_roles',JSON.stringify(DB.roles));}
+function saveRole(){var name=$('roleName').value.trim();if(!name){showToast('Name required',true);return;}var perms=[];document.querySelectorAll('#tab-roles input:checked').forEach(function(c){perms.push(c.value);});DB.roles.push({id:'ROL-'+Date.now(),name:name,desc:$('roleDesc').value,perms:perms});saveRoles();renderRoles();showToast('Role saved');}
+function renderRoles(){var tb=$('rolesBody');if(!DB.roles.length){tb.innerHTML='<tr><td colspan="5" class="empty-state">No roles</td></tr>';return;}tb.innerHTML=DB.roles.map(function(r){return'<tr><td>'+esc(r.name)+'</td><td>'+esc(r.desc)+'</td><td>'+(r.perms||[]).length+'</td><td class="badge badge-success">'+DB.accounts.filter(function(a){return a.roleId==r.id;}).length+' users</td><td><button class="btn btn-outline btn-sm" onclick="editRole(\''+r.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteRole(\''+r.id+'\')">Del</button></td></tr>';}).join('');}
+function editRole(id){var r=DB.roles.find(function(x){return x.id===id;});$('roleName').value=r.name;$('roleDesc').value=r.desc;document.querySelectorAll('#tab-roles input').forEach(function(c){c.checked=(r.perms||[]).indexOf(c.value)>-1;});showToast('Editing');}
+function deleteRole(id){if(!confirm('Delete?'))return;DB.roles=DB.roles.filter(function(r){return r.id!==id;});saveRoles();renderRoles();}
+function loadAccounts(){try{DB.accounts=JSON.parse(localStorage.getItem('danzona_accounts')||'[]');}catch(e){DB.accounts=[];}renderAccounts();}
+function saveAccounts(){localStorage.setItem('danzona_accounts',JSON.stringify(DB.accounts));}
+function saveAccount(){var name=$('userFullName').value.trim(),user=$('userName').value.trim(),pwd=$('userPassword').value;if(!name||!user||!pwd){showToast('All required',true);return;}if(DB.accounts.find(function(a){return a.username===user;})){showToast('User exists',true);return;}var r=DB.roles.find(function(r){return r.id===$('userRole').value;});DB.accounts.push({id:'USR-'+Date.now(),fullName:name,username:user,password:pwd,roleId:$('userRole').value,roleName:r?r.name:'Unassigned',phone:$('userPhone').value,email:$('userEmail').value,active:$('userActive').checked,createdAt:new Date().toISOString()});saveAccounts();renderAccounts();showToast('Created');}
+function renderAccounts(){var tb=$('accountsBody');if(!DB.accounts.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">No accounts</td></tr>';return;}tb.innerHTML=DB.accounts.map(function(a){return'<tr><td>'+esc(a.fullName)+'</td><td>'+esc(a.username)+'</td><td>'+esc(a.roleName)+'</td><td>'+esc(a.phone||'-')+'</td><td class="badge '+(a.active?'badge-success':'badge-danger')+'">'+(a.active?'Active':'Disabled')+'</td><td>'+new Date(a.createdAt).toLocaleDateString()+'</td><td><button class="btn btn-outline btn-sm" onclick="editAccount(\''+a.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteAccount(\''+a.id+'\')">Del</button></td></tr>';}).join('');}
+function editAccount(id){var a=DB.accounts.find(function(x){return x.id===id;});$('userFullName').value=a.fullName;$('userName').value=a.username;$('userPassword').value='';$('userRole').value=a.roleId;$('userPhone').value=a.phone;$('userEmail').value=a.email;$('userActive').checked=a.active;switchTab('accounts');showToast('Editing');}
+function deleteAccount(id){if(!confirm('Delete?'))return;DB.accounts=DB.accounts.filter(function(a){return a.id!==id;});saveAccounts();renderAccounts();}
+function populateRoleDropdown(){var s=$('userRole');if(s)s.innerHTML='<option value="">Select</option>'+DB.roles.map(function(r){return'<option value="'+r.id+'">'+esc(r.name)+'</option>';}).join('');}
+window.loadPending=function(){try{DB.pending=JSON.parse(localStorage.getItem('danzona_pending_accounts')||'[]');console.log('Pending:',DB.pending.length);}catch(e){DB.pending=[];}renderPending();};
+function savePending(){localStorage.setItem('danzona_pending_accounts',JSON.stringify(DB.pending));}
+function renderPending(){var b=$('pendingBadge');if(b)b.style.display=DB.pending.length?'inline':'none';b.textContent=DB.pending.length;var tb=$('pendingBody');if(!DB.pending.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">No pending</td></tr>';return;}tb.innerHTML=DB.pending.map(function(p){return'<tr><td>'+new Date(p.requestedAt).toLocaleDateString()+'</td><td>'+esc(p.fullName)+'</td><td>'+esc(p.username)+'</td><td>'+esc(p.role)+'</td><td>'+esc(p.phone||'-')+'</td><td>'+esc(p.email||'-')+'</td><td><button class="btn btn-success btn-sm" onclick="approvePending(\''+p.id+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="rejectPending(\''+p.id+'\')">Reject</button></td></tr>';}).join('');}
+function approvePending(id){var p=DB.pending.find(function(x){return x.id===id;});if(!p)return;var roleKey=(p.role||'Cashier').toLowerCase();var roleMap={cashier:'Cashier',pharmacist:'Pharmacist',sales:'sales representative',sales_representative:'Sales Representative','sales representative':'Sales Representative'};var roleName=roleMap[roleKey]||(p.role||'Cashier');var r=DB.roles.find(function(r){return r.name.toLowerCase()===roleName.toLowerCase();});DB.accounts.push({id:'USR-'+Date.now(),fullName:p.fullName,username:p.username,password:p.password,roleId:r?r.id:'ROL-2',roleName:r?r.name:(p.role||'Cashier'),phone:p.phone,email:p.email,active:true,createdAt:new Date().toISOString()});DB.pending=DB.pending.filter(function(x){return x.id!==id;});saveAccounts();savePending();renderAccounts();renderPending();showToast('Approved');}
+function rejectPending(id){if(!confirm('Reject?'))return;DB.pending=DB.pending.filter(function(x){return x.id!==id;});savePending();renderPending();}
+function testData(){DB.pending.push({id:'REQ-'+Date.now(),fullName:'Test User',username:'testuser',password:'test123',role:'cashier',phone:'+234',email:'test@test.com',notes:'test',requestedAt:new Date().toISOString()});savePending();renderPending();showToast('Test data added');}
+window.init=function(){console.log('init start');try{if(typeof POS!=='undefined'){try{POS.renderSidebar();}catch(e){}try{POS.renderUserMenu();}catch(e){}try{POS.startClock();}catch(e){}}catch(e){}loadRoles();loadAccounts();loadPending();console.log('Ready:',DB.roles.length,'roles',DB.accounts.length,'accounts',DB.pending.length,'pending');};
+document.addEventListener('DOMContentLoaded',function(){setTimeout(window.init,100);});
+if (document.readyState !== 'loading') setTimeout(window.init, 100);
+console.log('Script loaded');
+})();
 </script>
 </body>
 </html>
-
-

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -89,7 +89,7 @@
 <script>
 function $(id){return document.getElementById(id);}
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
-function fmt(n){ return '₦' + (parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); } }
 function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){t.style.display='none';},3000); }
 function today(){ return new Date().toISOString().split('T')[0]; }
 function loadSummary(){
@@ -133,5 +133,6 @@ document.addEventListener('DOMContentLoaded', function(){ if(!POS.requireAuth())
 </script>
 </body>
 </html>
+
 
 

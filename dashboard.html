@@ -10,75 +10,276 @@
 <script src="common.js"></script>
 <link rel="stylesheet" href="common.css">
 <style>
-.date-filter{padding:12px;background:#fff;border-radius:12px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+:root{--primary:#10b981;--primary-hover:#059669;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--dark:#1f2937;--border:#e5e7eb;--text:#1f2937;--shadow:0 1px 3px rgba(0,0,0,0.1);}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',Arial,sans-serif;}
+body{background:#f3f4f6;min-height:100vh;display:flex;}
+.sidebar{width:260px;background:var(--dark);color:#fff;height:100vh;overflow-y:auto;flex-shrink:0;}
+.sidebar-header{padding:20px;background:#111827;border-bottom:1px solid #374151;}
+.sidebar-header h1{font-size:22px;color:var(--primary);margin:0;font-weight:600;}
+.sidebar ul{list-style:none;padding:12px 0;}
+.sidebar ul li{padding:12px 22px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:3px solid transparent;transition:all 0.2s;font-size:14px;}
+.sidebar ul li:hover{background:#374151;color:#fff;border-left-color:var(--primary);}
+.sidebar ul li.active{background:#374151;color:#fff;border-left-color:var(--primary);}
+.main-content{flex:1;display:flex;flex-direction:column;}
+.header{background:var(--primary);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;position:relative;}
+.header h2{margin:0;font-size:20px;}
+.live-indicator{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;backdrop-filter:blur(10px);}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:livePulse 2s infinite;}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.2);}}
+.last-updated{font-size:11px;opacity:.85;font-weight:600;}
+.content{flex:1;padding:20px;overflow-y:auto;}
+.date-filter{padding:14px 18px;background:#fff;border-radius:14px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .preset-btns{display:flex;gap:6px;}
-.preset-btn{padding:7px 12px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;}
+.preset-btn{padding:8px 14px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:12px;font-weight:800;}
 .preset-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-.chart-container{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:20px;}
+.chart-card{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px;}
 .chart-wrapper{position:relative;height:280px;}
+.fast-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;}
+.stat-card{background:#fff;border:1px solid rgba(229,231,235,.8);border-radius:14px;padding:16px;box-shadow:var(--shadow);text-align:center;transition:.2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(15,23,42,.08);}
+.stat-card .stat-icon{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:6px;}
+.stat-card .stat-val{font-size:22px;font-weight:900;color:#111827;}
+.stat-card .stat-lbl{font-size:11px;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;}
+.stat-card .stat-trend{font-size:11px;font-weight:800;margin-top:6px;}
+.stat-trend.up{color:#10b981;} .stat-trend.down{color:#ef4444;} .stat-trend.neutral{color:#64748b;}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.dashboard-grid.three{grid-template-columns:1fr 1fr 1fr;}
+@keyframes dataFlash{0%{background:#ecfdf5;}100%{background:#fff;}}
+.data-flash{animation:dataFlash 1.5s ease;}
+.widget{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px;}
+.widget-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.widget-title{font-size:14px;font-weight:800;color:#111827;display:flex;align-items:center;gap:8px;}
+.widget-title i{color:var(--primary);}
+.widget-action{font-size:12px;color:var(--primary);font-weight:700;cursor:pointer;border:none;background:none;}
+.widget-action:hover{text-decoration:underline;}
+.top-products{display:flex;flex-direction:column;gap:10px;}
+.top-product-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;background:#f8fafc;transition:.2s;}
+.top-product-item:hover{background:#f1f5f9;}
+.top-product-rank{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.top-product-info{flex:1;min-width:0;}
+.top-product-name{font-size:13px;font-weight:700;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-product-meta{font-size:11px;color:#64748b;margin-top:2px;}
+.top-product-val{font-size:14px;font-weight:900;color:#111827;white-space:nowrap;}
+.progress-bar{width:100%;height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;background:linear-gradient(135deg,var(--primary),#2563eb);border-radius:999px;transition:width .6s ease;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;}
+.alert-item:last-child{border-bottom:none;}
+.alert-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;}
+.alert-body{flex:1;min-width:0;}
+.alert-title{font-size:13px;font-weight:700;color:#111827;}
+.alert-meta{font-size:12px;color:#64748b;margin-top:2px;}
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+.quick-action-btn{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:.2s;font-size:13px;font-weight:700;color:#374151;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.quick-action-btn:hover{background:var(--primary-soft,#ecfdf5);border-color:var(--primary);color:var(--primary-dark,#059669);transform:translateY(-2px);}
+.quick-action-btn i{font-size:20px;color:var(--primary);}
+.customer-list{display:flex;flex-direction:column;gap:8px;}
+.customer-item{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.customer-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#10b981,#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
+.customer-info{flex:1;min-width:0;}
+.customer-name{font-size:13px;font-weight:700;color:#111827;}
+.customer-meta{font-size:11px;color:#64748b;}
+.customer-spend{font-size:13px;font-weight:900;color:#111827;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px;background:#f8fafc;color:#64748b;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+td{padding:10px;border-bottom:1px solid #f1f5f9;color:#374151;}
+tr:hover td{background:#f8fafc;}
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800;}
+.badge-success{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;}
+.badge-warning{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
+.badge-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.badge-info{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}
+.kpi-sub{font-size:11px;color:#64748b;margin-top:4px;font-weight:700}
+@media(max-width:968px){.dashboard-grid{grid-template-columns:1fr;}.dashboard-grid.three{grid-template-columns:1fr;}}
+.activity-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:.15s;}
+.activity-item:hover{background:#f8fafc;margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:10px;}
+.activity-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.activity-body{flex:1;min-width:0;}
+.activity-title{font-size:14px;font-weight:700;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-meta{font-size:12px;color:#64748b;margin-top:2px;}
+.activity-amt{font-size:14px;font-weight:900;color:#111827;white-space:nowrap;}
+.error-box{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:16px;border-radius:12px;margin:16px 0;}
+.toast{position:fixed;top:20px;right:20px;background:#48bb78;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:1000;}
+.toast.error{background:#ef4444;}
 </style>
 </head>
 <body>
 <div class="sidebar" id="sidebar"></div>
 <div class="main-content">
-<div class="header">
-<h2><i class="fas fa-chart-line"></i> Dashboard</h2>
-<div id="userMenu"></div>
-<div class="header-clock" id="topClock"></div>
-</div>
+<div class="header"><h2><i class="fas fa-chart-line"></i> Dashboard</h2><div style="display:flex;align-items:center;gap:12px;"><span class="last-updated" id="lastUpdated">Live</span><span class="live-indicator"><span class="live-dot"></span> LIVE</span></div><div id="userMenu"></div><div class="header-clock" id="topClock"></div></div>
 <div class="content">
 <div class="date-filter">
 <label><i class="fas fa-calendar-alt"></i> Period:</label>
 <input type="date" id="startDate">
-<span>to</span>
+<span style="color:#64748b;">to</span>
 <input type="date" id="endDate">
-<button class="btn btn-primary" onclick="loadDashboard()"><i class="fas fa-sync-alt"></i></button>
+<button class="btn btn-primary" onclick="refreshDashboard()" title="Refresh" style="background:#fff;color:#333;border:1px solid #e5e7eb;"><i class="fas fa-sync-alt"></i></button>
 <div class="preset-btns">
 <button class="preset-btn active" onclick="setPreset('7d',this)">7D</button>
 <button class="preset-btn" onclick="setPreset('30d',this)">30D</button>
 <button class="preset-btn" onclick="setPreset('90d',this)">90D</button>
+<button class="preset-btn" onclick="setPreset('all',this)">All</button>
 </div>
 </div>
-<div class="kpi-grid" id="kpiGrid"></div>
-<div class="chart-container"><div class="chart-wrapper"><canvas id="trendChart"></canvas></div></div>
-<div class="chart-container"><div class="chart-wrapper"><canvas id="categoryChart"></canvas></div></div>
-<div class="chart-container"><div class="chart-wrapper"><canvas id="paymentChart"></canvas></div></div>
-<div id="activityFeed" style="max-height:200px;overflow-y:auto;background:#fff;padding:16px;border-radius:16px;box-shadow:var(--shadow);"></div>
+<div id="errorBox"></div>
+<div class="fast-stats" id="fastStats"></div>
+<div class="quick-actions" style="margin-bottom:20px;">
+    <button class="quick-action-btn" onclick="navigateTo('sales.html')"><i class="fas fa-shopping-cart"></i> New Sale</button>
+    <button class="quick-action-btn" onclick="navigateTo('variations.html')"><i class="fas fa-plus-circle"></i> Add Product</button>
+    <button class="quick-action-btn" onclick="navigateTo('customers.html')"><i class="fas fa-user-plus"></i> Add Customer</button>
+    <button class="quick-action-btn" onclick="navigateTo('purchase-orders.html')"><i class="fas fa-file-invoice-dollar"></i> Purchase Order</button>
+    <button class="quick-action-btn" onclick="navigateTo('reports.html')"><i class="fas fa-chart-bar"></i> Reports</button>
+    <button class="quick-action-btn" onclick="navigateTo('config.html')"><i class="fas fa-cog"></i> Settings</button>
+</div>
+<div class="chart-card"><div class="chart-wrapper"><canvas id="trendChart"></canvas></div></div>
+<div class="dashboard-grid">
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-trophy"></i> Top Products</div>
+            <button class="widget-action" onclick="navigateTo('inventory.html')">View All</button>
+        </div>
+        <div id="topProductsList" class="top-products"></div>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-wallet"></i> Payment Methods</div>
+            <button class="widget-action" onclick="navigateTo('payments.html')">Details</button>
+        </div>
+        <div id="paymentMethodsList"></div>
+    </div>
+</div>
+<div class="dashboard-grid">
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-exclamation-triangle"></i> Inventory Alerts</div>
+            <button class="widget-action" onclick="navigateTo('inventory.html')">Manage</button>
+        </div>
+        <div id="inventoryAlerts"></div>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-users"></i> Top Customers</div>
+            <button class="widget-action" onclick="navigateTo('customers.html')">View All</button>
+        </div>
+        <div id="topCustomersList" class="customer-list"></div>
+    </div>
+</div>
+<div class="dashboard-grid three">
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-chart-pie"></i> Category Breakdown</div>
+        </div>
+        <div class="chart-wrapper" style="height:240px;"><canvas id="categoryChart"></canvas></div>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-credit-card"></i> Payment Mix</div>
+        </div>
+        <div class="chart-wrapper" style="height:240px;"><canvas id="paymentChart"></canvas></div>
+    </div>
+    <div class="widget">
+        <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-bullseye"></i> Daily Target</div>
+        </div>
+        <div id="dailyTargetWidget"></div>
+    </div>
+</div>
+<div class="widget">
+    <div class="widget-header">
+        <div class="widget-title"><i class="fas fa-history"></i> Recent Transactions</div>
+        <button class="widget-action" onclick="navigateTo('sales.html')">View All Sales</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Date</th></tr></thead>
+            <tbody id="recentTransactionsBody"></tbody>
+        </table>
+    </div>
+</div>
+<div class="chart-card">
+    <h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-history" style="color:var(--primary);"></i> Recent Activity</h3>
+    <div id="activityFeed" style="max-height:320px;overflow-y:auto;"></div>
+</div>
 </div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
-var catChart,trendChart,payChart,sales=[],products=[],customers=[];var datePreset='7d';
+var DB={sales:[],products:[],customers:[],inventory:[],datePreset:'7d',charts:{},liveInterval:null};
 function $(id){return document.getElementById(id);}
-function formatCurrency(v){return '₦'+(parseFloat(v)||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
-async function loadDashboard(){
-if(!POS.requireAuth())return;POS.renderSidebar();POS.renderUserMenu();POS.startClock();
-var now=new Date();var start=new Date();if(datePreset==='7d')start.setDate(now.getDate()-7);else if(datePreset==='30d')start.setDate(now.getDate()-30);else if(datePreset==='90d')start.setDate(now.getDate()-90);
-$('startDate').value=start.toISOString().split('T')[0];$('endDate').value=now.toISOString().split('T')[0];
-try{await Promise.all([loadSales(),loadProducts(),loadCustomers()]);}catch(e){}
-renderKPIs();renderCharts();renderActivity();
+function fmtMoney(v){return '₦'+(parseFloat(v)||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtDate(d){if(!d)return '-';try{return new Date(d).toLocaleDateString('en-NG',{day:'numeric',month:'short',year:'numeric'});}catch(e){return '-';}}
+function safeGet(k,fallback){try{var v=localStorage.getItem(k);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+function navigateTo(page){window.location.href=page;}
+function formatLocalDate(date){var y=date.getFullYear();var m=String(date.getMonth()+1).padStart(2,'0');var d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d;}
+function esc(str){if(str==null)return '';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function formatNum(v){return (parseFloat(v)||0).toLocaleString('en-NG');}
+function formatCur(v){return '₦'+(parseFloat(v)||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});}
+async function loadData(){
+var sales=[],products=[],customers=[];
+try{ sales = await API.getSales(); } catch(e) { sales = safeGet('SHEDS_completed_sales', safeGet('danzona_sales', [])); }
+try{ products = await API.getProducts(); } catch(e) { products = safeGet('danzona_products',[]); }
+try{ customers = await API.getCustomers(); } catch(e) { customers = safeGet('danzona_customers',[]); }
+DB.sales=Array.isArray(sales)?sales:[];DB.products=Array.isArray(products)?products:[];DB.customers=Array.isArray(customers)?customers:[];DB.inventory=safeGet('danzona_inventory',[]);
 }
-async function loadSales(){try{sales=await API.getSales()||[];}catch(e){try{sales=JSON.parse(localStorage.getItem('SHEDS_sales')||'[]');}catch(err){sales=[];}}
-if(!sales.length)sales=JSON.parse(localStorage.getItem('SHEDS_completed_sales')||'[]');}
-async function loadProducts(){try{products=await API.getProducts()||[];}catch(e){try{products=JSON.parse(localStorage.getItem('SHEDS_products')||'[]');}catch(err){products=[];}}
-if(!products.length)products=JSON.parse(localStorage.getItem('SHEDS_inventory')||'[]');}
-async function loadCustomers(){try{customers=await API.getCustomers()||[];}catch(e){try{customers=JSON.parse(localStorage.getItem('danzona_customers')||'[]');}catch(err){customers=[];}}
-if(!customers.length)customers=JSON.parse(localStorage.getItem('SHEDS_customers')||'[]');}
-function renderKPIs(){var totalSales=sales.reduce(function(s,x){return s+parseFloat(x.total||0);},0);var totalCost=0;
-sales.forEach(function(s){(s.items||[]).forEach(function(it){var p=products.find(function(pr){return pr.id==it.id||pr.id==it.productId;});totalCost+=(p?(parseFloat(p.cost_price)||0):(parseFloat(it.cost)||0))*(parseInt(it.qty)||1);});});
-var profit=totalSales-totalCost;
-$('kpiGrid').innerHTML=
-'<div class="kpi-card"><div class="kpi-label"><i class="fas fa-chart-line"></i> Sales Profit</div><div class="kpi-value" style="color:'+(profit>=0?'#10b981':'#ef4444')+'">'+formatCurrency(profit)+'</div></div>'+
-'<div class="kpi-card"><div class="kpi-label"><i class="fas fa-shopping-cart"></i> Total Sales</div><div class="kpi-value">'+formatCurrency(totalSales)+'</div></div>'+
-'<div class="kpi-card"><div class="kpi-label"><i class="fas fa-receipt"></i> Transactions</div><div class="kpi-value">'+(sales.length)+'</div></div>'+
-'<div class="kpi-card"><div class="kpi-label"><i class="fas fa-users"></i> Customers</div><div class="kpi-value">'+(customers.length)+'</div></div>';
+function dateRange(){
+var now=new Date(),start=new Date();
+var p=DB.datePreset;
+if(p==='7d')start.setDate(now.getDate()-7);
+else if(p==='30d')start.setDate(now.getDate()-30);
+else if(p==='90d')start.setDate(now.getDate()-90);
+else if(p==='all')start=new Date(2000,0,1);
+else start.setDate(now.getDate()-7);
+    $('startDate').value=formatLocalDate(start);
+    $('endDate').value=formatLocalDate(now);
+return {start:start,end:now};
 }
-function setPreset(preset,el){datePreset=preset;document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');loadDashboard();}
-function renderCharts(){var daily={};var days=7;if(datePreset==='30d')days=30;else if(datePreset==='90d')days=90;var now=new Date();for(var i=days-1;i>=0;i--){var d=new Date(now);d.setDate(d.getDate()-i);daily[d.toISOString().split('T')[0]]=0;}sales.forEach(function(s){var d=s.date?s.date.split('T')[0]:s.created_at?s.created_at.split('T')[0]:'';if(daily[d])daily[d]+=parseFloat(s.total||0);});var labels=Object.keys(daily),vals=Object.values(daily);if(trendChart)trendChart.destroy();trendChart=new Chart($('trendChart'),{type:'line',data:{labels:labels.map(function(l){return l.split('-')[1]+'/'+l.split('-')[2];}),datasets:[{data:vals,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});if(payChart)payChart.destroy();payChart=new Chart($('paymentChart'),{type:'doughnut',data:{labels:['Cash','Card'],datasets:[{data:[1,2],backgroundColor:['#10b981','#3b82f6']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});if(catChart)catChart.destroy();catChart=new Chart($('categoryChart'),{type:'bar',data:{labels:['General'],datasets:[{data:[1],backgroundColor:'#10b981'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',scales:{x:{beginAtZero:true}}}});}
-function renderActivity(){$('activityFeed').innerHTML=sales.slice(-5).map(function(s){return '<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="viewSale('+s.id+')"><i class="fas fa-shopping-cart" style="color:#10b981;margin-right:6px;"></i>Sale #'+s.id+' - '+formatCurrency(s.total)+'<span style="float:right;font-size:11px;color:#6b7280;">'+POS.formatDate(s.date)+'</span></div>';}).join('')||'<div style="padding:20px;color:#6b7280;">No activity</div>';}
-function viewSale(id){var s=sales.find(function(sal){return sal.id==id;});if(!s)return;var items=s.items&&s.items.length?s.items.map(function(it){return '<tr><td>'+(it.name||it.product||'Product')+'</td><td>'+it.qty+'</td><td>'+formatCurrency(it.price||it.total||0)+'</td><tr>';}).join(''):'<tr><td colspan="3">No items</td></tr>';var modal='<div class=\"modal-overlay open\" id=\"detailModal\"><div class=\"modal\" style=\"max-width:500px;\"><div class=\"modal-header\"><h3>Sale #'+s.id+'</h3><button class=\"modal-close\" onclick=\"document.getElementById(\'detailModal\').remove()\">&times;</button></div><div style=\"padding:12px;\">'+formatCurrency(s.total)+' - '+(s.payment_method||'Cash')+'<br><button class=\"btn btn-primary\" onclick=\"editSale('+s.id+')\">Edit</button></div></div></div>';document.body.insertAdjacentHTML('beforeend',modal);}
-function editSale(id){showToast('Edit sale #'+id);}
-document.addEventListener('DOMContentLoaded',loadDashboard);setInterval(loadDashboard,30000);
+function filteredSales(){
+    var r=dateRange();
+    r.start.setHours(0,0,0,0);r.end.setHours(23,59,59,999);
+    var startStr=formatLocalDate(r.start),endStr=formatLocalDate(r.end);
+    return (DB.sales||[]).filter(function(s){try{var d=new Date(s.date||s.created_at||0);var ds=formatLocalDate(d);return ds>=startStr&&ds<=endStr;}catch(e){return false;}});
+}
+function renderKPIs(){try{var sales=filteredSales(),products=DB.products||[];var totalRevenue=sales.reduce(function(s,x){return s+(parseFloat(x.total)||0);},0);var txCount=sales.length;var avgTicket=txCount?totalRevenue/txCount:0;var lowStock=products.filter(function(p){return (parseFloat(p.stock)||0)<=(parseFloat(p.reorder_level||5));}).length;var today=new Date();today.setHours(0,0,0,0);var todaySales=sales.filter(function(s){try{var d=new Date(s.date||s.created_at||0);d.setHours(0,0,0,0);return d.getTime()===today.getTime();}catch(e){return false;}}).length;var yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);var yesterdaySales=sales.filter(function(s){try{var d=new Date(s.date||s.created_at||0);d.setHours(0,0,0,0);return d.getTime()===yesterday.getTime();}catch(e){return false;}}).length;var trend=todaySales>yesterdaySales?'up':todaySales<yesterdaySales?'down':'neutral';var trendIcon=trend==='up'?'<i class="fas fa-arrow-up"></i>':trend==='down'?'<i class="fas fa-arrow-down"></i>':'<i class="fas fa-minus"></i>';$('fastStats').innerHTML='<div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;color:#10b981;"><i class="fas fa-chart-line"></i></div><div class="stat-val">'+fmtMoney(totalRevenue)+'</div><div class="stat-lbl">Revenue</div></div>'+'<div class="stat-card"><div class="stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-receipt"></i></div><div class="stat-val">'+(txCount||0)+'</div><div class="stat-lbl">Transactions</div><div class="stat-trend '+trend+'">'+trendIcon+' vs yesterday</div></div>'+'<div class="stat-card"><div class="stat-icon" style="background:#f3e8ff;color:#8b5cf6;"><i class="fas fa-users"></i></div><div class="stat-val">'+(DB.customers.length||0)+'</div><div class="stat-lbl">Customers</div></div>'+'<div class="stat-card"><div class="stat-icon" style="background:#fef2f2;color:#ef4444;"><i class="fas fa-boxes"></i></div><div class="stat-val">'+(lowStock||0)+'</div><div class="stat-lbl">Low Stock</div></div>'+'<div class="stat-card"><div class="stat-icon" style="background:#f0fdf4;color:#059669;"><i class="fas fa-calendar-day"></i></div><div class="stat-val">'+(todaySales||0)+'</div><div class="stat-lbl">Today</div><div class="stat-trend '+trend+'">'+trendIcon+' vs yesterday</div></div>'+'<div class="stat-card"><div class="stat-icon" style="background:#fff7ed;color:#f97316;"><i class="fas fa-receipt"></i></div><div class="stat-val">'+fmtMoney(avgTicket)+'</div><div class="stat-lbl">Avg. Ticket</div></div>';}catch(e){console.error('renderKPIs error:',e);}}
+function renderCharts(){try{if(typeof Chart==='undefined')return;var sales=filteredSales();
+var days=7;
+if(DB.datePreset==='30d')days=30;else if(DB.datePreset==='90d')days=90;else if(DB.datePreset==='all')days=365;
+var now=new Date(),buckets={};
+for(var i=days-1;i>=0;i--){var d=new Date(now);d.setDate(d.getDate()-i);var key=formatLocalDate(d);buckets[key]={revenue:0,count:0};}
+sales.forEach(function(s){try{var d=new Date(s.date||s.created_at||0);var key=formatLocalDate(d);if(!buckets[key])buckets[key]={revenue:0,count:0};buckets[key].revenue+=(parseFloat(s.total)||0);buckets[key].count+=1;}catch(e){}});
+var labels=Object.keys(buckets).map(function(k){var p=k.split('-');return p[1]+'/'+p[2];});
+var vals=Object.keys(buckets).map(function(k){return buckets[k].revenue;});
+var counts=Object.keys(buckets).map(function(k){return buckets[k].count;});
+if(DB.charts.trend)DB.charts.trend.destroy();
+if($('trendChart')){DB.charts.trend=new Chart($('trendChart'),{type:'line',data:{labels:labels,datasets:[{label:'Revenue',data:vals,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2},{label:'Transactions',data:counts,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.06)',fill:true,tension:.3,pointRadius:2,borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return fmtMoney(v);}}},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{callback:function(v){return v;}}}}}});}
+var payMethods={},payColors=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#6b7280'];sales.forEach(function(s){var m=(s.payment_method||'cash').toLowerCase();payMethods[m]=(payMethods[m]||0)+(parseFloat(s.total)||0);});
+if(DB.charts.payment)DB.charts.payment.destroy();
+if($('paymentChart')){var payLabels=Object.keys(payMethods);var payVals=Object.values(payMethods);if(!payLabels.length){payLabels=['No data'];payVals=[0];}DB.charts.payment=new Chart($('paymentChart'),{type:'doughnut',data:{labels:payLabels.map(function(l){return l.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}),datasets:[{data:payVals,backgroundColor:payColors.slice(0,payLabels.length),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true}}}}});}
+var cats={};sales.forEach(function(s){(s.items||[]).forEach(function(it){cats[it.name||'Other']=(parseFloat(cats[it.name||'Other'])||0)+(parseFloat(it.unit_price||it.price||0))*(parseInt(it.qty)||1);});});
+if(DB.charts.category)DB.charts.category.destroy();
+if($('categoryChart')){var catLabels=Object.keys(cats);var catVals=Object.values(cats);if(!catLabels.length){catLabels=['No sales yet'];catVals=[0];}var catColors=['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#84cc16'];DB.charts.category=new Chart($('categoryChart'),{type:'bar',data:{labels:catLabels,datasets:[{label:'Sales',data:catVals,backgroundColor:catColors.slice(0,catLabels.length),borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',scales:{x:{beginAtZero:true,ticks:{callback:function(v){return fmtMoney(v);}}}}}});}
+}catch(e){console.error('renderCharts error:',e);}
+}
+function renderActivity(){
+    var sales=filteredSales().slice(-10).reverse();
+    if(!sales.length){$('activityFeed').innerHTML='<div style="padding:30px;text-align:center;color:#94a3b8;">No recent activity</div>';return;}
+    $('activityFeed').innerHTML=sales.map(function(s){
+        var items=(s.items||[]).length;var icon=s.payment_method==='store_account'?'fa-user-tag':s.payment_method==='card'?'fa-credit-card':'fa-shopping-cart';
+        var iconBg=s.payment_method==='store_account'?'#f3e8ff':s.payment_method==='card'?'#eff6ff':'#ecfdf5';
+        var iconColor=s.payment_method==='store_account'?'#8b5cf6':s.payment_method==='card'?'#3b82f6':'#10b981';
+        var customer=s.customer_name||'Walk-in';return '<div class="activity-item"><div class="activity-icon" style="background:'+iconBg+';color:'+iconColor+';"><i class="fas '+icon+'"></i></div><div class="activity-body"><div class="activity-title">Sale #'+s.id+' — '+customer+'</div><div class="activity-meta">'+items+' item'+(items===1?'':'s')+' · '+fmtDate(s.date||s.created_at)+' · '+(s.payment_method||'Cash').replace(/_/g,' ')+'</div></div><div class="activity-amt">'+fmtMoney(s.total)+'</div></div>';}).join('');
+}
+function renderTopProducts(){try{var sales=filteredSales(),products=DB.products||[];var prodMap={};sales.forEach(function(s){(s.items||[]).forEach(function(it){var n=it.name||'Unknown';if(!prodMap[n])prodMap[n]={name:n,revenue:0,qty:0};prodMap[n].revenue+=(parseFloat(it.unit_price||it.price||0))*(parseInt(it.qty)||1);prodMap[n].qty+=(parseInt(it.qty)||1);});});var arr=Object.values(prodMap).sort(function(a,b){return b.revenue-a.revenue;}).slice(0,5);var maxRev=arr.length?arr[0].revenue:1;$('topProductsList').innerHTML=arr.map(function(p,i){return '<div class="top-product-item"><div class="top-product-rank">'+(i+1)+'</div><div class="top-product-info"><div class="top-product-name">'+esc(p.name)+'</div><div class="top-product-meta">'+p.qty+' units sold</div><div class="progress-bar"><div class="progress-fill" style="width:'+Math.round((p.revenue/maxRev)*100)+'%"></div></div></div><div class="top-product-val">'+fmtMoney(p.revenue)+'</div></div>';}).join('')||'<div style="padding:20px;text-align:center;color:#94a3b8;">No sales data yet</div>';}catch(e){console.error('renderTopProducts error:',e);$('topProductsList').innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">Error loading top products</div>';}}
+function renderPaymentMethods(){try{var sales=filteredSales();var methods={};sales.forEach(function(s){var m=(s.payment_method||'cash').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});methods[m]=(methods[m]||0)+(parseFloat(s.total)||0);});var total=sales.reduce(function(s,x){return s+(parseFloat(x.total)||0);},0);var colors={'Cash':'#10b981','Card':'#3b82f6','Store Account':'#8b5cf6','Pos':'#f59e0b','Gift Card':'#ef4444'};var html='';Object.keys(methods).sort(function(a,b){return methods[b]-methods[a];}).forEach(function(m){var pct=total?Math.round((methods[m]/total)*100):0;html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:'+(colors[m]||'#6b7280')+';"></div><span style="font-size:13px;font-weight:600;color:#374154;">'+m+'</span></div><div style="text-align:right;"><div style="font-size:13px;font-weight:900;color:#111827;">'+fmtMoney(methods[m])+'</div><div style="font-size:11px;color:#64748b;">'+pct+'%</div></div></div>';});$('paymentMethodsList').innerHTML=html||'<div style="padding:20px;text-align:center;color:#94a3b8;">No payment data</div>';}catch(e){console.error('renderPaymentMethods error:',e);$('paymentMethodsList').innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">Error loading payment methods</div>';}}
+function renderInventoryAlerts(){try{var products=DB.products||[];var alerts=[];products.forEach(function(p){var stock=parseFloat(p.stock)||0;var min=parseFloat(p.reorder_level||5);if(stock<=0)alerts.push({name:p.name||'Unknown',msg:'Out of stock',cls:'badge-danger',icon:'fa-times-circle',color:'#ef4444',bg:'#fef2f2'});else if(stock<=min)alerts.push({name:p.name||'Unknown',msg:'Low stock ('+stock+' left)',cls:'badge-warning',icon:'fa-exclamation-circle',color:'#f59e0b',bg:'#fffbeb'});});alerts.sort(function(a,b){return a.cls==='badge-danger'?-1:1;});$('inventoryAlerts').innerHTML=alerts.slice(0,6).map(function(a){return '<div class="alert-item"><div class="alert-icon" style="background:'+a.bg+';color:'+a.color+';"><i class="fas '+a.icon+'"></i></div><div class="alert-body"><div class="alert-title">'+esc(a.name)+'</div><div class="alert-meta"><span class="badge '+a.cls+'">'+a.msg+'</span></div></div></div>';}).join('')||'<div style="padding:20px;text-align:center;color:#94a3b8;">All products in stock</div>';}catch(e){console.error('renderInventoryAlerts error:',e);$('inventoryAlerts').innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">Error loading inventory alerts</div>';}}
+function renderTopCustomers(){try{var sales=filteredSales();var custMap={};sales.forEach(function(s){var name=s.customer_name||'Walk-in';if(!custMap[name])custMap[name]={name:name,spend:0,tx:0};custMap[name].spend+=(parseFloat(s.total)||0);custMap[name].tx+=1;});var arr=Object.values(custMap).sort(function(a,b){return b.spend-a.spend;}).slice(0,5);$('topCustomersList').innerHTML=arr.map(function(c,i){return '<div class="customer-item"><div class="customer-avatar">'+(c.name||'W').charAt(0).toUpperCase()+'</div><div class="customer-info"><div class="customer-name">'+esc(c.name)+'</div><div class="customer-meta">'+c.tx+' transaction'+(c.tx===1?'':'s')+'</div></div><div class="customer-spend">'+fmtMoney(c.spend)+'</div></div>';}).join('')||'<div style="padding:20px;text-align:center;color:#94a3b8;">No customer data</div>';}catch(e){console.error('renderTopCustomers error:',e);$('topCustomersList').innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">Error loading top customers</div>';}}
+function renderDailyTarget(){try{var today=new Date();today.setHours(0,0,0,0);var todaySales=(DB.sales||[]).filter(function(s){try{var d=new Date(s.date||s.created_at||0);d.setHours(0,0,0,0);return d.getTime()===today.getTime();}catch(e){return false;}});var todayTotal=todaySales.reduce(function(s,x){return s+(parseFloat(x.total)||0);},0);var target=parseFloat(localStorage.getItem('dash_daily_target'))||50000;var pct=Math.min(100,Math.round((todayTotal/target)*100));var remaining=Math.max(0,target-todayTotal);var status=pct>=100?'badge-success':pct>=70?'badge-info':'badge-warning';var statusText=pct>=100?'Target Reached':pct>=70?'On Track':'Behind';$('dailyTargetWidget').innerHTML='<div style="text-align:center;padding:10px 0;"><div style="font-size:32px;font-weight:900;color:var(--primary);">'+fmtMoney(todayTotal)+'</div><div style="font-size:12px;color:#64748b;margin-top:4px;">of '+fmtMoney(target)+' target</div><div class="progress-bar" style="height:12px;margin:16px 0;"><div class="progress-fill" style="width:'+pct+'%;"></div></div><div style="display:flex;justify-content:space-between;align-items:center;"><span class="badge '+status+'">'+statusText+'</span><span style="font-size:12px;color:#64748b;">'+pct+'%</span></div><div style="font-size:12px;color:#64748b;margin-top:8px;">'+fmtMoney(remaining)+' remaining</div></div>';}catch(e){console.error('renderDailyTarget error:',e);$('dailyTargetWidget').innerHTML='<div style="padding:20px;text-align:center;color:#ef4444;">Error loading daily target</div>';}}
+function renderRecentTransactions(){try{var sales=filteredSales().slice(-8).reverse();var tbody=$('recentTransactionsBody');if(!sales.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:20px;">No transactions yet</td></tr>';return;}tbody.innerHTML=sales.map(function(s){var items=(s.items||[]).length;var customer=s.customer_name||'Walk-in';var pm=(s.payment_method||'Cash').replace(/_/g,' ');var badge=s.payment_method==='store_account'?'badge-info':s.payment_method==='card'?'badge-success':'badge-warning';return '<tr><td>#'+(s.id||'---')+'</td><td>'+esc(customer)+'</td><td>'+items+'</td><td style="font-weight:700;">'+fmtMoney(s.total)+'</td><td><span class="badge '+badge+'">'+pm+'</span></td><td style="color:#64748b;">'+fmtDate(s.date||s.created_at)+'</td></tr>';}).join('');}catch(e){console.error('renderRecentTransactions error:',e);var tbody=$('recentTransactionsBody');if(tbody)tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:20px;">Error loading transactions</td></tr>';}}
+function setPreset(preset,el){DB.datePreset=preset;document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');refreshDashboard();}
+async function refreshDashboard(){await loadData();renderKPIs();renderCharts();renderActivity();renderTopProducts();renderPaymentMethods();renderInventoryAlerts();renderTopCustomers();renderDailyTarget();renderRecentTransactions();updateLastUpdated();try{document.querySelectorAll('.stat-card').forEach(function(el){el.classList.add('data-flash');setTimeout(function(){el.classList.remove('data-flash');},1500);});}catch(e){}}
+document.addEventListener('DOMContentLoaded',function(){try{if(typeof POS!=='undefined'){if(!POS.requireAuth())return;POS.renderSidebar();POS.renderUserMenu();POS.startClock();}else{console.warn('POS not loaded');}loadData().then(function(){renderKPIs();renderCharts();renderActivity();renderTopProducts();renderPaymentMethods();renderInventoryAlerts();renderTopCustomers();renderDailyTarget();renderRecentTransactions();updateLastUpdated();startLiveUpdates();}).catch(function(e){console.error('Dashboard load error:',e);showDashboardError('Failed to load dashboard data. Please refresh.');});}catch(err){console.error('Dashboard init error:',err);showDashboardError('Page error: '+(err.message||'Unknown'));}});
+function showDashboardError(msg){var el=$('errorBox');if(el)el.innerHTML='<div class="error-box"><i class="fas fa-exclamation-circle"></i> '+msg+'</div>';}
+function updateLastUpdated(){var el=$('lastUpdated');if(el){var now=new Date();el.textContent='Updated '+now.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}}
+function startLiveUpdates(){if(DB.liveInterval)clearInterval(DB.liveInterval);DB.liveInterval=setInterval(function(){updateLastUpdated();refreshDashboard();},15000);window.addEventListener('storage',function(e){if(e.key==='danzona_sales'||e.key==='danzona_products'||e.key==='danzona_customers'||e.key==='SHEDS_completed_sales'){refreshDashboard();}});}
 </script>
 </body>
 </html>

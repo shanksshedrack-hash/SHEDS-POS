@@ -1,0 +1,45 @@
+app = "sheds-pos-pharmacy"
+primary_region = "lhr"
+
+[build]
+  builder = "paketobuildpacks/builder:base"
+
+[env]
+  PORT = "5000"
+  PYTHON_VERSION = "3.11.0"
+
+[[services]]
+  internal_port = 5000
+  protocol = "tcp"
+  auto_stop_machines = true
+  auto_start_machines = true
+  processes = ["app"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 50
+    soft_limit = 40
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [[services.tcp_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/api/health"
+
+[mounts]
+  source = "sheds_pos_data"
+  destination = "/data"

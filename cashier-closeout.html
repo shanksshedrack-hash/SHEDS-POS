@@ -133,7 +133,7 @@
 <div class="toast" id="toast"></div>
 <script>
 var shiftSales = 0, cashSalesTotal = 0, digitalTotal = 0, storeAccountTotal = 0;
-function fmt(n){ return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
 function recalculate(){
     var opening = parseFloat(document.getElementById('openingFloat').value) || 0;
     var actual = parseFloat(document.getElementById('actualCash').value) || 0;
@@ -254,4 +254,5 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 </body>
 </html>
+
 

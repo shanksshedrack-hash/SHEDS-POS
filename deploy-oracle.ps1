@@ -34,19 +34,40 @@ python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -r requirements.txt
 
+echo "Installing PostgreSQL..."
+if command -v apt-get >/dev/null 2>&1; then
+  sudo apt-get update
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib
+else
+  sudo dnf install -y postgresql-server postgresql-contrib
+  sudo postgresql-setup initdb
+fi
+sudo systemctl enable --now postgresql
+
+echo "Configuring PostgreSQL database..."
+DB_PASSWORD=$(openssl rand -hex 16)
+sudo -u postgres psql -c "CREATE USER danzona WITH PASSWORD '$DB_PASSWORD';"
+sudo -u postgres psql -c "CREATE DATABASE danzona_pos OWNER danzona;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE danzona_pos TO danzona;"
+
+SECRET_KEY=$(openssl rand -hex 32)
+
 SERVICE_USER=$(whoami)
 cat >/tmp/danzona-pos.service <<EOF
 [Unit]
-Description=Danzona POS
-After=network.target
+Description=SHEDS POS
+After=network.target postgresql.service
 
 [Service]
 User=$SERVICE_USER
 Group=$SERVICE_USER
 WorkingDirectory=/var/www/danzona-pos
 Environment="PATH=/var/www/danzona-pos/venv/bin"
+Environment="SECRET_KEY=${SECRET_KEY}"
+Environment="DATABASE_URL=postgresql://danzona:${DB_PASSWORD}@127.0.0.1:5432/danzona_pos"
 ExecStart=/var/www/danzona-pos/venv/bin/gunicorn --bind 127.0.0.1:5000 server:app
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
@@ -85,6 +106,10 @@ if [ -e /etc/nginx/sites-enabled/default ]; then sudo rm -f /etc/nginx/sites-ena
 sudo ln -sf /etc/nginx/sites-available/danzona-pos /etc/nginx/sites-enabled/danzona-pos
 sudo nginx -t
 sudo systemctl restart nginx
+
+mkdir -p /var/www/danzona-pos/data
+(crontab -l 2>/dev/null; echo "0 2 * * * /usr/bin/pg_dump -U danzona -h 127.0.0.1 danzona_pos > /var/www/danzona-pos/data/backup-\$(date +\%Y\%m\%d).sql 2>/dev/null") | crontab
+echo "Daily PostgreSQL backup cron added"
 
 echo 'Deployment completed. Open http://YOUR_VPS_IP/sales.html. Add your domain later and run certbot if needed.'
 '@

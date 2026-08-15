@@ -101,3 +101,4 @@ function loadProductForEdit(id){editingId=id;var list=JSON.parse(localStorage.ge
 document.addEventListener('DOMContentLoaded',function(){if(!POS.requireAuth())return;POS.renderSidebar();POS.renderUserMenu();if(!localStorage.getItem('danzona_products')){localStorage.setItem('danzona_products','[{"id":1,"name":"Paracetamol 500mg","sku":"PTM-001","price":500,"stock":100},{"id":2,"name":"Amoxicillin","sku":"AMX-002","price":1500,"stock":50}]');}var editId=new URLSearchParams(window.location.search).get('edit');if(editId){loadProductForEdit(editId);}renderPackages();$('productImage').addEventListener('input',renderImagePreview);});</script>
 </body>
 </html>
+

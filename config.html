@@ -1,221 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Config - SHEDS POS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-:root{--primary:#10b981;--primary-hover:#059669;--primary-soft:#ecfdf5;--primary-ring:rgba(16,185,129,0.1);--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--dark:#1f2937;--border:#e5e7eb;--light:#f9fafb;--text:#1f2937;--text-soft:#6b7280;--success:#10b981;}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',Arial,sans-serif;}
-body{background:#f3f4f6;min-height:100vh;display:flex;}
-.sidebar{width:260px;background:var(--dark);color:#fff;height:100vh;overflow-y:auto;flex-shrink:0;transition:all 0.3s;}
-.sidebar-header{padding:20px;background:#111827;border-bottom:1px solid #374151;}
-.sidebar-header h1{font-size:22px;color:var(--primary);margin:0;font-weight:600;}
-.sidebar-header p{font-size:12px;color:#9ca3af;margin-top:4px;}
-.sidebar ul{list-style:none;padding:12px 0;}
-.sidebar ul li{padding:12px 22px;display:flex;align-items:center;gap:12px;cursor:pointer;border-left:3px solid transparent;transition:all 0.2s;font-size:14px;}
-.sidebar ul li:hover{background:#374151;color:#fff;border-left-color:var(--primary);}
-.sidebar ul li.active{background:#374151;color:#fff;border-left-color:var(--primary);}
-.main-content{flex:1;display:flex;flex-direction:column;}
-.header{background:#10b981;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;}
-.header h2{font-size:20px;}
-.content{flex:1;padding:20px;}
-.notification-toast{position:fixed;top:20px;right:20px;background:#48bb78;color:white;padding:1rem 1.5rem;border-radius:5px;display:none;z-index:1000;}
-.config-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
-.config-header h2{margin:0;}
-.save-config-btn{background:#4da3ff;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;font-size:16px;}
-.save-config-btn:hover{background:#3b82f6;}
-.config-section{background:#fff;border-radius:10px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-.config-section h3{color:#2c3e50;margin-bottom:15px;display:flex;align-items:center;gap:0.5rem;}
-.config-group{display:flex;flex-direction:column;gap:0.5rem;margin-bottom:15px;}
-.config-group label{font-weight:500;color:#34495e;}
-.config-group input,.config-group select,.config-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:16px;}
-.config-group textarea{height:80px;resize:vertical;}
-.setting-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid #eee;}
-.setting-label{font-weight:500;color:#34495e;}
-.setting-value{color:#718096;}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Config - SHEDS POS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
 <script src="api.js"></script>
-<script>
-function navigateTo(page){window.location.href=page;}
-</script>
+<script src="common.js"></script>
 </head>
 <body>
-<div class="sidebar">
-<div class="sidebar-header">
-<h1><i class="fas fa-clinic-medical"></i> SHEDS POS</h1>
-<p>Point of Sale System</p>
-</div>
-    <ul>
-        <li onclick="navigateTo('dashboard.html')"><i class="fas fa-home"></i> Dashboard</li>
-        <li onclick="navigateTo('sales.html')"><i class="fas fa-shopping-cart"></i> Sales</li>
-        <li onclick="navigateTo('variations.html')"><i class="fas fa-plus-circle"></i> Add New Product</li>
-        <li onclick="navigateTo('inventory.html')"><i class="fas fa-boxes"></i> Inventory</li>
-        <li onclick="navigateTo('customers.html')"><i class="fas fa-users"></i> Customers</li>
-        <li onclick="navigateTo('suppliers.html')"><i class="fas fa-truck"></i> Suppliers</li>
-        <li onclick="navigateTo('reports.html')"><i class="fas fa-chart-bar"></i> Reports</li>
-        <li onclick="navigateTo('receiving.html')"><i class="fas fa-file-import"></i> Receiving</li>
-        <li onclick="navigateTo('deliveries.html')"><i class="fas fa-truck-loading"></i> Deliveries</li>
-        <li onclick="navigateTo('expenses.html')"><i class="fas fa-receipt"></i> Expenses</li>
-        <li onclick="navigateTo('employees.html')"><i class="fas fa-user-tie"></i> Employees</li>
-        <li onclick="navigateTo('appointments.html')"><i class="fas fa-calendar"></i> Appointments</li>
-        <li onclick="navigateTo('giftcards.html')"><i class="fas fa-gift"></i> Gift Cards</li>
-        <li class="active" onclick="navigateTo('config.html')"><i class="fas fa-cog"></i> Store Config</li>
-        <li onclick="navigateTo('invoices.html')"><i class="fas fa-file-invoice"></i> Invoices</li>
-        <li onclick="navigateTo('locations.html')"><i class="fas fa-store"></i> Locations</li>
-        <li onclick="navigateTo('messages.html')"><i class="fas fa-envelope"></i> Messages</li>
-        <li onclick="navigateTo('payments.html')"><i class="fas fa-credit-card"></i> Payments</li>
-        <li onclick="navigateTo('login.html')"><i class="fas fa-sign-out-alt"></i> Logout</li>
-    </ul>
-</div>
+<div class="sidebar" id="sidebar"></div>
 <div class="main-content">
-    <div class="header"><h2>Store Config</h2><span id="pharmacyNameDisplay" style="font-weight:500;">Loading...</span><div class="header-clock" id="topClock"></div></div>
-    <div class="content">
-    <div class="config-header">
-        <h2>Store Configuration</h2>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-store"></i> Store Information</h3>
-        <div class="config-group">
-            <label>Store Name</label>
-            <input type="text" id="storeName" placeholder="Enter store name" value="SHEDS POS">
-        </div>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-map-marker-alt"></i> Location Settings</h3>
-        <div class="config-group">
-            <label>Store Address</label>
-            <textarea id="storeAddress" placeholder="Enter store address">123 Pharmacy Street, Lagos, Nigeria</textarea>
-        </div>
-        <div class="config-group">
-            <label>Phone Number</label>
-            <input type="tel" id="phoneNumber" placeholder="Enter phone number" value="+234 123 4567">
-        </div>
-        <div class="config-group">
-            <label>Email Address</label>
-            <input type="email" id="emailAddress" placeholder="Enter email address" value="info@SHEDSpharm.com">
-        </div>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-clock"></i> Operating Hours</h3>
-        <div class="setting-item">
-            <span class="setting-label">Opening Time</span>
-            <span class="setting-value">8:00 AM</span>
-        </div>
-        <div class="setting-item">
-            <span class="setting-label">Closing Time</span>
-            <span class="setting-value">8:00 PM</span>
-        </div>
-        <div class="setting-item">
-            <span class="setting-label">Days Open</span>
-            <span class="setting-value">Monday - Saturday</span>
-        </div>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-tasks"></i> Inventory Settings</h3>
-        <div class="config-group">
-            <label>Low Stock Threshold</label>
-            <input type="number" id="lowStockThreshold" min="1" value="5" placeholder="Minimum stock level">
-        </div>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-user-shield"></i> Security Settings</h3>
-        <div class="config-group">
-            <label>Session Timeout (minutes)</label>
-            <input type="number" id="sessionTimeout" min="5" value="30" placeholder="Session duration">
-        </div>
-    </div>
-    <div class="config-section">
-        <h3><i class="fas fa-print"></i> Receipt Settings</h3>
-        <div class="config-group">
-            <label>Store Logo</label>
-            <input type="text" id="storeLogo" placeholder="URL or path to logo" value="logo.png">
-        </div>
-        <div class="config-group">
-            <label>Footer Text</label>
-            <input type="text" id="footerText" placeholder="Footer text on receipt" value="Thank you for choosing SHEDS POS!">
-        </div>
-    </div>
-    <div style="text-align:center; margin-top:30px;">
-        <button class="save-config-btn" onclick="saveConfig()">
-            <i class="fas fa-save"></i> Save Configuration
-        </button>
-    </div>
-    <div class="notification-toast" id="toast">Action completed!</div>
-    </div>
+<div class="header">
+<h2><i class="fas fa-cog"></i> Store Configuration</h2>
+<div id="userMenu"></div>
+<div class="header-clock" id="topClock"></div>
 </div>
-<script src="api.js"></script>
-<script>
-function navigateTo(page){window.location.href=page;}
-function showToast(msg, isError){
-    var t=document.getElementById('toast');
-    t.textContent=msg;
-    t.style.background = isError ? '#f56565' : '#48bb78';
-    t.style.display='block';
-    setTimeout(function(){t.style.display='none';},3000);
-}
-function loadConfig(){
-     var config=JSON.parse(localStorage.getItem('storeConfig')||'{}');
-     document.getElementById('storeName').value=config.storeName||'SHEDS POS';
-     document.getElementById('storeAddress').value=config.storeAddress||'123 Pharmacy Street, Lagos, Nigeria';
-     document.getElementById('phoneNumber').value=config.phoneNumber||'+234 123 4567';
-     document.getElementById('emailAddress').value=config.emailAddress||'info@SHEDSpharm.com';
-     document.getElementById('lowStockThreshold').value=config.lowStockThreshold||5;
-     document.getElementById('sessionTimeout').value=config.sessionTimeout||30;
-     document.getElementById('storeLogo').value=config.storeLogo||'logo.png';
-     document.getElementById('footerText').value=config.footerText||'Thank you for choosing SHEDS POS!';
- }
-function saveConfig() {
-    var storeName=document.getElementById('storeName').value.trim();
-    var storeAddress=document.getElementById('storeAddress').value.trim();
-    var phoneNumber=document.getElementById('phoneNumber').value.trim();
-    var emailAddress=document.getElementById('emailAddress').value.trim();
-    if(!storeName||!storeAddress){
-        showToast('Store name and address are required',true);
-        return;
-    }
-    var config={
-        storeName:storeName,
-        storeAddress:storeAddress,
-        phoneNumber:phoneNumber,
-        emailAddress:emailAddress,
-        lowStockThreshold:parseInt(document.getElementById('lowStockThreshold').value)||5,
-        sessionTimeout:parseInt(document.getElementById('sessionTimeout').value)||30,
-        storeLogo:document.getElementById('storeLogo').value,
-        footerText:document.getElementById('footerText').value
-    };
-    localStorage.setItem('storeConfig',JSON.stringify(config));
-    showToast('Configuration saved!');
-}
-function updatePharmacyName() {
-     var pharmName = API.getPharmacyName() || 'SHEDS POS';
-     var display = document.getElementById('pharmacyNameDisplay');
-    if (display) display.textContent = pharmName;
-}
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        API.logout();
-        window.location.href = 'login.html';
-    }
-}
-document.addEventListener('DOMContentLoaded', function() {
-    if (!API.isLoggedIn()) { 
-        var demo = getQueryParameter('demo');
-        if (demo !== '1') {
-            window.location.href = 'login.html'; 
-            return; 
-        }
-    }
-    loadConfig();
-    updatePharmacyName();
-});
+<div class="content">
+<div class="page-head">
+<div>
+<h3>Store Settings</h3>
+<p>Manage your pharmacy name, address, currency, receipts and system preferences.</p>
+</div>
+<button class="btn btn-success" onclick="saveAllConfig()" id="saveBtn"><i class="fas fa-save"></i> Save Changes</button>
+</div>
 
-function getQueryParameter(name) {
-    var params = new URLSearchParams(window.location.search);
-    return params.get(name) || '0';
-}
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-store" style="color:var(--primary);"></i> General Information</h3>
+<div class="form-row">
+<div class="form-group"><label class="required">Store / Pharmacy Name</label><input type="text" id="storeName" placeholder="e.g. Danzona Pharmacy"></div>
+<div class="form-group"><label>Phone Number</label><input type="tel" id="phoneNumber" placeholder="+234 801 234 5678"></div>
+</div>
+<div class="form-group"><label>Store Address</label><textarea id="storeAddress" class="notes-area" placeholder="Full address"></textarea></div>
+<div class="form-row">
+<div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="info@danzonapharm.com"></div>
+<div class="form-group"><label>Store Logo URL</label><input type="text" id="storeLogo" placeholder="https://... or leave blank"></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-coins" style="color:#f59e0b;"></i> Currency & Formatting</h3>
+<div class="form-row">
+<div class="form-group"><label class="required">Currency Symbol</label><input type="text" id="currency" placeholder="₦" maxlength="3"></div>
+<div class="form-group"><label class="required">Currency Code / Locale</label><select id="currencyLocale"><option value="en-NG">Nigeria (₦ — en-NG)</option><option value="en-US">USA ($ — en-US)</option><option value="en-GB">UK (£ — en-GB)</option><option value="en-KE">Kenya (KSh — en-KE)</option><option value="en-GH">Ghana (GH₵ — en-GH)</option><option value="en-ZA">South Africa (R — en-ZA)</option></select></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-receipt" style="color:#3b82f6;"></i> Receipt Settings</h3>
+<div class="form-row">
+<div class="form-group"><label>Printer Type</label><select id="printerType"><option value="small">Small (58mm / 80mm)</option><option value="large">Large (A4 / Letter)</option></select></div>
+</div>
+<div class="form-group"><label>Receipt Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-boxes" style="color:#ef4444;"></i> Inventory Thresholds</h3>
+<div class="form-row">
+<div class="form-group"><label>Low Stock Threshold</label><input type="number" id="lowStockThreshold" min="1" placeholder="e.g. 5"></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-user-shield" style="color:#8b5cf6;"></i> System Preferences</h3>
+<div class="form-row">
+<div class="form-group"><label>Session Timeout (minutes)</label><input type="number" id="sessionTimeout" min="5" placeholder="30"></div>
+<div class="form-group"><label>Opening Time</label><input type="time" id="openingTime" value="08:00"></div>
+<div class="form-group"><label>Closing Time</label><input type="time" id="closingTime" value="20:00"></div>
+</div>
+<div class="form-group"><label>Open Days</label><select id="openDays"><option value="Mon-Sat">Monday - Saturday</option><option value="Mon-Fri">Monday - Friday</option><option value="Mon-Sun">Everyday</option><option value="Sat-Thu">Saturday - Thursday</option></select></div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowStoreAccount" style="width:16px;height:16px;"> Enable Store Account</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowGiftCard" style="width:16px;height:16px;"> Enable Gift Cards</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowCardPayment" style="width:16px;height:16px;"> Enable Card Payment</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowPosPayment" style="width:16px;height:16px;"> Enable POS Payment</label></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-percent" style="color:#f59e0b;"></i> Tax & Discount</h3>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="taxEnabled" style="width:16px;height:16px;"> Enable Tax</label></div>
+<div class="form-group"><label>Tax Rate (%)</label><input type="number" id="taxRate" min="0" max="100" step="0.1" placeholder="7.5"></div>
+<div class="form-group"><label>Tax Name</label><input type="text" id="taxName" placeholder="VAT"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowDiscount" style="width:16px;height:16px;"> Allow Discounts</label></div>
+<div class="form-group"><label>Max Discount (%)</label><input type="number" id="maxDiscount" min="0" max="100" placeholder="20"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requireManagerForDiscount" style="width:16px;height:16px;"> Require Manager for Discount</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requireManagerForVoid" style="width:16px;height:16px;"> Require Manager to Void Sale</label></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-receipt" style="color:#3b82f6;"></i> Receipt Settings</h3>
+<div class="form-row">
+<div class="form-group"><label>Receipt Prefix</label><input type="text" id="receiptPrefix" placeholder="DAN" maxlength="5"></div>
+<div class="form-group"><label>Printer Type</label><select id="printerType"><option value="small">Small (58mm / 80mm)</option><option value="large">Large (A4 / Letter)</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoPrintReceipt" style="width:16px;height:16px;"> Auto-print After Sale</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showReceiptLogo" style="width:16px;height:16px;"> Show Logo on Receipt</label></div>
+</div>
+<div class="form-group"><label>Receipt Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-boxes" style="color:#ef4444;"></i> Inventory & Expiry</h3>
+<div class="form-row">
+<div class="form-group"><label>Low Stock Threshold</label><input type="number" id="lowStockThreshold" min="1" placeholder="5"></div>
+<div class="form-group"><label>Expiry Alert (days before)</label><input type="number" id="expiryAlertDays" min="1" placeholder="30"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="lowStockAlert" style="width:16px;height:16px;"> Low Stock Alert</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="expiryBlockSales" style="width:16px;height:16px;"> Block Sale of Expired Items</label></div>
+</div>
+<div class="form-group"><label>Low Stock Alert Email</label><input type="email" id="lowStockEmail" placeholder="manager@danzonapharm.com"></div>
+</div>
+
+<div id="saveStatus" style="margin-top:12px;"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var toastTimer = null;
+
+  function $(id){return document.getElementById(id);}
+
+  function showToast(msg, isError) {
+      var t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isError ? ' error' : '');
+      t.style.display = 'block';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function(){ t.style.display = 'none'; }, 3000);
+  }
+
+  function loadForm() {
+      var cfg = StoreConfig.getAll();
+      $('storeName').value = cfg.storeName || '';
+      $('storeAddress').value = cfg.storeAddress || '';
+      $('phoneNumber').value = cfg.phoneNumber || '';
+      $('emailAddress').value = cfg.emailAddress || '';
+      $('currency').value = cfg.currency || '₦';
+      $('currencyLocale').value = cfg.currencyLocale || 'en-NG';
+      $('printerType').value = cfg.printerType || 'small';
+      $('storeLogo').value = cfg.storeLogo || '';
+      $('footerText').value = cfg.footerText || '';
+      $('lowStockThreshold').value = cfg.lowStockThreshold || 5;
+      $('sessionTimeout').value = cfg.sessionTimeout || 30;
+      $('openingTime').value = cfg.openingTime || '08:00';
+      $('closingTime').value = cfg.closingTime || '20:00';
+      $('openDays').value = cfg.openDays || 'Mon-Sat';
+      $('receiptPrefix').value = cfg.receiptPrefix || 'DAN';
+      $('taxEnabled').checked = cfg.taxEnabled || false;
+      $('taxRate').value = cfg.taxRate || 7.5;
+      $('taxName').value = cfg.taxName || 'VAT';
+      $('allowDiscount').checked = cfg.allowDiscount !== false;
+      $('maxDiscount').value = cfg.maxDiscount || 20;
+      $('requireManagerForDiscount').checked = cfg.requireManagerForDiscount || false;
+      $('requireManagerForVoid').checked = cfg.requireManagerForVoid || true;
+      $('expiryAlertDays').value = cfg.expiryAlertDays || 30;
+      $('expiryBlockSales').checked = cfg.expiryBlockSales || false;
+      $('lowStockAlert').checked = cfg.lowStockAlert !== false;
+      $('lowStockEmail').value = cfg.lowStockEmail || '';
+      $('allowStoreAccount').checked = cfg.allowStoreAccount !== false;
+      $('allowGiftCard').checked = cfg.allowGiftCard !== false;
+      $('allowCardPayment').checked = cfg.allowCardPayment !== false;
+      $('allowPosPayment').checked = cfg.allowPosPayment !== false;
+      $('autoPrintReceipt').checked = cfg.autoPrintReceipt !== false;
+      $('showReceiptLogo').checked = cfg.showReceiptLogo !== false;
+  }
+
+  function collectForm() {
+      return {
+          storeName: $('storeName').value.trim(),
+          storeAddress: $('storeAddress').value.trim(),
+          phoneNumber: $('phoneNumber').value.trim(),
+          emailAddress: $('emailAddress').value.trim(),
+          currency: $('currency').value.trim() || '₦',
+          currencyLocale: $('currencyLocale').value || 'en-NG',
+          printerType: $('printerType').value || 'small',
+          storeLogo: $('storeLogo').value.trim(),
+          footerText: $('footerText').value.trim(),
+          lowStockThreshold: parseInt($('lowStockThreshold').value) || 5,
+          sessionTimeout: parseInt($('sessionTimeout').value) || 30,
+          openingTime: $('openingTime').value || '08:00',
+          closingTime: $('closingTime').value || '20:00',
+          openDays: $('openDays').value || 'Mon-Sat',
+          receiptPrefix: $('receiptPrefix').value.trim() || 'DAN',
+          taxEnabled: $('taxEnabled').checked,
+          taxRate: parseFloat($('taxRate').value) || 7.5,
+          taxName: $('taxName').value.trim() || 'VAT',
+          allowDiscount: $('allowDiscount').checked,
+          maxDiscount: parseInt($('maxDiscount').value) || 20,
+          requireManagerForDiscount: $('requireManagerForDiscount').checked,
+          requireManagerForVoid: $('requireManagerForVoid').checked,
+          expiryAlertDays: parseInt($('expiryAlertDays').value) || 30,
+          expiryBlockSales: $('expiryBlockSales').checked,
+          lowStockAlert: $('lowStockAlert').checked,
+          lowStockEmail: $('lowStockEmail').value.trim(),
+          allowStoreAccount: $('allowStoreAccount').checked,
+          allowGiftCard: $('allowGiftCard').checked,
+          allowCardPayment: $('allowCardPayment').checked,
+          allowPosPayment: $('allowPosPayment').checked,
+          autoPrintReceipt: $('autoPrintReceipt').checked,
+          showReceiptLogo: $('showReceiptLogo').checked
+      };
+  }
+
+  async function saveAllConfig() {
+      var cfg = collectForm();
+      if (!cfg.storeName) { showToast('Store name is required', true); return; }
+      try {
+      var saved = StoreConfig.save(cfg);
+      if (!saved) throw new Error('localStorage save failed (maybe private mode?)');
+      showToast('Configuration saved successfully!');
+          $('saveStatus').innerHTML = '<div style="color:#10b981;font-size:13px;"><i class="fas fa-check-circle"></i> Saved at ' + new Date().toLocaleTimeString() + '</div>';
+      } catch (err) {
+          showToast(err.message || 'Save failed', true);
+          $('saveStatus').innerHTML = '<div style="color:#ef4444;font-size:13px;"><i class="fas fa-exclamation-circle"></i> ' + err.message + '</div>';
+          console.error('Save config error:', err);
+      }
+  }
+
+  function init() {
+      try {
+          if (typeof POS !== 'undefined') {
+              POS.renderSidebar();
+              POS.renderUserMenu();
+              POS.startClock();
+          }
+          loadForm();
+      } catch (err) {
+          console.error('Store Config init error:', err);
+      }
+  }
+
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+  } else {
+      init();
+  }
+})();
 </script>
 </body>
 </html>
-

@@ -1,0 +1,44 @@
+name: sheds-pos
+type: docker
+
+# Build from Dockerfile
+dockerfile: Dockerfile.prod
+
+# Instance configuration
+instance:
+  type: free
+  cpu: 1
+  memory: 256
+
+# Port configuration
+ports:
+  - port: 5000
+    http: true
+
+# Environment variables
+env:
+  - key: SECRET_KEY
+    value: "change-me-to-a-random-secret-key"
+  - key: DB_PATH
+    value: "/data/danzona_pos.db"
+  - key: PORT
+    value: "5000"
+  - key: PYTHONUNBUFFERED
+    value: "1"
+
+# Health check
+health_check:
+  path: /api/health
+  port: 5000
+  timeout: 10
+  interval: 30
+
+# Scaling
+scaling:
+  min: 1
+  max: 1
+
+# Regions (Koyeb free tier supports specific regions)
+regions:
+  - fra  # Frankfurt (closest to Nigeria)
+  - iad  # Washington DC

@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <script src="api.js"></script>
+<script src="common.js"></script>
 <style>
 :root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--success:#10b981;--dark:#111827;--border:#d1d5db;--text:#1f2937;--muted:#6b7280;--danger:#ef4444;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -113,7 +114,7 @@ body{background:#f9fafb;min-height:100vh;padding:20px;font-family:'Inter',Arial,
 </div>
 </div>
 <script>
-function fmt(n){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}
+function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
 function noop(label){window.alert(label+' action is available from this receipt view.');}
 function go(p){window.location.href=p;}
@@ -150,7 +151,7 @@ function load(){
   var change=Math.max(0,tendered-total);
   var sold=items.reduce(function(s,it){return s+qty(it.qty);},0);
   var businessName=r.business_name||((window.API&&API.getPharmacyName)?API.getPharmacyName():'SHEDS ENTERPRISE');
-  var businessAddress=r.business_address||((window.API&&API.getPharmacyAddress)?API.getPharmacyAddress():'Tudu Gwandara, Lafia, Nigeria');
+  var businessAddress=r.business_address||'Tudu Gwandara, Lafia, Nigeria';
   document.getElementById('businessName').textContent=businessName;
   document.getElementById('businessLocation').textContent=businessAddress;
   var html='';
@@ -180,7 +181,8 @@ function load(){
   html+='<div class="section"><h3>Sales Summary</h3><table class="summary"><tbody>';
   html+='<tr><td>Subtotal</td><td>'+fmt(subtotal)+'</td></tr>';
   if(discount>0){html+='<tr><td>Discount</td><td>'+fmt(discount)+'</td></tr>';}
-  html+='<tr><td>Sales Tax</td><td>'+fmt(tax)+' (0.0%)</td></tr>';
+  var taxPct=subtotal>0?(tax/subtotal*100).toFixed(1)+'%':'0.0%';
+  html+='<tr><td>Sales Tax</td><td>'+fmt(tax)+' ('+taxPct+')</td></tr>';
   html+='<tr class="grand-total"><td><strong>Total Amount</strong></td><td><strong>'+fmt(total)+'</strong></td></tr>';
   html+='<tr><td>Weight</td><td>0</td></tr>';
   html+='<tr><td>Number of Items Sold</td><td>'+sold+'</td></tr>';
@@ -217,4 +219,5 @@ document.addEventListener('DOMContentLoaded',load);
 </script>
 </body>
 </html>
+
 

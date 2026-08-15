@@ -203,7 +203,7 @@ function applySort(list) {
     list = list.slice();
     list.sort(function(a, b) {
         var va, vb;
-        if (sortField === 'date') { va = new Date(a.suspendedAt.replace(' ', 'T')).getTime() || 0; vb = new Date(b.suspendedAt.replace(' ', 'T')).getTime() || 0; }
+        if (sortField === 'date') { va = a && a.suspendedAt ? new Date(a.suspendedAt.replace(' ', 'T')).getTime() : 0; vb = b && b.suspendedAt ? new Date(b.suspendedAt.replace(' ', 'T')).getTime() : 0; }
         else if (sortField === 'total') { va = calculateTotal(a); vb = calculateTotal(b); }
         else if (sortField === 'items') { va = getItemCount(a); vb = getItemCount(b); }
         else if (sortField === 'idx') { va = heldTransactions.indexOf(a); vb = heldTransactions.indexOf(b); }
@@ -216,7 +216,7 @@ function applySort(list) {
 }
 function deleteSelectedHeld() {
     if (!selectedHeldIds.length) { POS.showToast('Select transactions to delete', true); return; }
-    if (!confirm('Delete ' + selectedHeldIds.length + ' selected held transaction' + (selectedHeldIds.length === 1 ? '' : 's?') + '\\nThis action cannot be undone.')) return;
+    if (!confirm('Delete ' + selectedHeldIds.length + ' selected held transaction' + (selectedHeldIds.length === 1 ? '' : 's?') + '\nThis action cannot be undone.')) return;
     selectedHeldIds.sort(function(a, b) { return b - a; }).forEach(function(idx) {
         if (heldTransactions[idx]) heldTransactions.splice(idx, 1);
     });
@@ -228,14 +228,14 @@ function deleteSelectedHeld() {
 function bulkRecallSelected() {
     if (!selectedHeldIds.length) { POS.showToast('Select transactions to recall', true); return; }
     var count = selectedHeldIds.length;
-    if (!confirm('Recall ' + count + ' held transaction' + (count === 1 ? '' : 's') + '?\\nEach will be loaded into the Sales cart sequentially. You will need to checkout each one individually.')) return;
-    var sorted = selectedHeldIds.slice().sort(function(a, b) { return a - b; });
+    if (!confirm('Recall ' + count + ' held transaction' + (count === 1 ? '' : 's') + '?\nEach will be loaded into the Sales cart sequentially. You will need to checkout each one individually.')) return;
+    var sorted = selectedHeldIds.slice().sort(function(a, b) { return b - a; });
     sorted.forEach(function(idx) {
         if (!heldTransactions[idx]) return;
         var t = heldTransactions[idx];
         localStorage.setItem('salesCart', JSON.stringify(t.cart || []));
-        if (t.customer) localStorage.setItem('selectedCustomer', JSON.stringify(t.customer));
-        else localStorage.removeItem('selectedCustomer');
+        if (t.customer) localStorage.setItem('salesCustomer', JSON.stringify(t.customer));
+        else localStorage.removeItem('salesCustomer');
         heldTransactions.splice(idx, 1);
     });
     selectedHeldIds = [];
@@ -251,7 +251,7 @@ function clearSearch() {
 function clearOldHeld() {
     var stale = heldTransactions.filter(function(t) { return isStale(t); });
     if (!stale.length) { POS.showToast('No stale transactions (>24h) found'); return; }
-    if (!confirm('Clear ' + stale.length + ' stale transaction' + (stale.length === 1 ? '' : 's') + ' held for more than 24 hours?\\n(This does not affect today\\'s holds.)')) return;
+    if (!confirm('Clear ' + stale.length + ' stale transaction' + (stale.length === 1 ? '' : 's') + ' held for more than 24 hours?\n(This does not affect today\'s holds.)')) return;
     heldTransactions = heldTransactions.filter(function(t) { return !isStale(t); });
     selectedHeldIds = [];
     saveHeld();
@@ -334,12 +334,15 @@ function closeTransactionModal() {
     POS.closeModal('transactionModal');
 }
 function $(id) { return document.getElementById(id); }
+function navigateTo(page){window.location.href=page;}
 function saveHeld() {
     try { localStorage.setItem('heldTransactions', JSON.stringify(heldTransactions)); } catch (e) {}
 }
 function loadHeld() {
     try {
-        heldTransactions = JSON.parse(localStorage.getItem('heldTransactions') || localStorage.getItem('danzona_hold') || '[]') || [];
+        var raw = localStorage.getItem('heldTransactions') || localStorage.getItem('danzona_hold') || '[]';
+        var parsed = JSON.parse(raw);
+        heldTransactions = Array.isArray(parsed) ? parsed : [];
         if (heldTransactions.length && localStorage.getItem('danzona_hold')) {
             localStorage.setItem('heldTransactions', JSON.stringify(heldTransactions));
             try { localStorage.removeItem('danzona_hold'); } catch(e){}
@@ -371,62 +374,70 @@ function updateKPIs() {
     }
 }
 function renderHeldList() {
-    var q = $('searchInput').value.toLowerCase();
-    var reasonQ = $('reasonFilter').value;
-    var ageQ = $('ageFilter').value;
-    var now = Date.now();
-    var filtered = heldTransactions.filter(function(t) {
-        var text = [t.customer ? t.customer.name : '', t.notes || '', getReasonLabel(t), JSON.stringify(t.cart || [])].join(' ').toLowerCase();
-        var matchSearch = !q || text.indexOf(q) > -1;
-        var matchReason = !reasonQ || t.reason === reasonQ;
-        var age = getAgeHours(t);
-        var matchAge = true;
-        if (ageQ === 'today') matchAge = age < 24;
-        else if (ageQ === '24h') matchAge = age < 24;
-        else if (ageQ === 'week') matchAge = age < 168;
-        else if (ageQ === 'stale') matchAge = age >= STALE_HOURS;
-        return matchSearch && matchReason && matchAge;
-    });
-    filtered = applySort(filtered);
-    selectedHeldIds = selectedHeldIds.filter(function(idx) { return heldTransactions[idx] !== undefined; });
-    var tbody = $('heldBody');
-    updateSelectedCount(filtered);
-    if (!filtered.length) {
-        if ($('selectAllHeld')) $('selectAllHeld').checked = false;
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No held transactions found</td></tr>';
-        return;
+    try {
+        var q = $('searchInput').value.toLowerCase();
+        var reasonQ = $('reasonFilter').value;
+        var ageQ = $('ageFilter').value;
+        var now = Date.now();
+        var filtered = heldTransactions.filter(function(t) {
+            var text = [t.customer ? (typeof t.customer === 'object' ? t.customer.name : String(t.customer)) : '', t.notes || '', getReasonLabel(t), JSON.stringify(t.cart || [])].join(' ').toLowerCase();
+            var matchSearch = !q || text.indexOf(q) > -1;
+            var matchReason = !reasonQ || t.reason === reasonQ;
+            var age = getAgeHours(t);
+            var matchAge = true;
+            if (ageQ === 'today') matchAge = age < 24;
+            else if (ageQ === '24h') matchAge = age < 24;
+            else if (ageQ === 'week') matchAge = age < 168;
+            else if (ageQ === 'stale') matchAge = age >= STALE_HOURS;
+            return matchSearch && matchReason && matchAge;
+        });
+        filtered = applySort(filtered);
+        selectedHeldIds = selectedHeldIds.filter(function(idx) { return heldTransactions[idx] !== undefined; });
+        var tbody = $('heldBody');
+        updateSelectedCount(filtered);
+        if (!filtered.length) {
+            if ($('selectAllHeld')) $('selectAllHeld').checked = false;
+            if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No held transactions found</td></tr>';
+            return;
+        }
+        if (tbody) {
+            tbody.innerHTML = filtered.map(function(t, i) {
+                var idx = heldTransactions.indexOf(t);
+                var total = calculateTotal(t);
+                var items = getItemCount(t);
+                var age = getAgeHours(t);
+                var agedClass = isStale(t) ? 'row-aged' : '';
+                var ageBadge = isStale(t) ? '<span class="badge badge-aged">' + formatAge(age) + '</span>' : '<span style="color:#64748b;font-size:12px;">' + formatAge(age) + '</span>';
+                var reasonBadge = '<span class="badge badge-reason">' + POS.esc(getReasonLabel(t).replace(/_/g,' ')) + '</span>';
+                return '<tr class="' + agedClass + '">' +
+                    '<td><input type="checkbox" ' + (selectedHeldIds.indexOf(idx) > -1 ? 'checked' : '') + ' onclick="toggleHeldSelection(' + idx + ')"></td>' +
+                    '<td>' + (idx + 1) + '</td>' +
+                    '<td>' + POS.formatDate(t.suspendedAt) + '</td>' +
+                    '<td>' + POS.esc(t.customer ? (typeof t.customer === 'object' ? t.customer.name : String(t.customer)) : 'Walk-in Customer') + '</td>' +
+                    '<td>' + reasonBadge + '</td>' +
+                    '<td>' + POS.formatNumber(items) + '</td>' +
+                    '<td style="font-weight:900;">' + POS.formatCurrency(total) + '</td>' +
+                    '<td>' + ageBadge + '</td>' +
+                    '<td class="action-btns">' +
+                    '<button class="icon-btn view" onclick="openTransactionModal(' + idx + ')" title="View"><i class="fas fa-eye"></i></button>' +
+                    '<button class="icon-btn edit" onclick="editTransactionNotes(' + idx + ')" title="Edit"><i class="fas fa-pencil-alt"></i></button>' +
+                    '<button class="icon-btn view" onclick="duplicateHeld(' + idx + ')" title="Duplicate"><i class="fas fa-copy"></i></button>' +
+                    '<button class="icon-btn view" onclick="copyHeldToCart(' + idx + ')" title="Copy to Cart"><i class="fas fa-clipboard"></i></button>' +
+                    '<button class="icon-btn view" onclick="recallHeld(' + idx + ')" title="Recall (go to Sales)"><i class="fas fa-undo"></i></button>' +
+                    '<button class="icon-btn delete" onclick="deleteHeld(' + idx + ')" title="Delete"><i class="fas fa-trash"></i></button>' +
+                    '</td></tr>';
+            }).join('');
+        }
+        if ($('selectAllHeld')) {
+            var allVisible = filtered.every(function(t) { return selectedHeldIds.indexOf(heldTransactions.indexOf(t)) > -1; });
+            $('selectAllHeld').checked = filtered.length > 0 && allVisible;
+        }
+        updateSortIcons();
+    } catch(e) {
+        console.error('renderHeldList error:', e);
+        var tbody = $('heldBody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="empty-state" style="color:#ef4444;">Error loading transactions. Please refresh.</td></tr>';
     }
-    tbody.innerHTML = filtered.map(function(t, i) {
-        var idx = heldTransactions.indexOf(t);
-        var total = calculateTotal(t);
-        var items = getItemCount(t);
-        var age = getAgeHours(t);
-        var agedClass = isStale(t) ? 'row-aged' : '';
-        var ageBadge = isStale(t) ? '<span class="badge badge-aged">' + formatAge(age) + '</span>' : '<span style="color:#64748b;font-size:12px;">' + formatAge(age) + '</span>';
-        var reasonBadge = '<span class="badge badge-reason">' + POS.esc(getReasonLabel(t).replace(/_/g,' ')) + '</span>';
-        return '<tr class="' + agedClass + '">' +
-            '<td><input type="checkbox" ' + (selectedHeldIds.indexOf(idx) > -1 ? 'checked' : '') + ' onclick="toggleHeldSelection(' + idx + ')"></td>' +
-            '<td>' + (idx + 1) + '</td>' +
-            '<td>' + POS.formatDate(t.suspendedAt) + '</td>' +
-            '<td>' + POS.esc(t.customer ? t.customer.name : 'Walk-in Customer') + '</td>' +
-            '<td>' + reasonBadge + '</td>' +
-            '<td>' + POS.formatNumber(items) + '</td>' +
-            '<td style="font-weight:900;">' + POS.formatCurrency(total) + '</td>' +
-            '<td>' + ageBadge + '</td>' +
-            '<td class="action-btns">' +
-            '<button class="icon-btn view" onclick="openTransactionModal(' + idx + ')" title="View"><i class="fas fa-eye"></i></button>' +
-            '<button class="icon-btn edit" onclick="editTransactionNotes(' + idx + ')" title="Edit"><i class="fas fa-pencil-alt"></i></button>' +
-            '<button class="icon-btn view" onclick="duplicateHeld(' + idx + ')" title="Duplicate"><i class="fas fa-copy"></i></button>' +
-            '<button class="icon-btn view" onclick="copyHeldToCart(' + idx + ')" title="Copy to Cart"><i class="fas fa-clipboard"></i></button>' +
-            '<button class="icon-btn view" onclick="recallHeld(' + idx + ')" title="Recall (go to Sales)"><i class="fas fa-undo"></i></button>' +
-            '<button class="icon-btn delete" onclick="deleteHeld(' + idx + ')" title="Delete"><i class="fas fa-trash"></i></button>' +
-            '</td></tr>';
-    }).join('');
-    if ($('selectAllHeld')) {
-        var allVisible = filtered.every(function(t) { return selectedHeldIds.indexOf(heldTransactions.indexOf(t)) > -1; });
-        $('selectAllHeld').checked = filtered.length > 0 && allVisible;
-    }
-    updateSortIcons();
 }
 function updateSortIcons() {
     ['idx','date','items','total'].forEach(function(f) {
@@ -438,10 +449,10 @@ function updateSortIcons() {
 function recallHeld(idx) {
     var t = heldTransactions[idx];
     if (!t) return;
-    if (!confirm('Recall this held transaction?\\nIt will be loaded into the Sales cart. Make sure you checkout or re-suspend it before leaving.')) return;
+    if (!confirm('Recall this held transaction?\nIt will be loaded into the Sales cart. Make sure you checkout or re-suspend it before leaving.')) return;
     localStorage.setItem('salesCart', JSON.stringify(t.cart || []));
-    if (t.customer) localStorage.setItem('selectedCustomer', JSON.stringify(t.customer));
-    else localStorage.removeItem('selectedCustomer');
+    if (t.customer) localStorage.setItem('salesCustomer', JSON.stringify(t.customer));
+    else localStorage.removeItem('salesCustomer');
     heldTransactions.splice(idx, 1);
     saveHeld();
     loadHeld();
@@ -452,8 +463,8 @@ function copyHeldToCart(idx) {
     var t = heldTransactions[idx];
     if (!t) return;
     localStorage.setItem('salesCart', JSON.stringify(t.cart || []));
-    if (t.customer) localStorage.setItem('selectedCustomer', JSON.stringify(t.customer));
-    else localStorage.removeItem('selectedCustomer');
+    if (t.customer) localStorage.setItem('salesCustomer', JSON.stringify(t.customer));
+    else localStorage.removeItem('salesCustomer');
     POS.showToast('Cart copied - go to Sales to checkout or re-hold');
     setTimeout(function() { navigateTo('sales.html'); }, 900);
 }
@@ -499,8 +510,9 @@ function printHeldList() {
         })
     );
 }
-document.addEventListener('DOMContentLoaded', function() {
+function initPage() {
     try {
+        if (typeof POS === 'undefined') throw new Error('POS system not loaded. Please refresh the page.');
         if (!POS.requireAuth()) return;
         POS.renderSidebar();
         POS.renderUserMenu();
@@ -509,12 +521,30 @@ document.addEventListener('DOMContentLoaded', function() {
         autoRefreshInterval = setInterval(loadHeld, 30000);
     } catch(err) {
         console.error('Suspended Sales init error:', err);
+        clearLoadingState();
         var body = document.body;
         if (body) {
-            body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;"><h2 style="color:#ef4444;">Page Error</h2><p>' + err.message + '</p><p>Please press F12, check the Console tab, and report the error.</p><button onclick="location.reload()" style="padding:10px 20px;cursor:pointer;">Retry</button></div>';
+            body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif;"><h2 style="color:#ef4444;">Page Error</h2><p>' + (err.message || 'Unknown error') + '</p><p>Please press F12, check the Console tab, and report the error.</p><button onclick="location.reload()" style="padding:10px 20px;cursor:pointer;">Retry</button></div>';
         }
     }
-});
+}
+function clearLoadingState() {
+    try {
+        var tbody = $('heldBody');
+        if (tbody && tbody.innerHTML.indexOf('Loading held transactions') > -1) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No held transactions found</td></tr>';
+        }
+    } catch(e) {}
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initPage();
+        setTimeout(clearLoadingState, 2000);
+    });
+} else {
+    initPage();
+    setTimeout(clearLoadingState, 2000);
+}
 </script>
 </body>
 </html>

@@ -132,7 +132,7 @@ var editExpenseId = null;
 var catLabels = { utilities: 'Utilities', rent: 'Rent', supplies: 'Supplies', payroll: 'Payroll', maintenance: 'Maintenance', other: 'Other' };
 function showAddExpenseForm() {
     editExpenseId = null;
-    $('addExpenseForm').classList.add('open');
+    $(addExpenseForm).classList.add('open');
     $('expenseFormTitle').textContent = 'Add New Expense';
     $('expenseDate').value = new Date().toISOString().split('T')[0];
     $('expenseCategory').value = '';
@@ -142,11 +142,11 @@ function showAddExpenseForm() {
 }
 function $(id) { return document.getElementById(id); }
 async function addExpense() {
-    var date = $id('expenseDate').value;
-    var category = $id('expenseCategory').value;
-    var desc = $id('expenseDescription').value.trim();
-    var amount = parseFloat($id('expenseAmount').value) || 0;
-    var method = $id('expensePaymentMethod').value;
+    var date = $('expenseDate').value;
+    var category = $('expenseCategory').value;
+    var desc = $('expenseDescription').value.trim();
+    var amount = parseFloat($('expenseAmount').value) || 0;
+    var method = $('expensePaymentMethod').value;
     if (!date || !category || !desc || amount <= 0) {
         POS.showToast('Please fill all required fields', true);
         return;
@@ -173,15 +173,15 @@ async function renderExpenses() {
         expenses = [];
         POS.showToast('Failed to load expenses', true);
     }
-    var q = $id('searchInput').value.toLowerCase();
-    var cat = $id('categoryFilter').value;
+    var q = $('searchInput').value.toLowerCase();
+    var cat = $('categoryFilter').value;
     filteredExpenses = expenses.filter(function(e) {
         var matchesSearch = (e.description || '').toLowerCase().includes(q);
         var matchesCat = cat === 'all' || e.category === cat;
         return matchesSearch && matchesCat;
     });
-    var tbody = $id('expensesTableBody');
-    $id('expenseCount').textContent = filteredExpenses.length + ' expenses';
+    var tbody = $('expensesTableBody');
+    $('expenseCount').textContent = filteredExpenses.length + ' expenses';
     var total = expenses.reduce(function(sum, e) { return sum + (parseFloat(e.amount) || 0); }, 0);
     $id('totalExpenses').textContent = POS.formatCurrency(total);
     if (!filteredExpenses.length) {
@@ -205,13 +205,13 @@ function editExpense(id) {
     var exp = expenses.find(function(e) { return e.id == id; });
     if (!exp) return;
     editExpenseId = id;
-    $id('expenseFormTitle').textContent = 'Edit Expense';
-    $id('expenseDate').value = exp.date;
-    $id('expenseCategory').value = exp.category;
-    $id('expenseDescription').value = exp.description;
-    $id('expenseAmount').value = exp.amount;
-    $id('expensePaymentMethod').value = exp.method;
-    $id('addExpenseForm').classList.add('open');
+    $('expenseFormTitle').textContent = 'Edit Expense';
+    $('expenseDate').value = exp.date;
+    $('expenseCategory').value = exp.category;
+    $('expenseDescription').value = exp.description;
+    $('expenseAmount').value = exp.amount;
+    $('expensePaymentMethod').value = exp.method;
+    $('addExpenseForm').classList.add('open');
 }
 async function deleteExpense(id) {
     if (!confirm('Delete this expense?')) return;
@@ -266,3 +266,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account - SHEDS POS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2c3e50, #1a2533); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-container { background: white; border-radius: 10px; padding: 2.5rem; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .login-container h2 { color: #2c3e50; margin-bottom: 0.5rem; text-align: center; }
+    .login-container .subtitle { color: #718096; text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; color: #4a5568; font-weight: 500; font-size: 0.9rem; }
+    .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.95rem; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #3498db; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .login-btn { width: 100%; padding: 0.85rem; background: #10b981; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 0.5rem; }
+    .login-btn:hover { background: #059669; }
+    .back-link { display: block; text-align: center; margin-top: 1.5rem; color: #3498db; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
+    .notification-toast { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 5px; display: none; z-index: 1000; color: white; font-weight: 500; }
+    .notification-toast.success { background: #48bb78; }
+    .notification-toast.error { background: #f56565; }
+    .note { background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 5px; margin-bottom: 1rem; font-size: 0.85rem; color: #1e40af; text-align: center; }
+    .required-star { color: #ef4444; }
+</style>
+</head>
+<body>
+<div class="login-container">
+<h2><i class="fas fa-id-card"></i> Create Account</h2>
+<p class="subtitle">Fill in your details to create a staff account</p>
+
+<div class="note"><i class="fas fa-info-circle"></i> Your account will need to be approved by an administrator before you can log in.</div>
+
+<form onsubmit="createAccount(event)">
+<div class="form-row">
+<div class="form-group">
+<label>Full Name <span class="required-star">*</span></label>
+<input type="text" id="fullName" required placeholder="e.g. John Doe">
+</div>
+<div class="form-group">
+<label>Username <span class="required-star">*</span></label>
+<input type="text" id="username" required placeholder="Choose a username">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Password <span class="required-star">*</span></label>
+<input type="password" id="password" required placeholder="Min 6 characters" minlength="6">
+</div>
+<div class="form-group">
+<label>Confirm Password <span class="required-star">*</span></label>
+<input type="password" id="confirmPassword" required placeholder="Re-enter password">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Phone</label>
+<input type="tel" id="phone" placeholder="+234 801 234 5678">
+</div>
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="email" placeholder="you@example.com">
+</div>
+</div>
+<div class="form-group">
+<label>Requested Role</label>
+<select id="role">
+<option value="">-- Select Role --</option>
+<option value="Cashier">Cashier</option>
+<option value="Pharmacist">Pharmacist</option>
+<option value="Sales Representative">Sales Representative</option>
+</select>
+</div>
+<div class="form-group">
+<label>Notes (optional)</label>
+<input type="text" id="notes" placeholder="Any message for the admin">
+</div>
+<button type="submit" class="login-btn"><i class="fas fa-user-plus"></i> Submit Request</button>
+</form>
+<a class="back-link" onclick="window.location.href='login.html'"><i class="fas fa-arrow-left"></i> Back to Login</a>
+</div>
+</div>
+<div class="notification-toast" id="toast"></div>
+<script>
+function $(id){return document.getElementById(id);}
+function showToast(msg, isError){
+    var t=$('toast');
+    t.textContent=msg;
+    t.className='notification-toast '+(isError?'error':'success');
+    t.style.display='block';
+    setTimeout(function(){t.style.display='none';},4000);
+}
+function createAccount(e){
+    e.preventDefault();
+    var fullName=$('fullName').value.trim();
+    var username=$('username').value.trim();
+    var password=$('password').value;
+    var confirm=$('confirmPassword').value;
+    var phone=$('phone').value.trim();
+    var email=$('email').value.trim();
+    var role=$('role').value;
+    var notes=$('notes').value.trim();
+    if(!fullName||!username||!password){showToast('Name, username and password are required',true);return;}
+    if(password!==confirm){showToast('Passwords do not match',true);return;}
+    if(password.length<6){showToast('Password must be at least 6 characters',true);return;}
+    var pending=[];
+    try{var raw=localStorage.getItem('danzona_pending_accounts');pending=raw?JSON.parse(raw):[];if(!Array.isArray(pending))pending=[];}catch(e){pending=[];}
+    if(pending.find(function(a){return a.username===username;})){showToast('This username is already pending approval',true);return;}
+    var record={id:'REQ-'+Date.now(),fullName:fullName,username:username,password:password,phone:phone,email:email,role:role||'cashier',notes:notes,requestedAt:new Date().toISOString(),status:'pending'};
+    pending.push(record);
+    try{localStorage.setItem('danzona_pending_accounts',JSON.stringify(pending));}catch(e){showToast('Storage error. Try again.',true);return;}
+    showToast('Account request submitted! Ask your admin to approve it at User Roles > Pending Requests.');
+    $('fullName').value='';$('username').value='';$('password').value='';$('confirmPassword').value='';
+    $('phone').value='';$('email').value='';$('role').value='';$('notes').value='';
+    setTimeout(function(){window.location.href='login.html';},2500);
+}
+</script>
+</body>
+</html>

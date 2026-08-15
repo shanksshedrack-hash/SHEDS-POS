@@ -1,13 +1,19 @@
-/* Danzona POS - API Client
+/* SHEDS POS - API Client
  * Multi-tenant API using X-API-Key authentication.
  * Usage: API.init(apiKey, username); then API.get('/products'), API.post('/sales', data), etc.
  */
 var API = (function() {
-    var BASE_URL = '';
+    var BASE_URL = (typeof window !== 'undefined' && window.__API_BASE_URL) ? window.__API_BASE_URL : '/api';
     var apiKey = localStorage.getItem('danzona_api_key') || '';
     var username = localStorage.getItem('danzona_username') || '';
     var pharmacyName = localStorage.getItem('danzona_pharmacy_name') || '';
-    var currentUser = JSON.parse(localStorage.getItem('danzona_current_user') || 'null');
+    var currentUser = null;
+    try {
+        var raw = localStorage.getItem('danzona_current_user');
+        if (raw) currentUser = JSON.parse(raw);
+    } catch (e) {
+        currentUser = null;
+    }
 
     function headers() {
         var h = { 'Content-Type': 'application/json' };
@@ -141,10 +147,11 @@ var API = (function() {
         saveExpense: function(data) { return this.post('/expenses', data); },
         deleteExpense: function(id) { return this.delete('/expenses/' + id); },
 
-// Payments
-getPayments: function() { return this.get('/payments'); },
-savePayment: function(data) { return this.post('/payments', data); },
-updatePayment: function(id, data) { return this.put('/payments/' + id, data); },
+        // Payments
+        getPayments: function() { return this.get('/payments'); },
+        savePayment: function(data) { return this.post('/payments', data); },
+        updatePayment: function(id, data) { return this.put('/payments/' + id, data); },
+        deletePayment: function(id) { return this.delete('/payments/' + id); },
 
         // Locations
         getLocations: function() { return this.get('/locations'); },
@@ -167,6 +174,7 @@ updatePayment: function(id, data) { return this.put('/payments/' + id, data); },
         // Messages
         getMessages: function() { return this.get('/messages'); },
         saveMessage: function(data) { return this.post('/messages', data); },
+        deleteMessage: function(id) { return this.delete('/messages/' + id); },
 
         // Deliveries
         getDeliveries: function() { return this.get('/deliveries'); },

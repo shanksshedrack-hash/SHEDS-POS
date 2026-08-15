@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
 """
-Danzona POS - Multi-Tenant Backend API
+SHEDS POS - Multi-Tenant Backend API
 Each pharmacy gets isolated data with an API key.
 """
 
 import os
-import sqlite3
 import json
 import hashlib
 import secrets
 from datetime import datetime
 from flask import Flask, request, jsonify, g, send_file
 from functools import wraps
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+    except ImportError:
+        raise ImportError('psycopg2-binary is required when using DATABASE_URL. Install it with: pip install psycopg2-binary')
+else:
+    import sqlite3
 
 app = Flask(__name__)
 app.config['DB_PATH'] = os.environ.get('DB_PATH', 'danzona_pos.db')
@@ -20,24 +31,36 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-me-set-a-real-se
 # ---------- Database ----------
 
 def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(app.config['DB_PATH'])
-        db.row_factory = sqlite3.Row
-    return db
+    if USE_POSTGRES:
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.cursor_factory = RealDictCursor
+        return conn
+    else:
+        db = getattr(g, '_database', None)
+        if db is None:
+            db = g._database = sqlite3.connect(app.config['DB_PATH'])
+            db.row_factory = sqlite3.Row
+        return db
 
 @app.teardown_appcontext
 def close_db(exception):
+    if USE_POSTGRES:
+        return
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
 
+IntegrityError = psycopg2.IntegrityError if USE_POSTGRES else sqlite3.IntegrityError
+
+def id_col():
+    return 'SERIAL PRIMARY KEY' if USE_POSTGRES else 'INTEGER PRIMARY KEY AUTOINCREMENT'
+
 def init_db():
     db = get_db()
     # Pharmacies (tenants)
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS pharmacies (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             name TEXT NOT NULL,
             address TEXT,
             phone TEXT,
@@ -47,9 +70,9 @@ def init_db():
         )
     ''')
     # Users (staff per pharmacy)
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             username TEXT NOT NULL,
             password TEXT NOT NULL,
@@ -61,9 +84,9 @@ def init_db():
         )
     ''')
 
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS categories (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             UNIQUE(pharmacy_id, name)
@@ -71,9 +94,9 @@ def init_db():
     ''')
 
     # Products per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             sku TEXT NOT NULL,
@@ -93,9 +116,9 @@ def init_db():
         )
     ''')
     # Sales per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS sales (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
             customer_id INTEGER,
@@ -113,9 +136,9 @@ def init_db():
         )
     ''')
     # Customers per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             cust_id TEXT,
             first_name TEXT,
@@ -127,9 +150,9 @@ def init_db():
         )
     ''')
     # Employees per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS employees (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             emp_id TEXT,
             first_name TEXT NOT NULL,
@@ -146,9 +169,9 @@ def init_db():
         )
     ''')
     # Inventory per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS inventory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             product_id INTEGER,
             quantity REAL DEFAULT 0,
@@ -162,9 +185,9 @@ def init_db():
         )
     ''')
     # Expenses per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS expenses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
             category TEXT,
@@ -175,9 +198,9 @@ def init_db():
         )
     ''')
     # Payments / Accounts per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS payments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             paymentId TEXT,
             date TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -192,9 +215,9 @@ def init_db():
         )
     ''')
     # Locations per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS locations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             address TEXT,
@@ -204,9 +227,9 @@ def init_db():
         )
     ''')
     # Appointments per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             customer_name TEXT,
             customer_phone TEXT,
@@ -219,9 +242,9 @@ def init_db():
         )
     ''')
     # Gift cards per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS giftcards (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             code TEXT UNIQUE NOT NULL,
             amount REAL DEFAULT 0,
@@ -234,9 +257,9 @@ def init_db():
         )
     ''')
     # Messages per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             from_user TEXT,
             to_user TEXT,
@@ -247,9 +270,9 @@ def init_db():
         )
     ''')
     # Deliveries per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS deliveries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             sale_id INTEGER,
             customer_name TEXT,
@@ -262,9 +285,9 @@ def init_db():
         )
     ''')
     # Invoices per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             invoice_number TEXT UNIQUE NOT NULL,
             customer_name TEXT,
@@ -280,9 +303,9 @@ def init_db():
         )
     ''')
     # Suppliers per pharmacy
-    db.execute('''
+    db.execute(f'''
         CREATE TABLE IF NOT EXISTS suppliers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {id_col()},
             pharmacy_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             contact_person TEXT,
@@ -368,7 +391,7 @@ def register_pharmacy():
             'admin_username': admin_username,
             'message': 'Pharmacy registered successfully! Save your API key - you will need it to login.'
         }), 201
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         return jsonify({'error': 'API key collision, please try again'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -479,6 +502,10 @@ def check_auth():
         'pharmacy_id': g.pharmacy_id,
         'name': g.pharmacy['name']
     }), 200
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'ok'}), 200
 
 # ---------- Generic CRUD helper ----------
 
@@ -811,6 +838,11 @@ def create_message():
     data['pharmacy_id'] = g.pharmacy_id
     return table_create('messages', data)
 
+@app.route('/api/messages/<int:mid>', methods=['DELETE'])
+@require_auth
+def delete_message(mid):
+    return table_delete('messages', mid)
+
 # --- Deliveries ---
 @app.route('/api/deliveries', methods=['GET'])
 @require_auth
@@ -911,11 +943,12 @@ def sales_by_category():
 def sales_trend():
     db = get_db()
     pid = g.pharmacy_id
+    thirty_days_ago = (datetime.now() - __import__('datetime').timedelta(days=30)).strftime('%Y-%m-%d')
     rows = db.execute('''
-        SELECT date(date) as day, SUM(total) as total
-        FROM sales WHERE pharmacy_id = ? AND date >= date('now', '-30 days')
-        GROUP BY day ORDER BY day ASC
-    ''', (pid,)).fetchall()
+        SELECT date as day, SUM(total) as total
+        FROM sales WHERE pharmacy_id = ? AND date >= ?
+        GROUP BY date ORDER BY date ASC
+    ''', (pid, thirty_days_ago)).fetchall()
     return jsonify([dict(r) for r in rows])
 
 # --- Register endpoint for staff (users within pharmacy) ---
@@ -940,7 +973,7 @@ def register_staff():
         )
         db.commit()
         return jsonify({'message': 'Staff account created', 'username': username}), 201
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         return jsonify({'error': 'Username already exists for this pharmacy'}), 400
 
 @app.route('/api/users', methods=['GET'])
@@ -1000,7 +1033,7 @@ def create_category():
     data['pharmacy_id'] = g.pharmacy_id
     try:
         return table_create('categories', data)
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         return jsonify({'error': 'Category already exists'}), 400
 
 # --- Catalogue PDF info ---
@@ -1030,8 +1063,9 @@ def serve_static(filename):
         return send_file(filepath)
     return jsonify({'error': 'Not found'}), 404
 
+with app.app_context():
+    init_db()
+
 if __name__ == '__main__':
-    with app.app_context():
-        init_db()
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

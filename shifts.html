@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Manager - SHEDS POS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
+<script src="api.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<div class="sidebar" id="sidebar"></div>
+<div class="main-content">
+<div class="header">
+<h2><i class="fas fa-clock"></i> Shift Manager</h2>
+<div id="userMenu"></div>
+<div class="header-clock" id="topClock"></div>
+</div>
+<div class="content">
+<div class="page-head">
+<div>
+<h3>Staff Shifts</h3>
+<p>Track who is on duty, opening/closing cash float, and shift performance.</p>
+</div>
+<button class="btn btn-success" onclick="openShiftModal()"><i class="fas fa-plus"></i> Open New Shift</button>
+</div>
+
+<div class="kpi-grid" id="shiftKPIs">
+<div class="kpi-card"><div class="kpi-label"><i class="fas fa-door-open"></i> Open Shifts</div><div class="kpi-value" id="openShifts" style="color:#10b981;">0</div><div class="kpi-sub">Currently active</div></div>
+<div class="kpi-card"><div class="kpi-label"><i class="fas fa-door-closed"></i> Closed Today</div><div class="kpi-value" id="closedToday">0</div><div class="kpi-sub">Completed shifts</div></div>
+<div class="kpi-card"><div class="kpi-label"><i class="fas fa-money-bill-wave"></i> Total Float Out</div><div class="kpi-value" id="totalFloatOut">₦0</div><div class="kpi-sub">Cash in registers</div></div>
+<div class="kpi-card"><div class="kpi-label"><i class="fas fa-cash-register"></i> Total Sales</div><div class="kpi-value" id="totalShiftSales">₦0</div><div class="kpi-sub">Revenue this shift</div></div>
+</div>
+
+<div class="panel">
+<div class="toolbar">
+<input type="text" id="searchInput" class="search-input" placeholder="Search shifts..." oninput="renderShifts()">
+<select id="statusFilter" class="form-select" onchange="renderShifts()">
+<option value="">All Status</option>
+<option value="open">Open</option>
+<option value="closed">Closed</option>
+</select>
+<button class="btn btn-info" onclick="exportShiftsCSV()"><i class="fas fa-file-export"></i> Export</button>
+</div>
+</div>
+
+<div class="table-panel">
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Shift ID</th>
+<th>Cashier</th>
+<th>Start Time</th>
+<th>End Time</th>
+<th>Opening Float</th>
+<th>Closing Cash</th>
+<th>Total Sales</th>
+<th>Variance</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="shiftsBody">
+<tr><td colspan="10" class="empty-state">Loading shifts...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="shiftModal">
+<div class="modal modal-lg">
+<div class="modal-header">
+<h3 id="shiftModalTitle">Open New Shift</h3>
+<button class="modal-close" onclick="closeShiftModal()">&times;</button>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="required">Cashier</label><input type="text" id="shiftCashier" placeholder="Cashier name"></div>
+<div class="form-group"><label class="required">Opening Float (₦)</label><input type="number" id="shiftFloat" placeholder="e.g. 5000" step="0.01" min="0"></div>
+</div>
+<div class="form-group"><label>Notes</label><textarea id="shiftNotes" class="notes-area" placeholder="Any notes for this shift..."></textarea></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeShiftModal()">Cancel</button>
+<button class="btn btn-success" onclick="saveShift()">Start Shift</button>
+</div>
+</div>
+</div>
+
+<div class="modal-overlay" id="closeShiftModal">
+<div class="modal modal-lg">
+<div class="modal-header">
+<h3>Close Shift</h3>
+<button class="modal-close" onclick="document.getElementById('closeShiftModal').classList.remove('open')">&times;</button>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="required">Cash in Drawer (₦)</label><input type="number" id="closeCashInDrawer" placeholder="Count cash" step="0.01" min="0"></div>
+</div>
+<div class="form-group"><label>Shift Notes</label><textarea id="closeShiftNotes" class="notes-area" placeholder="Any issues during shift..."></textarea></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="document.getElementById('closeShiftModal').classList.remove('open')">Cancel</button>
+<button class="btn btn-warning" onclick="closeShift()">Close Shift</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var shifts = [];
+  var editingShiftId = null;
+  var closingShiftId = null;
+
+  function $(id){return document.getElementById(id);}
+
+  function showToast(msg, isError) {
+      var t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isError ? ' error' : '');
+      t.style.display = 'block';
+      setTimeout(function() { t.style.display = 'none'; }, 3000);
+  }
+
+  function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2}); } }
+
+  function loadShifts() {
+      var data = [];
+      try { data = JSON.parse(localStorage.getItem('danzona_shifts') || '[]'); } catch(e) { data = []; }
+      shifts = Array.isArray(data) ? data : [];
+  }
+
+  function saveShifts() {
+      try { localStorage.setItem('danzona_shifts', JSON.stringify(shifts)); } catch(e) {}
+  }
+
+  function openShiftModal() {
+      editingShiftId = null;
+      $('shiftModalTitle').textContent = 'Open New Shift';
+      $('shiftCashier').value = API.getUserName ? API.getUserName() : '';
+      $('shiftFloat').value = '';
+      $('shiftNotes').value = '';
+      $('shiftModal').classList.add('open');
+  }
+
+  function saveShift() {
+      var cashier = $('shiftCashier').value.trim();
+      var floatAmt = parseFloat($('shiftFloat').value) || 0;
+      if (!cashier) { showToast('Cashier name is required', true); return; }
+      if (floatAmt < 0) { showToast('Opening float cannot be negative', true); return; }
+      var now = new Date().toISOString();
+      var shift = {
+          id: 'SHF-' + Date.now().toString().slice(-6),
+          cashier: cashier,
+          startTime: now,
+          endTime: null,
+          openingFloat: floatAmt,
+          closingCash: null,
+          totalSales: 0,
+          variance: null,
+          status: 'open',
+          notes: $('shiftNotes').value.trim()
+      };
+      shifts.unshift(shift);
+      saveShifts();
+      closeShiftModal();
+      renderShifts();
+      showToast('Shift opened: ' + shift.id);
+  }
+
+  function viewShift(id) {
+      var shift = shifts.find(function(s){ return s.id === id; });
+      if (!shift) return;
+      var duration = shift.endTime ? Math.round((new Date(shift.endTime) - new Date(shift.startTime)) / 60000) + ' min' : 'Active';
+      var variance = shift.variance !== null ? fmt(shift.variance) + (shift.variance >= 0 ? ' (Surplus)' : ' (Shortage)') : '-';
+      alert(
+          'Shift ID: ' + shift.id + '\n' +
+          'Cashier: ' + shift.cashier + '\n' +
+          'Status: ' + shift.status.toUpperCase() + '\n' +
+          'Start: ' + (new Date(shift.startTime)).toLocaleString() + '\n' +
+          (shift.endTime ? 'End: ' + (new Date(shift.endTime)).toLocaleString() + '\n' : '') +
+          'Duration: ' + duration + '\n' +
+          'Opening Float: ' + fmt(shift.openingFloat) + '\n' +
+          (shift.closingCash !== null ? 'Closing Cash: ' + fmt(shift.closingCash) + '\n' : '') +
+          'Total Sales: ' + fmt(shift.totalSales) + '\n' +
+          (shift.variance !== null ? 'Variance: ' + variance + '\n' : '') +
+          (shift.notes ? 'Notes: ' + shift.notes : '')
+      );
+  }
+
+  function promptCloseShift(id) {
+      var shift = shifts.find(function(s){ return s.id === id; });
+      if (!shift || shift.status !== 'open') return;
+      closingShiftId = id;
+      $('closeCashInDrawer').value = '';
+      $('closeShiftNotes').value = '';
+      document.getElementById('closeShiftModal').classList.add('open');
+  }
+
+  function closeShift() {
+      var cashInDrawer = parseFloat($('closeCashInDrawer').value) || 0;
+      if (cashInDrawer < 0) { showToast('Invalid cash amount', true); return; }
+      var shift = shifts.find(function(s){ return s.id === closingShiftId; });
+      if (!shift) return;
+      shift.endTime = new Date().toISOString();
+      shift.closingCash = cashInDrawer;
+      shift.variance = cashInDrawer - (shift.openingFloat + shift.totalSales);
+      shift.status = 'closed';
+      shift.notes = (shift.notes || '') + ' | ' + ($('closeShiftNotes').value.trim() || '');
+      saveShifts();
+      document.getElementById('closeShiftModal').classList.remove('open');
+      closingShiftId = null;
+      renderShifts();
+      showToast('Shift closed: ' + shift.id + ' | Variance: ' + fmt(shift.variance));
+  }
+
+  function closeShiftModal() { $('shiftModal').classList.remove('open'); }
+
+  function deleteShift(id) {
+      if (!confirm('Delete this shift record?')) return;
+      shifts = shifts.filter(function(s){ return s.id !== id; });
+      saveShifts();
+      renderShifts();
+      showToast('Shift deleted');
+  }
+
+  function exportShiftsCSV() {
+      if (!shifts.length) { showToast('No shifts to export', true); return; }
+      POS.exportCSV('shifts_' + POS.today() + '.csv',
+          ['Shift ID','Cashier','Start','End','Opening Float','Closing Cash','Total Sales','Variance','Status'],
+          shifts.map(function(s){return {
+              'Shift ID': s.id, 'Cashier': s.cashier,
+              'Start': s.startTime ? new Date(s.startTime).toLocaleString() : '',
+              'End': s.endTime ? new Date(s.endTime).toLocaleString() : '',
+              'Opening Float': s.openingFloat, 'Closing Cash': s.closingCash || 0,
+              'Total Sales': s.totalSales, 'Variance': s.variance || 0, 'Status': s.status
+          };})
+      );
+  }
+
+  function renderShifts() {
+      var q = ($('searchInput').value || '').toLowerCase();
+      var status = $('statusFilter').value;
+      var list = shifts.filter(function(s) {
+          var text = [s.id, s.cashier, s.notes || ''].join(' ').toLowerCase();
+          return (!q || text.indexOf(q) > -1) && (!status || s.status === status);
+      });
+      updateShiftKPIs();
+      var tbody = $('shiftsBody');
+      if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No shifts found</td></tr>';
+          return;
+      }
+      tbody.innerHTML = list.map(function(s) {
+          var duration = s.endTime ? Math.round((new Date(s.endTime) - new Date(s.startTime)) / 60000) + 'm' : 'Active';
+          var varianceBadge = s.variance === null ? '-' : (s.variance >= 0 ? '<span style="color:#10b981;font-weight:700;">+' + fmt(s.variance) + '</span>' : '<span style="color:#ef4444;font-weight:700;">' + fmt(s.variance) + '</span>');
+          return '<tr>' +
+              '<td><strong>' + s.id + '</strong></td>' +
+              '<td>' + POS.esc(s.cashier) + '</td>' +
+              '<td>' + (new Date(s.startTime)).toLocaleString() + '</td>' +
+              '<td>' + (s.endTime ? (new Date(s.endTime)).toLocaleString() : '<span style="color:#10b981;">---</span>') + '</td>' +
+              '<td>' + fmt(s.openingFloat) + '</td>' +
+              '<td>' + (s.closingCash !== null ? fmt(s.closingCash) : '<span style="color:#64748b;">---</span>') + '</td>' +
+              '<td style="font-weight:700;">' + fmt(s.totalSales) + '</td>' +
+              '<td>' + varianceBadge + '</td>' +
+              '<td><span class="badge badge-' + (s.status === 'open' ? 'success' : 'muted') + '">' + (s.status === 'open' ? 'OPEN' : 'CLOSED') + '</span></td>' +
+              '<td class="action-btns">' +
+              '<button class="icon-btn view" onclick="viewShift(\'' + s.id + '\')" title="View"><i class="fas fa-eye"></i></button>' +
+              (s.status === 'open' ? '<button class="icon-btn edit" onclick="promptCloseShift(\'' + s.id + '\')" title="Close Shift"><i class="fas fa-stop-circle"></i></button>' : '') +
+              '<button class="icon-btn delete" onclick="deleteShift(\'' + s.id + '\')" title="Delete"><i class="fas fa-trash"></i></button>' +
+              '</td></tr>';
+      }).join('');
+  }
+
+  function updateShiftKPIs() {
+      var open = shifts.filter(function(s){ return s.status === 'open'; }).length;
+      var today = new Date(); today.setHours(0,0,0,0);
+      var closedToday = shifts.filter(function(s){ return s.status === 'closed' && new Date(s.endTime) >= today; }).length;
+      var totalFloat = shifts.filter(function(s){ return s.status === 'open'; }).reduce(function(sum, s){ return sum + (parseFloat(s.openingFloat)||0); }, 0);
+      var totalSales = shifts.reduce(function(sum, s){ return sum + (parseFloat(s.totalSales)||0); }, 0);
+      $('openShifts').textContent = open;
+      $('closedToday').textContent = closedToday;
+      $('totalFloatOut').textContent = fmt(totalFloat);
+      $('totalShiftSales').textContent = fmt(totalSales);
+  }
+
+  function init() {
+      try {
+          if (typeof POS !== 'undefined') {
+              POS.renderSidebar();
+              POS.renderUserMenu();
+              POS.startClock();
+          }
+          loadShifts();
+          renderShifts();
+      } catch (err) {
+          console.error('Shifts init error:', err);
+          $('shiftsBody').innerHTML = '<tr><td colspan="10" class="empty-state" style="color:#ef4444;">Error: ' + err.message + '</td></tr>';
+      }
+  }
+
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+  } else {
+      init();
+  }
+})();
+</script>
+</body>
+</html>

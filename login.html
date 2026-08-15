@@ -46,10 +46,11 @@
         </div>
         <div class="server-status" id="serverStatus"></div>
 
-        <div class="tab-switch">
-            <button class="active" onclick="switchTab('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
-            <button onclick="switchTab('register')"><i class="fas fa-user-plus"></i> New Pharmacy</button>
-        </div>
+<div class="tab-switch">
+<button class="active" onclick="switchTab('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
+<button onclick="switchTab('register')"><i class="fas fa-user-plus"></i> New Pharmacy</button>
+<button onclick="window.location.href='create-account.html'"><i class="fas fa-id-card"></i> Create Account</button>
+</div>
 
         <div id="login-tab" class="tab-content active">
             <form onsubmit="login(event)">
@@ -107,7 +108,7 @@
 
     <script src="api.js"></script>
     <script>
-    var API_URL = window.location.origin;
+    var API_URL = window.location.origin || '';
 
     function showToast(msg, type) {
         var t = document.getElementById('toast');
@@ -127,8 +128,9 @@
     }
 
     function checkServer() {
-        fetch(API_URL + '/api/auth/check', { method: 'GET', headers: { 'X-API-Key': 'ping' } })
+        fetch(API_URL + '/api/health', { method: 'GET' })
             .then(function(res) {
+                if (!res.ok) throw new Error('Server unavailable');
                 document.getElementById('offlineWarning').style.display = 'none';
                 var status = document.getElementById('serverStatus');
                 status.className = 'server-status online';
@@ -220,9 +222,12 @@
                 setTimeout(function() {
                     window.location.href = 'dashboard.html';
                 }, 1000);
-            }).catch(function(err) {
-                showToast('Connection error. Is the server running?', 'error');
-                console.error(err);
+        }).catch(function(err) {
+            console.error('Login fetch error:', err);
+            var errMsg = 'Connection error. Is the server running?';
+            if (err && err.message) errMsg = err.message;
+            else if (typeof err === 'string') errMsg = err;
+            showToast(errMsg, 'error');
             });
 
             document.querySelector('form[onsubmit="registerPharmacy(event)"]').reset();

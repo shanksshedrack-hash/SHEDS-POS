@@ -2,7 +2,7 @@
 set -e
 
 echo "=========================================="
-echo "  Danzona POS - Contabo VPS Deploy"
+echo "  SHEDS POS - Contabo VPS Deploy"
 echo "=========================================="
 
 # 1. Install Docker if not present
@@ -50,7 +50,7 @@ MAX_RETRIES=10
 RETRY=0
 while [ $RETRY -lt $MAX_RETRIES ]; do
     if curl -s http://localhost:5000/api/auth/check -H "X-API-Key: test" | grep -q "error"; then
-        echo "✓ App is running (API responded)"
+        echo "âœ“ App is running (API responded)"
         break
     fi
     RETRY=$((RETRY + 1))
@@ -59,7 +59,7 @@ while [ $RETRY -lt $MAX_RETRIES ]; do
 done
 
 if [ $RETRY -eq $MAX_RETRIES ]; then
-    echo "⚠ App may not be fully healthy yet. Checking logs..."
+    echo "âš  App may not be fully healthy yet. Checking logs..."
     docker logs danzona-pos --tail 20 2>/dev/null || true
 fi
 

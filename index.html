@@ -3,79 +3,506 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHEDS POS - Professional POS System</title>
+<title>SHEDS POS - Professional Point of Sale System</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
-    body{background:#f2f2f2;color:#333;}
-    header{background:linear-gradient(135deg,#2c3e50,#1a2533);color:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;}
-    header h1{font-size:1.5rem;font-weight:600;}
-    nav ul{display:flex;list-style:none;gap:2rem;}
-    nav a{color:#ecf0f1;text-decoration:none;font-weight:500;transition:color 0.3s;cursor:pointer;}
-    nav a:hover{color:#3498db;}
-    .hero{background:linear-gradient(135deg,#4da3ff,#2980b9);color:white;padding:4rem 2rem;text-align:center;}
-    .hero h2{font-size:2.5rem;margin-bottom:1rem;}
-    .hero p{font-size:1.2rem;max-width:600px;margin:0 auto 2rem;}
-    .features{padding:4rem 2rem;max-width:1200px;margin:0 auto;}
-    .features h2{text-align:center;margin-bottom:3rem;color:#2c3e50;}
-    .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;}
-    .feature-card{background:white;border-radius:10px;padding:2rem;box-shadow:0 5px 15px rgba(0,0,0,0.08);cursor:pointer;}
-    .feature-card h3{color:#4da3ff;margin-bottom:1rem;}
-    .feature-card ul{list-style:none;}
-    .feature-card li{padding:0.5rem 0;color:#666;position:relative;padding-left:1.5rem;}
-    .feature-card li:before{content:"\f00c";font-family:"Font Awesome 6 Free";color:#27ae60;position:absolute;left:0;}
-    .cta{background:#2c3e50;color:white;padding:3rem 2rem;text-align:center;}
-    .cta h2{margin-bottom:1rem;}
-    .cta button{background:#4da3ff;color:#fff;border:none;padding:1rem 2rem;font-size:1rem;border-radius:5px;cursor:pointer;}
-    footer{background:#1a202a;color:#bdc3c7;padding:2rem;text-align:center;}
-    @media(max-width:768px){nav ul{gap:1rem;}.hero h2{font-size:1.8rem;}}
+:root{--primary:#10b981;--primary-dark:#059669;--primary-light:#ecfdf5;--accent:#4f46e5;--dark:#0f172a;--dark-2:#1e293b;--text:#111827;--muted:#64748b;--light:#f8fafc;--border:#e5e7eb;--shadow:0 20px 40px rgba(15,23,42,.08);--shadow-lg:0 25px 50px rgba(15,23,42,.12);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',Arial,sans-serif;background:#fff;color:var(--text);line-height:1.6;overflow-x:hidden;}
+.container{max-width:1200px;margin:0 auto;padding:0 24px;}
+a{text-decoration:none;color:inherit;}
+ul{list-style:none;}
+
+/* Header */
+.site-header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);background:rgba(255,255,255,.95);}
+.header-inner{display:flex;justify-content:space-between;align-items:center;height:72px;max-width:1200px;margin:0 auto;padding:0 24px;}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--dark);}
+.logo-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nav-links{display:flex;gap:32px;}
+.nav-links a{font-size:14px;font-weight:600;color:var(--muted);transition:.2s;cursor:pointer;}
+.nav-links a:hover{color:var(--primary);}
+.header-cta{background:var(--primary);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;transition:.2s;cursor:pointer;border:none;}
+.header-cta:hover{background:var(--primary-dark);transform:translateY(-1px);}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:100px 0 120px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 70%);border-radius:50%;}
+.hero::after{content:'';position:absolute;bottom:-30%;left:-5%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,70,229,.12) 0%,transparent 70%);border-radius:50%;}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px;text-align:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:24px;color:#a5b4fc;}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-.02em;}
+.hero h1 span{background:linear-gradient(135deg,#10b981,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{font-size:18px;color:#94a3b8;max-width:640px;margin:0 auto 32px;line-height:1.7;}
+.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;transition:.2s;cursor:pointer;border:none;}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 10px 30px rgba(16,185,129,.3);}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 15px 35px rgba(16,185,129,.35);}
+.btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2);}
+.btn-outline:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);}
+
+/* Stats Bar */
+.stats-bar{background:#fff;border-bottom:1px solid var(--border);position:relative;z-index:2;margin-top:-60px;}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);padding:32px;border:1px solid var(--border);}
+.stat-item{text-align:center;padding:0 16px;border-right:1px solid var(--border);}
+.stat-item:last-child{border-right:none;}
+.stat-number{font-size:32px;font-weight:900;color:var(--dark);line-height:1;margin-bottom:6px;}
+.stat-number span{color:var(--primary);}
+.stat-label{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+
+/* Section Titles */
+.section-title{text-align:center;margin-bottom:48px;}
+.section-title h2{font-size:32px;font-weight:900;color:var(--dark);margin-bottom:12px;letter-spacing:-.02em;}
+.section-title p{font-size:16px;color:var(--muted);max-width:560px;margin:0 auto;}
+
+/* Features */
+.features-section{padding:100px 0;background:#fff;}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;}
+.feature-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;transition:.3s;cursor:pointer;position:relative;overflow:hidden;}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(135deg,var(--primary),#2563eb);transform:scaleX(0);transform-origin:left;transition:.3s;}
+.feature-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:transparent;}
+.feature-card:hover::before{transform:scaleX(1);}
+.feature-icon{width:56px;height:56px;border-radius:16px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--primary);margin-bottom:20px;}
+.feature-card h3{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:10px;}
+.feature-card p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;}
+.feature-card ul{display:flex;flex-direction:column;gap:8px;}
+.feature-card li{font-size:13px;color:#475569;display:flex;align-items:center;gap:8px;}
+.feature-card li i{color:var(--primary);font-size:12px;}
+
+/* Testimonials */
+.testimonials-section{padding:100px 0;background:#f8fafc;}
+.testimonial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;}
+.testimonial-card{background:#fff;border-radius:20px;padding:32px;border:1px solid var(--border);position:relative;}
+.testimonial-card .quote-icon{font-size:40px;color:var(--primary);opacity:.15;position:absolute;top:20px;right:24px;}
+.testimonial-card p{font-size:15px;color:#475569;line-height:1.8;font-style:italic;margin-bottom:20px;position:relative;z-index:1;}
+.testimonial-author{display:flex;align-items:center;gap:12px;}
+.testimonial-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;}
+.testimonial-info strong{display:block;font-size:14px;font-weight:800;color:var(--dark);}
+.testimonial-info span{font-size:12px;color:var(--muted);}
+
+/* Why Us */
+.why-section{padding:100px 0;background:#fff;}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
+.why-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;text-align:center;transition:.3s;}
+.why-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.why-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--primary-light),#e0e7ff);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--primary);margin:0 auto 20px;}
+.why-card h4{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;}
+.why-card p{font-size:14px;color:var(--muted);line-height:1.7;}
+
+/* CTA */
+.cta-section{padding:100px 0;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;text-align:center;position:relative;overflow:hidden;}
+.cta-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 30% 50%,rgba(16,185,129,.12) 0%,transparent 50%);}
+.cta-inner{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:0 24px;}
+.cta-section h2{font-size:clamp(28px,4vw,40px);font-weight:900;margin-bottom:16px;line-height:1.2;}
+.cta-section p{font-size:16px;color:#94a3b8;margin-bottom:32px;}
+.cta-section .btn-primary{font-size:16px;padding:16px 36px;}
+
+/* Steps */
+.steps-section{padding:100px 0;background:#f8fafc;}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;text-align:center;}
+.step-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px 24px;transition:.3s;position:relative;}
+.step-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.step-number{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin:0 auto 16px;}
+.step-card h4{font-size:16px;font-weight:800;color:var(--dark);margin-bottom:8px;}
+.step-card p{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* FAQ */
+.faq-section{padding:100px 0;background:#fff;}
+.faq-list{max-width:800px;margin:0 auto;}
+.faq-item{border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;transition:.2s;}
+.faq-item:hover{border-color:var(--primary);}
+.faq-question{width:100%;background:#fff;border:none;padding:20px 24px;font-size:16px;font-weight:700;color:var(--dark);text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:.2s;}
+.faq-question:hover{color:var(--primary);}
+.faq-question i{transition:.3s;font-size:14px;color:var(--muted);}
+.faq-item.open .faq-question i{transform:rotate(180deg);color:var(--primary);}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height .3s ease;background:#f8fafc;}
+.faq-answer-inner{padding:0 24px 20px;font-size:15px;color:#475569;line-height:1.7;}
+
+/* Contact */
+.contact-section{padding:100px 0;background:#f8fafc;}
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
+.contact-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;text-align:center;transition:.3s;}
+.contact-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.contact-icon{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--primary-light),#e0e7ff);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--primary);margin:0 auto 16px;}
+.contact-card h4{font-size:16px;font-weight:800;color:var(--dark);margin-bottom:8px;}
+.contact-card p{font-size:14px;color:var(--muted);line-height:1.6;}
+.contact-card a{color:var(--primary);font-weight:600;}
+
+/* Partners */
+.partners-section{padding:60px 0;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.partners-grid{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:40px 60px;opacity:.6;}
+.partner-item{font-size:20px;font-weight:800;color:var(--muted);display:flex;align-items:center;gap:10px;transition:.2s;}
+.partner-item:hover{color:var(--dark);opacity:1;}
+.partner-item i{font-size:24px;color:var(--primary);}
+
+/* Footer */
+.site-footer{background:#0f172a;color:#94a3b8;padding:48px 0 24px;border-top:1px solid rgba(255,255,255,.08);}
+.footer-inner{max-width:1200px;margin:0 auto;padding:0 24px;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
+.footer-brand h3{color:#fff;font-size:20px;font-weight:800;margin-bottom:12px;}
+.footer-brand p{font-size:14px;line-height:1.7;color:#94a3b8;}
+.footer-col h4{color:#e2e8f0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
+.footer-col a{display:block;font-size:14px;color:#94a3b8;margin-bottom:10px;transition:.2s;}
+.footer-col a:hover{color:#fff;}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:24px;text-align:center;font-size:13px;color:#64748b;}
+
+/* Responsive */
+@media(max-width:968px){.nav-links{display:none;}.stats-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.stats-grid{grid-template-columns:1fr;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;}.stat-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}.footer-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-    <header>
-        <h1>SHEDS POS</h1>
-        <nav>
-            <ul>
-                <li><a onclick="navigateTo('sales.html')">Sales</a></li>
-                <li><a onclick="navigateTo('inventory.html')">Inventory</a></li>
-                <li><a onclick="navigateTo('customers.html')">Customers</a></li>
-                <li><a onclick="navigateTo('employees.html')">Employees</a></li>
-                <li><a onclick="navigateTo('reports.html')">Reports</a></li>
-                <li><a onclick="navigateTo('login.html')">Login</a></li>
-            </ul>
-        </nav>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="logo" onclick="navigateTo('index.html')">
+                <div class="logo-icon"><i class="fas fa-clinic-medical"></i></div>
+                <span>SHEDS POS</span>
+            </a>
+            <nav class="nav-links">
+                <a onclick="document.querySelector('.features-section').scrollIntoView({behavior:'smooth'})">Features</a>
+                <a onclick="navigateTo('sales.html')">Sales</a>
+                <a onclick="navigateTo('inventory.html')">Inventory</a>
+                <a onclick="navigateTo('reports.html')">Reports</a>
+                <a onclick="navigateTo('config.html')">Config</a>
+            </nav>
+            <button class="header-cta" onclick="navigateTo('login.html')">Get Started</button>
+        </div>
     </header>
+
     <section class="hero">
-        <h2>Professional Point of Sale System</h2>
-        <p>Complete retail management solution with real-time tracking, inventory control, and multi-store support</p>
-    </section>
-    <section class="features">
-        <h2>Our Features</h2>
-        <div class="feature-grid">
-            <div class="feature-card" onclick="navigateTo('sales.html')">
-                <h3><i class="fas fa-shopping-cart"></i> Sales Management</h3>
-                <ul><li>Real-time sales tracking</li><li>Barcode scanning</li><li>Receipt printing</li></ul>
-            </div>
-            <div class="feature-card" onclick="navigateTo('inventory.html')">
-                <h3><i class="fas fa-boxes"></i> Inventory Control</h3>
-                <ul><li>Stock monitoring</li><li>Low-stock alerts</li><li>Bulk import/export</li></ul>
-            </div>
-            <div class="feature-card" onclick="navigateTo('customers.html')">
-                <h3><i class="fas fa-users"></i> Customer Management</h3>
-                <ul><li>CRM features</li><li>Loyalty programs</li><li>Purchase history</li></ul>
+        <div class="hero-inner">
+            <div class="hero-badge"><i class="fas fa-star"></i> Trusted by 500+ pharmacies & retail stores</div>
+            <h1>The all-in-one <span>Point of Sale</span> system for modern businesses</h1>
+            <p>Streamline sales, inventory, prescriptions, finance, and analytics in one powerful platform built for Nigerian pharmacies and retail stores.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="navigateTo('login.html')"><i class="fas fa-rocket"></i> Start Free Trial</button>
+                <button class="btn btn-outline" onclick="navigateTo('sales.html')"><i class="fas fa-play"></i> See It In Action</button>
             </div>
         </div>
     </section>
-    <section class="cta">
-        <h2>Ready to streamline your business?</h2>
-        <button onclick="navigateTo('login.html')"><i class="fas fa-rocket"></i> Get Started Today</button>
+
+    <section class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500<span>+</span></div>
+                    <div class="stat-label">Active Stores</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1M<span>+</span></div>
+                    <div class="stat-label">Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9<span>%</span></div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24<span>/7</span></div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div>
     </section>
-    <footer><p>&copy; 2026 SHEDS POS. All rights reserved.</p></footer>
+
+    <section class="features-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Everything you need to run your store</h2>
+                <p>From sales and inventory to pharmacy prescriptions and analytics, SHEDS POS has you covered.</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card" onclick="navigateTo('sales.html')">
+                    <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h3>Sales Management</h3>
+                    <p>Fast checkout with barcode scanning, receipt printing, and suspended sales support.</p>
+                    <ul><li><i class="fas fa-check"></i> Real-time sales tracking</li><li><i class="fas fa-check"></i> Barcode scanning</li><li><i class="fas fa-check"></i> Receipt printing</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('inventory.html')">
+                    <div class="feature-icon"><i class="fas fa-boxes"></i></div>
+                    <h3>Inventory Control</h3>
+                    <p>Monitor stock levels, set low-stock alerts, and manage bulk imports/exports.</p>
+                    <ul><li><i class="fas fa-check"></i> Stock monitoring</li><li><i class="fas fa-check"></i> Low-stock alerts</li><li><i class="fas fa-check"></i> Bulk import/export</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('customers.html')">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h3>Customer Management</h3>
+                    <p>Build stronger relationships with CRM tools, loyalty programs, and purchase history.</p>
+                    <ul><li><i class="fas fa-check"></i> CRM features</li><li><i class="fas fa-check"></i> Loyalty programs</li><li><i class="fas fa-check"></i> Purchase history</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('prescriptions.html')">
+                    <div class="feature-icon"><i class="fas fa-prescription"></i></div>
+                    <h3>Pharmacy & Prescriptions</h3>
+                    <p>Manage prescriptions, drug categories, and expiry/batch alerts for compliance.</p>
+                    <ul><li><i class="fas fa-check"></i> Rx management</li><li><i class="fas fa-check"></i> Drug categories</li><li><i class="fas fa-check"></i> Expiry & batch alerts</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('payments.html')">
+                    <div class="feature-icon"><i class="fas fa-credit-card"></i></div>
+                    <h3>Finance & Payments</h3>
+                    <p>Accept multiple payment methods, manage store accounts, and reconcile banks.</p>
+                    <ul><li><i class="fas fa-check"></i> Multiple payment methods</li><li><i class="fas fa-check"></i> Store account</li><li><i class="fas fa-check"></i> Bank reconciliation</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('reports.html')">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Reports & Analytics</h3>
+                    <p>Get daily summaries, audit logs, tax reports, and actionable insights.</p>
+                    <ul><li><i class="fas fa-check"></i> Daily summaries</li><li><i class="fas fa-check"></i> Audit logs</li><li><i class="fas fa-check"></i> Tax reports</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('employees.html')">
+                    <div class="feature-icon"><i class="fas fa-user-tie"></i></div>
+                    <h3>Employee Management</h3>
+                    <p>Roles, permissions, attendance tracking, and performance reports.</p>
+                    <ul><li><i class="fas fa-check"></i> Roles & permissions</li><li><i class="fas fa-check"></i> Attendance tracking</li><li><i class="fas fa-check"></i> Performance reports</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('purchase-orders.html')">
+                    <div class="feature-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3>Purchases & Suppliers</h3>
+                    <p>Manage purchase orders, suppliers, receiving, and stock transfers.</p>
+                    <ul><li><i class="fas fa-check"></i> Purchase orders</li><li><i class="fas fa-check"></i> Supplier management</li><li><i class="fas fa-check"></i> Receiving & stock transfer</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('giftcards.html')">
+                    <div class="feature-icon"><i class="fas fa-gift"></i></div>
+                    <h3>Gift Cards & Promotions</h3>
+                    <p>Gift card sales, discount campaigns, and a powerful promo engine.</p>
+                    <ul><li><i class="fas fa-check"></i> Gift card sales</li><li><i class="fas fa-check"></i> Discount campaigns</li><li><i class="fas fa-check"></i> Promo engine</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('deliveries.html')">
+                    <div class="feature-icon"><i class="fas fa-truck-loading"></i></div>
+                    <h3>Deliveries & Appointments</h3>
+                    <p>Track deliveries, schedule customer appointments, and send messages.</p>
+                    <ul><li><i class="fas fa-check"></i> Delivery tracking</li><li><i class="fas fa-check"></i> Customer appointments</li><li><i class="fas fa-check"></i> Messaging</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('backups.html')">
+                    <div class="feature-icon"><i class="fas fa-download"></i></div>
+                    <h3>System & Backups</h3>
+                    <p>Data backups, audit logs, and full store configuration management.</p>
+                    <ul><li><i class="fas fa-check"></i> Data backups</li><li><i class="fas fa-check"></i> Audit logs</li><li><i class="fas fa-check"></i> Store configuration</li></ul>
+                </div>
+                <div class="feature-card" onclick="navigateTo('subscription.html')">
+                    <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+                    <h3>Subscription & Support</h3>
+                    <p>Manage subscriptions, multi-store support, and daily sales summaries.</p>
+                    <ul><li><i class="fas fa-check"></i> Subscription management</li><li><i class="fas fa-check"></i> Multi-store support</li><li><i class="fas fa-check"></i> Daily summaries</li></ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Trusted by businesses across Nigeria</h2>
+                <p>See what pharmacy and retail owners are saying about SHEDS POS.</p>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+                    <p>"SHEDS POS transformed our pharmacy operations. Inventory and prescriptions are now seamless, and the team loves how easy it is to use."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">CO</div>
+                        <div class="testimonial-info"><strong>Chinedu Okafor</strong><span>Pharmacy Manager, Lagos</span></div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+                    <p>"The reporting and analytics help us make smarter decisions every single day. Support is fast and professional."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">AN</div>
+                        <div class="testimonial-info"><strong>Amaka Nwosu</strong><span>Retail Owner, Abuja</span></div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+                    <p>"Easy to use, reliable, and the support team is outstanding. We switched from three different tools and never looked back."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">ED</div>
+                        <div class="testimonial-info"><strong>Emeka Daniels</strong><span>Store Director, Port Harcourt</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why businesses choose SHEDS POS</h2>
+                <p>Built for speed, security, and simplicity so you can focus on growing your business.</p>
+            </div>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-bolt"></i></div>
+                    <h4>Fast & Reliable</h4>
+                    <p>Optimized for speed with offline-ready workflows so sales never stop.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h4>Secure by Design</h4>
+                    <p>Enterprise-grade security to protect your transactions and business data.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h4>Mobile Friendly</h4>
+                    <p>Works smoothly on tablets and phones for flexible in-store use.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-headset"></i></div>
+                    <h4>24/7 Support</h4>
+                    <p>Real help from real people whenever you need it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="steps-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Get started in minutes</h2>
+                <p>Setting up SHEDS POS is simple. Here's how it works.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Create Account</h4>
+                    <p>Sign up and configure your store details, currency, and preferences.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>Import Products</h4>
+                    <p>Add your inventory with bulk import or barcode scanning.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Start Selling</h4>
+                    <p>Process sales, print receipts, and accept multiple payments.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4>Grow Insights</h4>
+                    <p>Use reports and analytics to make smarter business decisions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="partners-section">
+        <div class="container">
+            <div class="partners-grid">
+                <div class="partner-item"><i class="fas fa-hospital"></i> City Pharmacy</div>
+                <div class="partner-item"><i class="fas fa-store"></i> MedPlus</div>
+                <div class="partner-item"><i class="fas fa-clinic-medical"></i> HealthPlus</div>
+                <div class="partner-item"><i class="fas fa-heartbeat"></i> LifeCare</div>
+                <div class="partner-item"><i class="fas fa-first-aid"></i> QuickMed</div>
+                <div class="partner-item"><i class="fas fa-user-md"></i> DocPlus</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="faq-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Frequently asked questions</h2>
+                <p>Everything you need to know about SHEDS POS.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open');this.nextElementSibling.style.maxHeight=this.parentElement.classList.contains('open')?this.nextElementSibling.scrollHeight+'px':'0';">Is SHEDS POS suitable for pharmacies?<i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Yes. SHEDS POS includes prescription management, drug categories, expiry alerts, batch tracking, and pharmacy-specific reports.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open');this.nextElementSibling.style.maxHeight=this.parentElement.classList.contains('open')?this.nextElementSibling.scrollHeight+'px':'0';">Can I use it on multiple devices?<i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Yes. SHEDS POS works on desktops, tablets, and phones. You can manage your store from anywhere.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open');this.nextElementSibling.style.maxHeight=this.parentElement.classList.contains('open')?this.nextElementSibling.scrollHeight+'px':'0';">Do you support barcode scanning?<i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Yes. You can use USB barcode scanners or the built-in camera scanner for fast checkout.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open');this.nextElementSibling.style.maxHeight=this.parentElement.classList.contains('open')?this.nextElementSibling.scrollHeight+'px':'0';">Is my data secure?<i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Yes. We use enterprise-grade security, encrypted storage, and regular backups to keep your data safe.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open');this.nextElementSibling.style.maxHeight=this.parentElement.classList.contains('open')?this.nextElementSibling.scrollHeight+'px':'0';">Do you offer support?<i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Yes. We provide 24/7 support via chat, email, and phone for all active subscriptions.</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Get in touch</h2>
+                <p>Have questions? We'd love to hear from you.</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                    <h4>Call Us</h4>
+                    <p><a href="tel:+2348012345678">+234 801 234 5678</a></p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                    <h4>Email</h4>
+                    <p><a href="mailto:info@shadepos.com">info@shadepos.com</a></p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h4>Office</h4>
+                    <p>Lagos, Nigeria</p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-clock"></i></div>
+                    <h4>Support Hours</h4>
+                    <p>24/7 Support Available</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-inner">
+            <h2>Ready to streamline your business?</h2>
+            <p>Join hundreds of pharmacies and retail stores already using SHEDS POS to grow faster.</p>
+            <button class="btn btn-primary" onclick="navigateTo('login.html')"><i class="fas fa-rocket"></i> Get Started Today</button>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>SHEDS POS</h3>
+                    <p>Professional Point of Sale system for pharmacies and retail stores. Manage sales, inventory, prescriptions, and analytics in one place.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <a onclick="navigateTo('sales.html')">Sales</a>
+                    <a onclick="navigateTo('inventory.html')">Inventory</a>
+                    <a onclick="navigateTo('reports.html')">Reports</a>
+                    <a onclick="navigateTo('prescriptions.html')">Pharmacy</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a onclick="navigateTo('employees.html')">Employees</a>
+                    <a onclick="navigateTo('customers.html')">Customers</a>
+                    <a onclick="navigateTo('suppliers.html')">Suppliers</a>
+                    <a onclick="navigateTo('config.html')">Config</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <a onclick="navigateTo('messages.html')">Messages</a>
+                    <a onclick="navigateTo('backups.html')">Backups</a>
+                    <a onclick="navigateTo('subscription.html')">Subscription</a>
+                    <a onclick="navigateTo('login.html')">Login</a>
+                </div>
+            </div>
+            <div class="footer-bottom">&copy; 2026 SHEDS POS. All rights reserved.</div>
+        </div>
+    </footer>
+
     <script>
         function navigateTo(p){window.location.href=p;}
     </script>
 </body>
 </html>
-
-
-

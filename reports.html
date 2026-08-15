@@ -35,7 +35,7 @@
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-label"><i class="fas fa-shopping-cart"></i> Total Sales</div>
-                    <div class="kpi-value" id="totalSalesMTD">?0.00</div>
+                    <div class="kpi-value" id="totalSalesMTD">₦0.00</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label"><i class="fas fa-receipt"></i> Total Orders</div>
@@ -43,7 +43,7 @@
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label"><i class="fas fa-chart-line"></i> Avg Order Value</div>
-                    <div class="kpi-value" id="avgOrderValue">?0.00</div>
+                    <div class="kpi-value" id="avgOrderValue">₦0.00</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-label"><i class="fas fa-triangle-exclamation"></i> Low Stock Items</div>
@@ -73,10 +73,10 @@
                 </div>
             </div>
             <div class="kpi-grid">
-                <div class="kpi-card"><div class="kpi-label">Total Sales Today</div><div class="kpi-value" id="closeoutTotalSales">?0.00</div></div>
-                <div class="kpi-card"><div class="kpi-label">Tax Collected</div><div class="kpi-value" id="closeoutTax">?0.00</div></div>
+                <div class="kpi-card"><div class="kpi-label">Total Sales Today</div><div class="kpi-value" id="closeoutTotalSales">₦0.00</div></div>
+                <div class="kpi-card"><div class="kpi-label">Tax Collected</div><div class="kpi-value" id="closeoutTax">₦0.00</div></div>
                 <div class="kpi-card"><div class="kpi-label">Transactions</div><div class="kpi-value" id="closeoutTransactions">0</div></div>
-                <div class="kpi-card"><div class="kpi-label">Avg Transaction</div><div class="kpi-value" id="closeoutAvg">?0.00</div></div>
+                <div class="kpi-card"><div class="kpi-label">Avg Transaction</div><div class="kpi-value" id="closeoutAvg">₦0.00</div></div>
             </div>
             <div class="table-panel">
                 <div class="table-top"><strong><i class="fas fa-credit-card"></i> Payment Breakdown</strong></div>
@@ -105,23 +105,35 @@
 <script>
 var currentSales = [];
 var currentProducts = [];
+var dataReady = null;
 function toLocalDateStr(d) { var dd = String(d.getDate()).padStart(2, '0'); var mm = String(d.getMonth() + 1).padStart(2, '0'); return d.getFullYear() + '-' + mm + '-' + dd; }
 function $id(id) { return document.getElementById(id); }
 function formatCurrency(amount) { return POS.formatCurrency(amount); }
 function formatNumber(num) { return POS.formatNumber(num || 0); }
-async function loadFilteredSales() {
-    try {
-        var data = await API.getSales();
-        var prods = await API.getProducts();
-        currentSales = data || [];
-        currentProducts = prods || [];
-    } catch (err) {
-        currentSales = [];
-        currentProducts = [];
-        var errMsg = (err && err.message) ? err.message : 'Unknown error';
-        POS.showToast('Failed to load sales data: ' + errMsg, true);
-        console.error('Reports load error:', err);
+function safeGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+async function loadData() {
+    dataReady = (async function() {
+        try {
+            var data = await API.getSales();
+            var prods = await API.getProducts();
+            currentSales = Array.isArray(data) ? data : safeGet('SHEDS_completed_sales', safeGet('danzona_sales', []));
+            currentProducts = Array.isArray(prods) ? prods : safeGet('danzona_products', []);
+        } catch (err) {
+            currentSales = safeGet('SHEDS_completed_sales', safeGet('danzona_sales', []));
+            currentProducts = safeGet('danzona_products', []);
+            var errMsg = (err && err.message) ? err.message : 'Unknown error';
+            POS.showToast('API unreachable, using cached data: ' + errMsg, true);
+            console.error('Reports load error:', err);
+        }
+    })();
+    await dataReady;
+}
+async function waitForData() {
+    if (dataReady) {
+        try { await dataReady; } catch (e) { /* handled in loadData */ }
     }
+}
+function getFilteredSales() {
     var from = $id('reportDateFrom').value;
     var to = $id('reportDateTo').value;
     var sales = currentSales;
@@ -137,8 +149,7 @@ async function loadFilteredSales() {
     }
     return { sales: sales, products: currentProducts };
 }
-async function loadCloseoutSales(date) {
-    await loadFilteredSales();
+function getCloseoutSales(date) {
     var targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0);
     var nextDate = new Date(targetDate);
@@ -150,8 +161,17 @@ async function loadCloseoutSales(date) {
     });
     return { sales: sales, products: currentProducts };
 }
-function renderFavorites() {
-    loadFilteredSales().then(function(data) {
+async function loadFilteredSales() {
+    await waitForData();
+    return getFilteredSales();
+}
+async function loadCloseoutSales(date) {
+    await waitForData();
+    return getCloseoutSales(date);
+}
+async function renderFavorites() {
+    try {
+        var data = await loadFilteredSales();
         var sales = data.sales;
         var products = data.products;
         var totalSales = sales.reduce(function(sum, s) { return sum + (parseFloat(s.total) || 0); }, 0);
@@ -166,7 +186,9 @@ function renderFavorites() {
         $id('lowStockItems').textContent = formatNumber(lowStock);
         renderSalesTrend(sales);
         renderTopProducts(sales, products);
-    });
+    } catch (e) {
+        console.error('renderFavorites error:', e);
+    }
 }
 function renderSalesTrend(sales) {
     var dailySales = {};
@@ -179,7 +201,7 @@ function renderSalesTrend(sales) {
     }
     (sales || []).forEach(function(s) {
         var dateStr = s.date ? POS.getDatePart(s.date) : '';
-        if (dateStr && dailySales.hasOwnProperty(dateStr)) dailySales[dateStr] += parseFloat(s.total) || 0;
+        if (dateStr && dailySales.hasOwnProperty(dateStr)) dailySales[dateStr] += (parseFloat(s.total) || 0);
     });
     var container = $id('salesTrendChart');
     var maxVal = Math.max.apply(null, Object.keys(dailySales).map(function(k){return dailySales[k];}).concat([1]));
@@ -211,31 +233,36 @@ function renderTopProducts(sales, products) {
     }).join('') || '<tr><td colspan="4" class="empty-state">No sales data</td></tr>';
 }
 async function generateCloseout() {
-    var date = $id('closeoutDate').value;
-    var data = await loadCloseoutSales(date);
-    var sales = data.sales;
-    var totalSales = sales.reduce(function(sum, s) { return sum + (parseFloat(s.total) || 0); }, 0);
-    var totalOrders = sales.length;
-    var avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
-    var tax = sales.reduce(function(sum, s) { return sum + (parseFloat(s.tax) || 0); }, 0);
-    var paymentBreakdown = {};
-    sales.forEach(function(s) {
-        var method = s.payment_method || s.payment || 'Unknown';
-        if (!paymentBreakdown[method]) paymentBreakdown[method] = { amount: 0, count: 0 };
-        paymentBreakdown[method].amount += parseFloat(s.total) || 0;
-        paymentBreakdown[method].count += 1;
-    });
-    $id('closeoutTotalSales').textContent = formatCurrency(totalSales);
-    $id('closeoutTax').textContent = formatCurrency(tax);
-    $id('closeoutTransactions').textContent = formatNumber(totalOrders);
-    $id('closeoutAvg').textContent = formatCurrency(avgOrder);
-    var tbody = $id('closeoutPaymentBreakdown');
-    tbody.innerHTML = Object.entries(paymentBreakdown).map(function(entry) {
-        return '<tr><td>' + POS.esc(entry[0]) + '</td><td>' + formatCurrency(entry[1].amount) + '</td><td>' + entry[1].count + '</td></tr>';
-    }).join('') || '<tr><td colspan="3" class="empty-state">No transactions</td></tr>';
+    try {
+        var date = $id('closeoutDate').value;
+        var data = await loadCloseoutSales(date);
+        var sales = data.sales;
+        var totalSales = sales.reduce(function(sum, s) { return sum + (parseFloat(s.total) || 0); }, 0);
+        var totalOrders = sales.length;
+        var avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
+        var tax = sales.reduce(function(sum, s) { return sum + (parseFloat(s.tax) || 0); }, 0);
+        var paymentBreakdown = {};
+        sales.forEach(function(s) {
+            var method = s.payment_method || s.payment || 'Unknown';
+            if (!paymentBreakdown[method]) paymentBreakdown[method] = { amount: 0, count: 0 };
+            paymentBreakdown[method].amount += parseFloat(s.total) || 0;
+            paymentBreakdown[method].count += 1;
+        });
+        $id('closeoutTotalSales').textContent = formatCurrency(totalSales);
+        $id('closeoutTax').textContent = formatCurrency(tax);
+        $id('closeoutTransactions').textContent = formatNumber(totalOrders);
+        $id('closeoutAvg').textContent = formatCurrency(avgOrder);
+        var tbody = $id('closeoutPaymentBreakdown');
+        tbody.innerHTML = Object.entries(paymentBreakdown).map(function(entry) {
+            return '<tr><td>' + POS.esc(entry[0]) + '</td><td>' + formatCurrency(entry[1].amount) + '</td><td>' + entry[1].count + '</td></tr>';
+        }).join('') || '<tr><td colspan="3" class="empty-state">No transactions</td></tr>';
+    } catch (e) {
+        console.error('generateCloseout error:', e);
+    }
 }
-function renderEmployees() {
-    loadFilteredSales().then(function(data) {
+async function renderEmployees() {
+    try {
+        var data = await loadFilteredSales();
         var sales = data.sales;
         var employeeSales = {};
         sales.forEach(function(s) {
@@ -248,10 +275,13 @@ function renderEmployees() {
         tbody.innerHTML = Object.entries(employeeSales).map(function(entry) {
             return '<tr><td><strong>' + POS.esc(entry[0]) + '</strong></td><td>Cashier</td><td>' + formatCurrency(entry[1].amount) + '</td><td>' + entry[1].count + '</td></tr>';
         }).join('') || '<tr><td colspan="4" class="empty-state">No sales data</td></tr>';
-    });
+    } catch (e) {
+        console.error('renderEmployees error:', e);
+    }
 }
-function exportCSV() {
-    loadFilteredSales().then(function(data) {
+async function exportCSV() {
+    try {
+        var data = await loadFilteredSales();
         var sales = data.sales;
         POS.exportCSV('sales-report-' + POS.today() + '.csv',
             ['Date', 'Transaction ID', 'Items', 'Subtotal', 'Tax', 'Total', 'Payment Method'],
@@ -268,11 +298,14 @@ function exportCSV() {
                 };
             })
         );
-    });
+    } catch (e) {
+        console.error('exportCSV error:', e);
+    }
 }
-function exportCloseout() {
-    var date = $id('closeoutDate').value;
-    loadCloseoutSales(date).then(function(data) {
+async function exportCloseout() {
+    try {
+        var date = $id('closeoutDate').value;
+        var data = await loadCloseoutSales(date);
         var sales = data.sales;
         POS.exportCSV('closeout-' + date + '.csv',
             ['Date', 'Transaction ID', 'Items', 'Total'],
@@ -286,10 +319,13 @@ function exportCloseout() {
                 };
             })
         );
-    });
+    } catch (e) {
+        console.error('exportCloseout error:', e);
+    }
 }
 function applyDateFilter() {
     renderFavorites();
+    generateCloseout();
     renderEmployees();
     POS.showToast('Date filter applied');
 }
@@ -302,7 +338,7 @@ function switchTab(tabId, el) {
     if (tabId === 'closeout') generateCloseout();
     if (tabId === 'employees') renderEmployees();
 }
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     if (!POS.requireAuth()) return;
     POS.renderSidebar();
     POS.renderUserMenu();
@@ -312,6 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $id('reportDateFrom').value = toLocalDateStr(start);
     $id('reportDateTo').value = toLocalDateStr(end);
     $id('closeoutDate').value = toLocalDateStr(end);
+    await loadData();
     renderFavorites();
     generateCloseout();
     renderEmployees();
@@ -319,3 +356,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
