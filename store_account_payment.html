@@ -310,22 +310,14 @@ async function saveCollectPayment(){
     var newId = payments.length>0? Math.max.apply(null,payments.map(function(p){return p.id;}))+1:1;
     var paymentId = 'SAP-' + String(newId).padStart(3,'0');
     var paymentData = {id:newId,paymentId:paymentId,customer:custId,date:new Date().toISOString().split('T')[0],amount:amount,method:method,ref:ref,notes:notes,status:'paid'};
-    try{
-        await API.savePayment(paymentData);
-    }catch(e){
-        payments.unshift(paymentData);
-        try{localStorage.setItem('SHEDS_payments',JSON.stringify(payments));}catch(err){}
-    }
-    var cust = customers.find(function(c){return String(c.id)===String(custId);});
-    if(cust){
-        cust.balance = (parseFloat(cust.balance)||0) - amount;
-        try{localStorage.setItem('danzona_customers',JSON.stringify(customers));}catch(err){}
-    }
-POS.showToast('Payment recorded!');
+    await API.savePayment(paymentData);
+    POS.showToast('Payment recorded!');
     POS.closeModal('collectModal');
     await loadPayments();
+    await loadCustomers();
     updateKPIs();
     renderCustomersTable();
+    renderHistoryTable();
     renderHistoryTable();
 }
 function renderHistoryTable(){
@@ -410,13 +402,19 @@ function viewAccountDetails(custId){
     tbody.innerHTML = stmtData.map(function(r){return '<tr><td>' + POS.formatDate(r.date) + '</td><td>' + POS.esc(r.type) + '</td><td>' + POS.esc(r.ref) + '</td><td>' + (r.debit? POS.formatCurrency(r.debit): '-') + '</td><td>' + (r.credit? POS.formatCurrency(r.credit): '-') + '</td></tr>';}).join('') || '<tr><td colspan="5" class="empty-state">No transactions yet</td></tr>';
     POS.openModal('accountDetailModal');
 }
-function saveBalanceOnly(){
+async function saveBalanceOnly(){
     var cust = customers.find(function(c){return String(c.id)===String(detailCustId);});
     if(!cust) return;
     var newBal = parseFloat($id('detailBalanceInput').value)||0;
-    cust.balance = newBal;
-    try{localStorage.setItem('danzona_customers',JSON.stringify(customers));}catch(err){}
-    POS.showToast('Balance saved!');
+    try{
+        await API.updateCustomer(cust.id, {balance: newBal});
+        cust.balance = newBal;
+        POS.showToast('Balance saved!');
+    }catch(e){
+        cust.balance = newBal;
+        try{localStorage.setItem('danzona_customers',JSON.stringify(customers));}catch(err){}
+        POS.showToast('Balance saved locally', true);
+    }
     updateKPIs();
     renderCustomersTable();
     POS.closeModal('accountDetailModal');

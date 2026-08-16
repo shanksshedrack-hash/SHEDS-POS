@@ -156,9 +156,14 @@ def init_db():
             email TEXT,
             phone TEXT,
             address TEXT,
+            balance REAL DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    try:
+        db.execute('ALTER TABLE customers ADD COLUMN balance REAL DEFAULT 0')
+    except Exception:
+        pass
     # Employees per pharmacy
     db.execute(f'''
         CREATE TABLE IF NOT EXISTS employees (
@@ -701,7 +706,16 @@ def create_sale():
     data['pharmacy_id'] = g.pharmacy_id
     if 'items' in data and isinstance(data['items'], list):
         data['items'] = json.dumps(data['items'])
-    return table_create('sales', data)
+    result = table_create('sales', data)
+    if result[1] == 201:
+        if data.get('payment_method') == 'store_account' and data.get('customer_id'):
+            db = get_db()
+            db.execute(
+                'UPDATE customers SET balance = balance + ? WHERE pharmacy_id = ? AND id = ?',
+                (data.get('total', 0), g.pharmacy_id, data['customer_id'])
+            )
+            db.commit()
+    return result
 
 @app.route('/api/sales/<int:sid>', methods=['GET'])
 @require_auth
@@ -819,7 +833,15 @@ def get_payments():
 def create_payment():
     data = request.get_json()
     data['pharmacy_id'] = g.pharmacy_id
-    return table_create('payments', data)
+    result = table_create('payments', data)
+    if result[1] == 201 and data.get('customer'):
+        db = get_db()
+        db.execute(
+            'UPDATE customers SET balance = balance - ? WHERE pharmacy_id = ? AND id = ?',
+            (data.get('amount', 0), g.pharmacy_id, data['customer'])
+        )
+        db.commit()
+    return result
 
 @app.route('/api/payments/<int:pid>', methods=['PUT'])
 @require_auth
