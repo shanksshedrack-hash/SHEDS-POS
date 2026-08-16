@@ -200,10 +200,27 @@ function renderSummary(){
 function loadShiftData(){
     var sales = [];
     try {
-        var raw = localStorage.getItem('SHEDS_completed_sales') || localStorage.getItem('SHEDS_sales') || localStorage.getItem('sales') || '[]';
-        sales = JSON.parse(raw);
-        if(!Array.isArray(sales)) sales = [];
-    } catch(e) { sales = []; }
+        API.getSales().then(function(serverSales){
+            sales = serverSales || [];
+            if(!Array.isArray(sales)) sales = [];
+            calculateCloseout(sales);
+        }).catch(function(){
+            try {
+                var raw = localStorage.getItem('SHEDS_completed_sales') || localStorage.getItem('SHEDS_sales') || localStorage.getItem('sales') || '[]';
+                sales = JSON.parse(raw);
+                if(!Array.isArray(sales)) sales = [];
+                calculateCloseout(sales);
+            } catch(e) { 
+                sales = []; 
+                calculateCloseout(sales);
+            }
+        });
+    } catch(e) { 
+        sales = []; 
+        calculateCloseout(sales);
+    }
+}
+function calculateCloseout(sales){
     var today = new Date().toISOString().split('T')[0];
     var filtered = sales.filter(function(s){
         var d = s.date ? POS.getDatePart(s.date) : '';
