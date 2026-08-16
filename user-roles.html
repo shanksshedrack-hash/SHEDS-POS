@@ -142,6 +142,16 @@ function testData(){DB.pending.push({id:'REQ-'+Date.now(),fullName:'Test User',u
 window.init=function(){console.log('init start');try{if(typeof POS!=='undefined'){try{POS.renderSidebar();}catch(e){}try{POS.renderUserMenu();}catch(e){}try{POS.startClock();}catch(e){}}catch(e){}loadRoles();loadAccounts();loadPending();console.log('Ready:',DB.roles.length,'roles',DB.accounts.length,'accounts',DB.pending.length,'pending');};
 document.addEventListener('DOMContentLoaded',function(){setTimeout(window.init,100);});
 if (document.readyState !== 'loading') setTimeout(window.init, 100);
+
+window.saveRole = saveRole;
+window.editRole = editRole;
+window.deleteRole = deleteRole;
+window.saveAccount = saveAccount;
+window.editAccount = editAccount;
+window.deleteAccount = deleteAccount;
+window.approvePending = approvePending;
+window.rejectPending = rejectPending;
+window.testData = testData;
 console.log('Script loaded');
 })();
 </script>

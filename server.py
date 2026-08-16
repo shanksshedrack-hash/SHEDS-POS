@@ -353,6 +353,144 @@ def init_db():
         )
     ''')
 
+
+    # Shifts per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS shifts (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            cashier_id INTEGER,
+            cashier_name TEXT,
+            opening_float REAL DEFAULT 0,
+            total_sales REAL DEFAULT 0,
+            total_cash REAL DEFAULT 0,
+            total_card REAL DEFAULT 0,
+            total_store_account REAL DEFAULT 0,
+            total_pos REAL DEFAULT 0,
+            total_gift_card REAL DEFAULT 0,
+            expected_cash REAL DEFAULT 0,
+            actual_cash REAL DEFAULT 0,
+            variance REAL DEFAULT 0,
+            status TEXT DEFAULT 'open',
+            start_time TEXT DEFAULT CURRENT_TIMESTAMP,
+            end_time TEXT,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Purchase orders per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS purchase_orders (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            supplier_id INTEGER,
+            supplier_name TEXT,
+            po_number TEXT,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            items TEXT,
+            subtotal REAL DEFAULT 0,
+            tax REAL DEFAULT 0,
+            total REAL DEFAULT 0,
+            status TEXT DEFAULT 'draft',
+            notes TEXT,
+            created_by TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Bank reconciliation records per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS bank_records (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            bank_name TEXT,
+            account_number TEXT,
+            transaction_ref TEXT,
+            amount REAL DEFAULT 0,
+            type TEXT,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Stock transfers per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS stock_transfers (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            from_location_id INTEGER,
+            to_location_id INTEGER,
+            from_location_name TEXT,
+            to_location_name TEXT,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            items TEXT,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_by TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Tax rules per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS tax_rules (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            rate REAL DEFAULT 0,
+            type TEXT DEFAULT 'percentage',
+            applicable_categories TEXT,
+            status TEXT DEFAULT 'active',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Expiry batches per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS expiry_batches (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            product_id INTEGER,
+            product_name TEXT,
+            batch_number TEXT,
+            expiry_date TEXT,
+            quantity REAL DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Prescriptions per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS prescriptions (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            prescription_number TEXT,
+            patient_name TEXT,
+            patient_age INTEGER,
+            patient_gender TEXT,
+            doctor_name TEXT,
+            date TEXT DEFAULT CURRENT_TIMESTAMP,
+            items TEXT,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Audit log per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            user_id INTEGER,
+            user_name TEXT,
+            action TEXT,
+            entity_type TEXT,
+            entity_id INTEGER,
+            details TEXT,
+            ip_address TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     db.commit()
 
 # ---------- Auth Middleware ----------
@@ -1245,6 +1383,243 @@ def update_store_config():
     db.execute('INSERT OR REPLACE INTO store_config (pharmacy_id, config, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (g.pharmacy_id, config_json))
     db.commit()
     return jsonify(data)
+
+
+# --- Shifts ---
+@app.route('/api/shifts', methods=['GET'])
+@require_auth
+def get_shifts():
+    db = get_db()
+    rows = db.execute('SELECT * FROM shifts WHERE pharmacy_id = ? ORDER BY start_time DESC', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/shifts', methods=['POST'])
+@require_auth
+def create_shift():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('shifts', data)
+
+@app.route('/api/shifts/<int:sid>', methods=['PUT'])
+@require_auth
+def update_shift(sid):
+    data = request.get_json()
+    return table_update('shifts', sid, data)
+
+@app.route('/api/shifts/<int:sid>', methods=['DELETE'])
+@require_auth
+def delete_shift(sid):
+    return table_delete('shifts', sid)
+
+# --- Purchase Orders ---
+@app.route('/api/purchase-orders', methods=['GET'])
+@require_auth
+def get_purchase_orders():
+    db = get_db()
+    rows = db.execute('SELECT * FROM purchase_orders WHERE pharmacy_id = ? ORDER BY date DESC', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        row = dict(r)
+        if row.get('items') and isinstance(row['items'], str):
+            try:
+                row['items'] = json.loads(row['items'])
+            except Exception:
+                row['items'] = []
+        result.append(row)
+    return jsonify(result)
+
+@app.route('/api/purchase-orders', methods=['POST'])
+@require_auth
+def create_purchase_order():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_create('purchase_orders', data)
+
+@app.route('/api/purchase-orders/<int:pid>', methods=['PUT'])
+@require_auth
+def update_purchase_order(pid):
+    data = request.get_json()
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_update('purchase_orders', pid, data)
+
+@app.route('/api/purchase-orders/<int:pid>', methods=['DELETE'])
+@require_auth
+def delete_purchase_order(pid):
+    return table_delete('purchase_orders', pid)
+
+# --- Bank Records ---
+@app.route('/api/bank-records', methods=['GET'])
+@require_auth
+def get_bank_records():
+    db = get_db()
+    rows = db.execute('SELECT * FROM bank_records WHERE pharmacy_id = ? ORDER BY date DESC', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/bank-records', methods=['POST'])
+@require_auth
+def create_bank_record():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('bank_records', data)
+
+@app.route('/api/bank-records/<int:bid>', methods=['PUT'])
+@require_auth
+def update_bank_record(bid):
+    data = request.get_json()
+    return table_update('bank_records', bid, data)
+
+@app.route('/api/bank-records/<int:bid>', methods=['DELETE'])
+@require_auth
+def delete_bank_record(bid):
+    return table_delete('bank_records', bid)
+
+# --- Stock Transfers ---
+@app.route('/api/stock-transfers', methods=['GET'])
+@require_auth
+def get_stock_transfers():
+    db = get_db()
+    rows = db.execute('SELECT * FROM stock_transfers WHERE pharmacy_id = ? ORDER BY date DESC', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        row = dict(r)
+        if row.get('items') and isinstance(row['items'], str):
+            try:
+                row['items'] = json.loads(row['items'])
+            except Exception:
+                row['items'] = []
+        result.append(row)
+    return jsonify(result)
+
+@app.route('/api/stock-transfers', methods=['POST'])
+@require_auth
+def create_stock_transfer():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_create('stock_transfers', data)
+
+@app.route('/api/stock-transfers/<int:tid>', methods=['PUT'])
+@require_auth
+def update_stock_transfer(tid):
+    data = request.get_json()
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_update('stock_transfers', tid, data)
+
+@app.route('/api/stock-transfers/<int:tid>', methods=['DELETE'])
+@require_auth
+def delete_stock_transfer(tid):
+    return table_delete('stock_transfers', tid)
+
+# --- Tax Rules ---
+@app.route('/api/tax-rules', methods=['GET'])
+@require_auth
+def get_tax_rules():
+    db = get_db()
+    rows = db.execute('SELECT * FROM tax_rules WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/tax-rules', methods=['POST'])
+@require_auth
+def create_tax_rule():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('tax_rules', data)
+
+@app.route('/api/tax-rules/<int:tid>', methods=['PUT'])
+@require_auth
+def update_tax_rule(tid):
+    data = request.get_json()
+    return table_update('tax_rules', tid, data)
+
+@app.route('/api/tax-rules/<int:tid>', methods=['DELETE'])
+@require_auth
+def delete_tax_rule(tid):
+    return table_delete('tax_rules', tid)
+
+# --- Expiry Batches ---
+@app.route('/api/expiry-batches', methods=['GET'])
+@require_auth
+def get_expiry_batches():
+    db = get_db()
+    rows = db.execute('SELECT * FROM expiry_batches WHERE pharmacy_id = ? ORDER BY expiry_date ASC', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/expiry-batches', methods=['POST'])
+@require_auth
+def create_expiry_batch():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('expiry_batches', data)
+
+@app.route('/api/expiry-batches/<int:bid>', methods=['PUT'])
+@require_auth
+def update_expiry_batch(bid):
+    data = request.get_json()
+    return table_update('expiry_batches', bid, data)
+
+@app.route('/api/expiry-batches/<int:bid>', methods=['DELETE'])
+@require_auth
+def delete_expiry_batch(bid):
+    return table_delete('expiry_batches', bid)
+
+# --- Prescriptions ---
+@app.route('/api/prescriptions', methods=['GET'])
+@require_auth
+def get_prescriptions():
+    db = get_db()
+    rows = db.execute('SELECT * FROM prescriptions WHERE pharmacy_id = ? ORDER BY date DESC', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        row = dict(r)
+        if row.get('items') and isinstance(row['items'], str):
+            try:
+                row['items'] = json.loads(row['items'])
+            except Exception:
+                row['items'] = []
+        result.append(row)
+    return jsonify(result)
+
+@app.route('/api/prescriptions', methods=['POST'])
+@require_auth
+def create_prescription():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_create('prescriptions', data)
+
+@app.route('/api/prescriptions/<int:pid>', methods=['PUT'])
+@require_auth
+def update_prescription(pid):
+    data = request.get_json()
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    return table_update('prescriptions', pid, data)
+
+@app.route('/api/prescriptions/<int:pid>', methods=['DELETE'])
+@require_auth
+def delete_prescription(pid):
+    return table_delete('prescriptions', pid)
+
+# --- Audit Log ---
+@app.route('/api/audit-log', methods=['GET'])
+@require_auth
+def get_audit_log():
+    db = get_db()
+    rows = db.execute('SELECT * FROM audit_log WHERE pharmacy_id = ? ORDER BY created_at DESC', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/audit-log', methods=['POST'])
+@require_auth
+def create_audit_log():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('audit_log', data)
 
 # ========== Main ==========
 

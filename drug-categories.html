@@ -96,19 +96,25 @@ function $(id){return document.getElementById(id);}
 var categories=[];
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3000); }
-function saveCategory(){
+async function saveCategory(){
     var name=$('catName').value.trim();
     var cls=$('catClass').value.trim();
     var schedule=$('catSchedule').value;
     var desc=$('catDesc').value.trim();
     if(!name){ showToast('Category name is required', true); return; }
-    var record={ id:'CAT-'+Date.now(), date:new Date().toISOString(), name:name, cls:cls, schedule:schedule, desc:desc };
-    categories.unshift(record);
-    try{ localStorage.setItem('SHEDS_categories', JSON.stringify(categories)); }catch(e){}
-    showToast('Category added');
+    var data={name:name, cls:cls, schedule:schedule, desc:desc};
+    try{
+        var created = await API.saveCategory(data);
+        data.id = created.id;
+        categories.unshift(data);
+        showToast('Category added');
+    }catch(e){
+        showToast(e.message||'Save failed', true);
+        return;
+    }
     resetCategory();
     renderCategories();
-    logAction('edit', record.id, 'New category: ' + name);
+    logAction('edit', data.id, 'New category: ' + name);
 }
 function resetCategory(){ $('catName').value='';$('catClass').value='';$('catDesc').value=''; }
 function renderCategories(){
@@ -120,12 +126,16 @@ function renderCategories(){
     renderProductsByCat(categories);
 }
 function filterByCategory(id){ var cat=categories.find(function(c){return c.id===id;}); if(!cat) return; renderProductsByCat(categories.filter(function(c){return c.id===id;})); }
-function deleteCategory(id){
+async function deleteCategory(id){
     if(!confirm('Delete this category?')) return;
-    categories=categories.filter(function(c){return c.id!==id;});
-    try{ localStorage.setItem('SHEDS_categories', JSON.stringify(categories)); }catch(e){}
+    try{
+        await API.delete('/categories/' + id);
+        categories=categories.filter(function(c){return c.id!==id;});
+        showToast('Category deleted');
+    }catch(e){
+        showToast(e.message||'Delete failed', true);
+    }
     renderCategories();
-    showToast('Category deleted');
 }
 function renderProductsByCat(cats){
     var tbody=$('productsByCatBody');

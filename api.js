@@ -22,6 +22,17 @@ var API = (function() {
         return h;
     }
 
+    function logout() {
+        localStorage.removeItem('danzona_api_key');
+        localStorage.removeItem('danzona_username');
+        localStorage.removeItem('danzona_pharmacy_name');
+        localStorage.removeItem('danzona_current_user');
+        apiKey = '';
+        username = '';
+        pharmacyName = '';
+        currentUser = null;
+    }
+
     function request(method, path, data) {
         return fetch(BASE_URL + path, {
             method: method,
@@ -34,10 +45,10 @@ var API = (function() {
                 return Promise.reject(new Error('Session expired'));
             }
             if (!res.ok) {
-                return res.json().then(function(err) {
-                    return Promise.reject(new Error(err.error || 'Request failed'));
-                }).catch(function() {
-                    return Promise.reject(new Error('Request failed: ' + res.status));
+                return res.text().then(function(text) {
+                    var msg = 'Request failed';
+                    try { var err = JSON.parse(text); msg = err.error || msg; } catch(e) {}
+                    return Promise.reject(new Error(msg + ' (' + res.status + ')'));
                 });
             }
             return res.json();
@@ -75,16 +86,7 @@ var API = (function() {
             return pharmacyName;
         },
 
-        logout: function() {
-            localStorage.removeItem('danzona_api_key');
-            localStorage.removeItem('danzona_username');
-            localStorage.removeItem('danzona_pharmacy_name');
-            localStorage.removeItem('danzona_current_user');
-            apiKey = '';
-            username = '';
-            pharmacyName = '';
-            currentUser = null;
-        },
+        logout: function() { logout(); },
 
         get: function(path) { return request('GET', path); },
         post: function(path, data) { return request('POST', path, data); },
@@ -200,6 +202,52 @@ var API = (function() {
         deleteSupplier: function(id) { return this.delete('/suppliers/' + id); },
 
         // Catalogue
-        getCatalogue: function() { return this.get('/catalogue'); }
+        getCatalogue: function() { return this.get('/catalogue'); },
+
+        // Shifts
+        getShifts: function() { return this.get('/shifts'); },
+        saveShift: function(data) { return this.post('/shifts', data); },
+        updateShift: function(id, data) { return this.put('/shifts/' + id, data); },
+        deleteShift: function(id) { return this.delete('/shifts/' + id); },
+
+        // Purchase Orders
+        getPurchaseOrders: function() { return this.get('/purchase-orders'); },
+        savePurchaseOrder: function(data) { return this.post('/purchase-orders', data); },
+        updatePurchaseOrder: function(id, data) { return this.put('/purchase-orders/' + id, data); },
+        deletePurchaseOrder: function(id) { return this.delete('/purchase-orders/' + id); },
+
+        // Bank Records
+        getBankRecords: function() { return this.get('/bank-records'); },
+        saveBankRecord: function(data) { return this.post('/bank-records', data); },
+        updateBankRecord: function(id, data) { return this.put('/bank-records/' + id, data); },
+        deleteBankRecord: function(id) { return this.delete('/bank-records/' + id); },
+
+        // Stock Transfers
+        getStockTransfers: function() { return this.get('/stock-transfers'); },
+        saveStockTransfer: function(data) { return this.post('/stock-transfers', data); },
+        updateStockTransfer: function(id, data) { return this.put('/stock-transfers/' + id, data); },
+        deleteStockTransfer: function(id) { return this.delete('/stock-transfers/' + id); },
+
+        // Tax Rules
+        getTaxRules: function() { return this.get('/tax-rules'); },
+        saveTaxRule: function(data) { return this.post('/tax-rules', data); },
+        updateTaxRule: function(id, data) { return this.put('/tax-rules/' + id, data); },
+        deleteTaxRule: function(id) { return this.delete('/tax-rules/' + id); },
+
+        // Expiry Batches
+        getExpiryBatches: function() { return this.get('/expiry-batches'); },
+        saveExpiryBatch: function(data) { return this.post('/expiry-batches', data); },
+        updateExpiryBatch: function(id, data) { return this.put('/expiry-batches/' + id, data); },
+        deleteExpiryBatch: function(id) { return this.delete('/expiry-batches/' + id); },
+
+        // Prescriptions
+        getPrescriptions: function() { return this.get('/prescriptions'); },
+        savePrescription: function(data) { return this.post('/prescriptions', data); },
+        updatePrescription: function(id, data) { return this.put('/prescriptions/' + id, data); },
+        deletePrescription: function(id) { return this.delete('/prescriptions/' + id); },
+
+        // Audit Log
+        getAuditLog: function() { return this.get('/audit-log'); },
+        saveAuditLog: function(data) { return this.post('/audit-log', data); }
     };
 })();
