@@ -335,6 +335,18 @@ def init_db():
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    # Roles per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS roles (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            permissions TEXT NOT NULL DEFAULT '[]',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(pharmacy_id, name)
+        )
+    ''')
 
     db.commit()
 
@@ -1119,6 +1131,75 @@ def get_catalogue():
         'SELECT * FROM products WHERE pharmacy_id = ?', (g.pharmacy_id,)
     ).fetchall()
     return jsonify([dict(p) for p in products])
+
+# --- Roles ---
+@app.route('/api/roles', methods=['GET'])
+@require_auth
+def get_roles():
+    db = get_db()
+    rows = db.execute('SELECT * FROM roles WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get('permissions') and isinstance(d['permissions'], str):
+            try:
+                d['permissions'] = json.loads(d['permissions'])
+            except Exception:
+                d['permissions'] = []
+        result.append(d)
+    return jsonify(result)
+
+@app.route('/api/roles', methods=['POST'])
+@require_auth
+def create_role():
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    if not name:
+        return jsonify({'error': 'Role name is required'}), 400
+    permissions = data.get('permissions', [])
+    if not isinstance(permissions, list):
+        permissions = []
+    db = get_db()
+    try:
+        cursor = db.execute(
+            'INSERT INTO roles (pharmacy_id, name, description, permissions) VALUES (?, ?, ?, ?)',
+            (g.pharmacy_id, name, data.get('description', ''), json.dumps(permissions))
+        )
+        db.commit()
+        data['id'] = cursor.lastrowid
+        data['pharmacy_id'] = g.pharmacy_id
+        return jsonify(data), 201
+    except IntegrityError:
+        return jsonify({'error': 'Role already exists'}), 400
+
+@app.route('/api/roles/<int:rid>', methods=['PUT'])
+@require_auth
+def update_role(rid):
+    data = request.get_json()
+    db = get_db()
+    sets = []
+    values = []
+    if 'name' in data:
+        sets.append('name = ?')
+        values.append(data['name'].strip())
+    if 'description' in data:
+        sets.append('description = ?')
+        values.append(data['description'])
+    if 'permissions' in data:
+        sets.append('permissions = ?')
+        values.append(json.dumps(data['permissions'] if isinstance(data['permissions'], list) else []))
+    values.extend([g.pharmacy_id, rid])
+    db.execute(f"UPDATE roles SET {', '.join(sets)} WHERE pharmacy_id = ? AND id = ?", values)
+    db.commit()
+    return jsonify({'updated': True})
+
+@app.route('/api/roles/<int:rid>', methods=['DELETE'])
+@require_auth
+def delete_role(rid):
+    db = get_db()
+    db.execute('DELETE FROM roles WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, rid))
+    db.commit()
+    return jsonify({'deleted': True})
 
 # --- Store Config ---
 @app.route('/api/store-config', methods=['GET'])
