@@ -372,12 +372,12 @@
       filterEmployees();
   }
 
-  function initPage() {
+  async function initPage() {
       try {
           POS.renderSidebar();
           POS.renderUserMenu();
           POS.startClock();
-          loadEmployees();
+          await loadEmployees();
       } catch (err) {
           console.error('Employees init error:', err);
           $('employeesTableBody').innerHTML = '<tr><td colspan="9" class="empty-state" style="color:#ef4444;">Error: ' + err.message + '</td></tr>';

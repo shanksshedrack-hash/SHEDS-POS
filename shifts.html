@@ -285,14 +285,14 @@
       $('totalShiftSales').textContent = fmt(totalSales);
   }
 
-  function init() {
+  async function init() {
       try {
           if (typeof POS !== 'undefined') {
               POS.renderSidebar();
               POS.renderUserMenu();
               POS.startClock();
           }
-          loadShifts();
+          await loadShifts();
           renderShifts();
       } catch (err) {
           console.error('Shifts init error:', err);
