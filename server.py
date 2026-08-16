@@ -116,10 +116,15 @@ def init_db():
             prices TEXT,
             default_pkg_sale TEXT DEFAULT 'pkt',
             default_pkg_receive TEXT DEFAULT 'pkt',
+            packaging_types TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(pharmacy_id, sku)
         )
     ''')
+    try:
+        db.execute('ALTER TABLE products ADD COLUMN packaging_types TEXT')
+    except Exception:
+        pass
     # Sales per pharmacy
     db.execute(f'''
         CREATE TABLE IF NOT EXISTS sales (
@@ -586,16 +591,33 @@ def table_delete(table, record_id):
 @app.route('/api/products', methods=['GET'])
 @require_auth
 def get_products():
-    return table_response('products')
+    db = get_db()
+    rows = db.execute('SELECT * FROM products WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        row = dict(r)
+        if row.get('prices') and isinstance(row['prices'], str):
+            try:
+                row['prices'] = json.loads(row['prices'])
+            except Exception:
+                row['prices'] = {}
+        if row.get('packaging_types') and isinstance(row['packaging_types'], str):
+            try:
+                row['packaging_types'] = json.loads(row['packaging_types'])
+            except Exception:
+                row['packaging_types'] = []
+        result.append(row)
+    return jsonify(result)
 
 @app.route('/api/products', methods=['POST'])
 @require_auth
 def create_product():
     data = request.get_json()
     data['pharmacy_id'] = g.pharmacy_id
-    # Ensure prices is stored as JSON string
     if 'prices' in data and isinstance(data['prices'], dict):
         data['prices'] = json.dumps(data['prices'])
+    if 'packaging_types' in data and isinstance(data['packaging_types'], list):
+        data['packaging_types'] = json.dumps(data['packaging_types'])
     return table_create('products', data)
 
 @app.route('/api/products/<int:pid>', methods=['PUT'])
@@ -604,6 +626,8 @@ def update_product(pid):
     data = request.get_json()
     if 'prices' in data and isinstance(data['prices'], dict):
         data['prices'] = json.dumps(data['prices'])
+    if 'packaging_types' in data and isinstance(data['packaging_types'], list):
+        data['packaging_types'] = json.dumps(data['packaging_types'])
     return table_update('products', pid, data)
 
 @app.route('/api/products/<int:pid>', methods=['DELETE'])
@@ -1085,6 +1109,18 @@ def serve_static(filename):
     if os.path.isfile(filepath):
         return send_file(filepath)
     return jsonify({'error': 'Not found'}), 404
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, X-API-Key, X-Username'
+    return response
+
+@app.route('/api/health', methods=['OPTIONS'])
+@app.route('/api/<path:path>', methods=['OPTIONS'])
+def handle_options(path=''):
+    return '', 204
 
 with app.app_context():
     init_db()

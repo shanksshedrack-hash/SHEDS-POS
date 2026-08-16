@@ -84,7 +84,7 @@
 </div>
 <div class="toast" id="toast"></div>
 <script>
-var editingId=null,packages=[{id:'pkt',name:'Packet',qty:1,price:0,default_sale:true}];
+var editingId=null,packages=[];
 function updatePackagePrices(sellPrice){packages.forEach(function(p){if(typeof p.price==='undefined'||p.price===0)p.price=sellPrice||0;});}
 function $(id){return document.getElementById(id);}
 function num(v,f){var n=parseFloat(v);return isNaN(n)?(f||0):n;}
