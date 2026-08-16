@@ -111,14 +111,13 @@
 </div>
 </div>
 <script>
-(function(){
 var DB={roles:[],accounts:[],pending:[]};
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return m=='&'?'&amp;':m=='<'?'&lt;':m=='>'?'&gt;':m=='"'?'&quot;':'&#39;';});}
 function showToast(msg,err){var t=$('toast');t.textContent=msg;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 window.switchTab=function(tab,el){document.querySelectorAll('[id^=tabBtn-]').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.tab-pane').forEach(function(p){p.style.display='none';});if(el)el.classList.add('active');$('tab-'+tab).style.display='block';if(tab==='pending')loadPending();if(tab==='accounts')populateRoleDropdown();};
 async function loadRoles(){try{DB.roles=await API.get('/roles')||[];}catch(e){DB.roles=[];}if(!DB.roles.length){var defaults=[{name:'Administrator',desc:'Full system access with all permissions',permissions:['sales','inventory','reports','customers','suppliers','employees','settings','audit']},{name:'Pharmacist',desc:'Pharmacy operations, dispensing, and inventory oversight',permissions:['sales','inventory','reports','customers','suppliers','employees','audit']},{name:'Cashier',desc:'Sales transactions and customer service at counter',permissions:['sales','customers']},{name:'Sales Representative',desc:'Customer management, sales outreach, and reporting',permissions:['sales','customers','reports']}];for(var r of defaults){try{await API.post('/roles',r);}catch(e){}}}loadRolesFromLocal();renderRoles();populateRoleDropdown();}
-function loadRolesFromLocal(){try{var local=JSON.parse(localStorage.getItem('danzona_roles')||'[]');if(local.length&&!DB.roles.length)DB.roles=local;}catch(e){}}}
+function loadRolesFromLocal(){try{var local=JSON.parse(localStorage.getItem('danzona_roles')||'[]');if(local.length&&!DB.roles.length)DB.roles=local;}catch(e){}}
 function saveRolesToLocal(){try{localStorage.setItem('danzona_roles',JSON.stringify(DB.roles));}catch(e){}}
 async function saveRole(){var name=$('roleName').value.trim();if(!name){showToast('Name required',true);return;}var perms=[];document.querySelectorAll('#tab-roles input:checked').forEach(function(c){perms.push(c.value);});var data={name:name,desc:$('roleDesc').value,permissions:perms};try{if(window._editingRoleId){data.id=window._editingRoleId;var res=await API.put('/roles/'+window._editingRoleId,data);var idx=DB.roles.findIndex(function(r){return String(r.id)===String(window._editingRoleId);});if(idx>-1)DB.roles[idx]=Object.assign(DB.roles[idx],res);showToast('Role updated');window._editingRoleId=null;}else{var res=await API.post('/roles',data);DB.roles.push(res);showToast('Role saved');}saveRolesToLocal();renderRoles();}catch(e){showToast(e.message||'Save failed',true);}$('roleName').value='';$('roleDesc').value='';document.querySelectorAll('#tab-roles input').forEach(function(c){c.checked=false;});}
 function renderRoles(){var tb=$('rolesBody');if(!DB.roles.length){tb.innerHTML='<tr><td colspan="5" class="empty-state">No roles</td></tr>';return;}tb.innerHTML=DB.roles.map(function(r){return'<tr><td>'+esc(r.name)+'</td><td>'+esc(r.desc||'')+'</td><td>'+(r.permissions||[]).length+'</td><td class="badge badge-success">'+DB.accounts.filter(function(a){return a.roleId==r.id;}).length+' users</td><td><button class="btn btn-outline btn-sm" onclick="editRole(\''+r.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteRole(\''+r.id+'\')">Del</button></td></tr>';}).join('');}
@@ -142,7 +141,6 @@ function testData(){DB.pending.push({id:'REQ-'+Date.now(),fullName:'Test User',u
 window.init=async function(){console.log('init start');try{if(typeof POS!=='undefined'){try{POS.renderSidebar();}catch(e){}try{POS.renderUserMenu();}catch(e){}try{POS.startClock();}catch(e){}}catch(e){}try{await loadRoles();}catch(e){console.error('loadRoles error:',e);}try{await loadAccounts();}catch(e){console.error('loadAccounts error:',e);}try{await loadPending();}catch(e){console.error('loadPending error:',e);}console.log('Ready:',DB.roles.length,'roles',DB.accounts.length,'accounts',DB.pending.length,'pending');};
 document.addEventListener('DOMContentLoaded',function(){setTimeout(window.init,100);});
 if (document.readyState !== 'loading') setTimeout(window.init, 100);
-
 window.saveRole = saveRole;
 window.editRole = editRole;
 window.deleteRole = deleteRole;
