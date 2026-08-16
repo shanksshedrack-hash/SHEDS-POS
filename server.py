@@ -326,6 +326,15 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    # Store config per pharmacy
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS store_config (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL UNIQUE,
+            config TEXT NOT NULL DEFAULT '{{}}',
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
 
     db.commit()
 
@@ -1110,6 +1119,29 @@ def get_catalogue():
         'SELECT * FROM products WHERE pharmacy_id = ?', (g.pharmacy_id,)
     ).fetchall()
     return jsonify([dict(p) for p in products])
+
+# --- Store Config ---
+@app.route('/api/store-config', methods=['GET'])
+@require_auth
+def get_store_config():
+    db = get_db()
+    row = db.execute('SELECT config FROM store_config WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchone()
+    if row and row['config']:
+        try:
+            return jsonify(json.loads(row['config']))
+        except Exception:
+            pass
+    return jsonify({})
+
+@app.route('/api/store-config', methods=['PUT'])
+@require_auth
+def update_store_config():
+    data = request.get_json()
+    config_json = json.dumps(data)
+    db = get_db()
+    db.execute('INSERT OR REPLACE INTO store_config (pharmacy_id, config, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (g.pharmacy_id, config_json))
+    db.commit()
+    return jsonify(data)
 
 # ========== Main ==========
 

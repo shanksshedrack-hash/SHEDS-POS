@@ -25,7 +25,27 @@ var StoreConfig = (function() {
     function getCurrency() { return get('currency') || defaults.currency; }
     function getLowStockThreshold() { return parseInt(get('lowStockThreshold')) || defaults.lowStockThreshold; }
     function getPharmacyName() { return get('pharmacyName') || get('storeName') || defaults.storeName; }
-    return { getAll: getAll, get: get, set: set, save: save, formatCurrency: formatCurrency, formatDate: formatDate, getStoreName: getStoreName, getCurrency: getCurrency, getLowStockThreshold: getLowStockThreshold, getPharmacyName: getPharmacyName, defaults: defaults, KEY: KEY };
+    async function syncFromServer() {
+        try {
+            if (!API.isLoggedIn()) return;
+            var data = await API.get('/store-config');
+            if (data && Object.keys(data).length > 0) {
+                save(data);
+            }
+        } catch (e) {
+            console.error('StoreConfig sync error:', e);
+        }
+    }
+    async function syncToServer() {
+        try {
+            if (!API.isLoggedIn()) return;
+            var cfg = getAll();
+            await API.put('/store-config', cfg);
+        } catch (e) {
+            console.error('StoreConfig syncToServer error:', e);
+        }
+    }
+    return { getAll: getAll, get: get, set: set, save: save, formatCurrency: formatCurrency, formatDate: formatDate, getStoreName: getStoreName, getCurrency: getCurrency, getLowStockThreshold: getLowStockThreshold, getPharmacyName: getPharmacyName, syncFromServer: syncFromServer, syncToServer: syncToServer, defaults: defaults, KEY: KEY };
 })();
 
 var POS = (function() {

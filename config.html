@@ -140,40 +140,48 @@
       toastTimer = setTimeout(function(){ t.style.display = 'none'; }, 3000);
   }
 
-  function loadForm() {
-      var cfg = StoreConfig.getAll();
-      $('storeName').value = cfg.storeName || '';
-      $('storeAddress').value = cfg.storeAddress || '';
-      $('phoneNumber').value = cfg.phoneNumber || '';
-      $('emailAddress').value = cfg.emailAddress || '';
-      $('currency').value = cfg.currency || '₦';
-      $('currencyLocale').value = cfg.currencyLocale || 'en-NG';
-      $('printerType').value = cfg.printerType || 'small';
-      $('storeLogo').value = cfg.storeLogo || '';
-      $('footerText').value = cfg.footerText || '';
-      $('lowStockThreshold').value = cfg.lowStockThreshold || 5;
-      $('sessionTimeout').value = cfg.sessionTimeout || 30;
-      $('openingTime').value = cfg.openingTime || '08:00';
-      $('closingTime').value = cfg.closingTime || '20:00';
-      $('openDays').value = cfg.openDays || 'Mon-Sat';
-      $('receiptPrefix').value = cfg.receiptPrefix || 'DAN';
-      $('taxEnabled').checked = cfg.taxEnabled || false;
-      $('taxRate').value = cfg.taxRate || 7.5;
-      $('taxName').value = cfg.taxName || 'VAT';
-      $('allowDiscount').checked = cfg.allowDiscount !== false;
-      $('maxDiscount').value = cfg.maxDiscount || 20;
-      $('requireManagerForDiscount').checked = cfg.requireManagerForDiscount || false;
-      $('requireManagerForVoid').checked = cfg.requireManagerForVoid || true;
-      $('expiryAlertDays').value = cfg.expiryAlertDays || 30;
-      $('expiryBlockSales').checked = cfg.expiryBlockSales || false;
-      $('lowStockAlert').checked = cfg.lowStockAlert !== false;
-      $('lowStockEmail').value = cfg.lowStockEmail || '';
-      $('allowStoreAccount').checked = cfg.allowStoreAccount !== false;
-      $('allowGiftCard').checked = cfg.allowGiftCard !== false;
-      $('allowCardPayment').checked = cfg.allowCardPayment !== false;
-      $('allowPosPayment').checked = cfg.allowPosPayment !== false;
-      $('autoPrintReceipt').checked = cfg.autoPrintReceipt !== false;
-      $('showReceiptLogo').checked = cfg.showReceiptLogo !== false;
+  async function loadForm() {
+      try {
+          var cfg = await API.get('/store-config');
+          if (!cfg || Object.keys(cfg).length === 0) {
+              cfg = StoreConfig.getAll();
+          }
+          StoreConfig.save(cfg);
+      } catch (e) {
+          var cfg = StoreConfig.getAll();
+      }
+      $('storeName').value = StoreConfig.get('storeName') || '';
+      $('storeAddress').value = StoreConfig.get('storeAddress') || '';
+      $('phoneNumber').value = StoreConfig.get('phoneNumber') || '';
+      $('emailAddress').value = StoreConfig.get('emailAddress') || '';
+      $('currency').value = StoreConfig.get('currency') || '₦';
+      $('currencyLocale').value = StoreConfig.get('currencyLocale') || 'en-NG';
+      $('printerType').value = StoreConfig.get('printerType') || 'small';
+      $('storeLogo').value = StoreConfig.get('storeLogo') || '';
+      $('footerText').value = StoreConfig.get('footerText') || '';
+      $('lowStockThreshold').value = StoreConfig.get('lowStockThreshold') || 5;
+      $('sessionTimeout').value = StoreConfig.get('sessionTimeout') || 30;
+      $('openingTime').value = StoreConfig.get('openingTime') || '08:00';
+      $('closingTime').value = StoreConfig.get('closingTime') || '20:00';
+      $('openDays').value = StoreConfig.get('openDays') || 'Mon-Sat';
+      $('receiptPrefix').value = StoreConfig.get('receiptPrefix') || 'DAN';
+      $('taxEnabled').checked = StoreConfig.get('taxEnabled') || false;
+      $('taxRate').value = StoreConfig.get('taxRate') || 7.5;
+      $('taxName').value = StoreConfig.get('taxName') || 'VAT';
+      $('allowDiscount').checked = StoreConfig.get('allowDiscount') !== false;
+      $('maxDiscount').value = StoreConfig.get('maxDiscount') || 20;
+      $('requireManagerForDiscount').checked = StoreConfig.get('requireManagerForDiscount') || false;
+      $('requireManagerForVoid').checked = StoreConfig.get('requireManagerForVoid') || true;
+      $('expiryAlertDays').value = StoreConfig.get('expiryAlertDays') || 30;
+      $('expiryBlockSales').checked = StoreConfig.get('expiryBlockSales') || false;
+      $('lowStockAlert').checked = StoreConfig.get('lowStockAlert') !== false;
+      $('lowStockEmail').value = StoreConfig.get('lowStockEmail') || '';
+      $('allowStoreAccount').checked = StoreConfig.get('allowStoreAccount') !== false;
+      $('allowGiftCard').checked = StoreConfig.get('allowGiftCard') !== false;
+      $('allowCardPayment').checked = StoreConfig.get('allowCardPayment') !== false;
+      $('allowPosPayment').checked = StoreConfig.get('allowPosPayment') !== false;
+      $('autoPrintReceipt').checked = StoreConfig.get('autoPrintReceipt') !== false;
+      $('showReceiptLogo').checked = StoreConfig.get('showReceiptLogo') !== false;
   }
 
   function collectForm() {
@@ -217,9 +225,9 @@
       var cfg = collectForm();
       if (!cfg.storeName) { showToast('Store name is required', true); return; }
       try {
-      var saved = StoreConfig.save(cfg);
-      if (!saved) throw new Error('localStorage save failed (maybe private mode?)');
-      showToast('Configuration saved successfully!');
+          await API.put('/store-config', cfg);
+          StoreConfig.save(cfg);
+          showToast('Configuration saved successfully!');
           $('saveStatus').innerHTML = '<div style="color:#10b981;font-size:13px;"><i class="fas fa-check-circle"></i> Saved at ' + new Date().toLocaleTimeString() + '</div>';
       } catch (err) {
           showToast(err.message || 'Save failed', true);
