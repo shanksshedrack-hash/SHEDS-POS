@@ -535,31 +535,31 @@ def table_response(table, extra_filter='', params=()):
 def table_create(table, data):
     try:
         db = get_db()
-        keys = list(data.keys())
+        cursor = db.execute(f'PRAGMA table_info({table})')
+        valid_columns = {row['name'] for row in cursor.fetchall()}
+        filtered_data = {k: v for k, v in data.items() if k in valid_columns and k != 'id'}
+        keys = list(filtered_data.keys())
         placeholders = ['?'] * len(keys)
-        values = list(data.values())
-
-        if 'id' in keys:
-            idx = keys.index('id')
-            keys.pop(idx)
-            values.pop(idx)
-
+        values = list(filtered_data.values())
         sql = f"INSERT INTO {table} ({', '.join(keys)}) VALUES ({', '.join(placeholders)})"
         cursor = db.execute(sql, values)
         db.commit()
-        data['id'] = cursor.lastrowid
-        data['pharmacy_id'] = g.pharmacy_id
-        return jsonify(data), 201
+        result = dict(filtered_data)
+        result['id'] = cursor.lastrowid
+        result['pharmacy_id'] = g.pharmacy_id
+        return jsonify(result), 201
     except Exception as e:
         return jsonify({'error': f'Database insert failed: {str(e)}'}), 500
 
 def table_update(table, record_id, data):
     try:
         db = get_db()
+        cursor = db.execute(f'PRAGMA table_info({table})')
+        valid_columns = {row['name'] for row in cursor.fetchall()}
         sets = []
         values = []
         for k, v in data.items():
-            if k != 'id':
+            if k != 'id' and k in valid_columns:
                 sets.append(f'{k} = ?')
                 values.append(v)
         values.append(g.pharmacy_id)
