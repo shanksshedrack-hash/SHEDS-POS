@@ -618,7 +618,21 @@ def create_product():
         data['prices'] = json.dumps(data['prices'])
     if 'packaging_types' in data and isinstance(data['packaging_types'], list):
         data['packaging_types'] = json.dumps(data['packaging_types'])
-    return table_create('products', data)
+    result = table_create('products', data)
+    if result[1] == 201:
+        resp_data = result[0].get_json()
+        if resp_data.get('prices') and isinstance(resp_data['prices'], str):
+            try:
+                resp_data['prices'] = json.loads(resp_data['prices'])
+            except Exception:
+                pass
+        if resp_data.get('packaging_types') and isinstance(resp_data['packaging_types'], str):
+            try:
+                resp_data['packaging_types'] = json.loads(resp_data['packaging_types'])
+            except Exception:
+                pass
+        return jsonify(resp_data), 201
+    return result
 
 @app.route('/api/products/<int:pid>', methods=['PUT'])
 @require_auth
@@ -628,7 +642,11 @@ def update_product(pid):
         data['prices'] = json.dumps(data['prices'])
     if 'packaging_types' in data and isinstance(data['packaging_types'], list):
         data['packaging_types'] = json.dumps(data['packaging_types'])
-    return table_update('products', pid, data)
+    result = table_update('products', pid, data)
+    if result[1] == 200:
+        resp_data = result[0].get_json()
+        return jsonify(resp_data), 200
+    return result
 
 @app.route('/api/products/<int:pid>', methods=['DELETE'])
 @require_auth
