@@ -5,219 +5,436 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Receipt - SHEDS POS</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="api.js"></script>
 <script src="common.js"></script>
 <style>
-:root{--primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#dbeafe;--success:#10b981;--dark:#111827;--border:#d1d5db;--text:#1f2937;--muted:#6b7280;--danger:#ef4444;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#f9fafb;min-height:100vh;padding:20px;font-family:'Inter',Arial,sans-serif;color:var(--text);}
-.receipt-wrapper{max-width:800px;margin:0 auto;}
-.topbar{max-width:800px;margin:0 auto 16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05);display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px;}
-.topbar .actions{display:flex;gap:8px;flex-wrap:wrap;}
-.topbar button,.btn{border:none;border-radius:8px;padding:8px 14px;background:#f3f4f6;color:var(--text);cursor:pointer;font-size:13px;font-weight:500;transition:0.2s;border:1px solid var(--border);}
-.topbar button:hover,.btn:hover{background:#e5e7eb;}
-.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
-.btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark);}
-.receipt-paper{background:#fff;border-radius:0;box-shadow:0 0 0 1px var(--border),0 10px 25px rgba(0,0,0,0.08);overflow:hidden;position:relative;}
-.receipt-paper::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--primary),var(--success),var(--primary));}
-.receipt-head{padding:28px 24px;border-bottom:2px solid var(--border);}
-.logo-section{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
-.logo{display:flex;align-items:center;justify-content:center;width:64px;height:64px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:12px;color:#fff;font-size:28px;}
-.business-info{flex:1;}
-.business-info h1{font-family:'Playfair Display',Georgia,serif;font-size:24px;color:var(--dark);margin:0 0 4px;font-weight:700;letter-spacing:-0.5px;}
-.business-info .tagline{color:var(--muted);font-size:13px;}
-.contact-info{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:8px;}
-.contact-info div{display:flex;align-items:center;gap:6px;}
-.contact-info i{color:var(--primary);font-size:11px;width:16px;}
-.receipt-body{padding:24px 28px;font-family:'Courier Prime',Courier,monospace;font-size:13px;}
-.section{margin-top:22px;}
-.section h3{font-family:'Inter',Arial,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);font-weight:600;}
-.receipt-details{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
-.receipt-details .detail{background:#f9fafb;border-radius:6px;padding:8px 12px;font-size:12px;}
-.receipt-details .detail span{display:block;}
-.receipt-details .detail .label{color:var(--muted);font-size:10px;text-transform:uppercase;}
-.receipt-details .detail .value{font-weight:600;color:var(--dark);}
-.customer-section{background:#fafbff;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;}
-.customer-section .label{color:var(--muted);font-size:10px;text-transform:uppercase;margin-bottom:4px;}
-.customer-section .name{font-weight:600;color:var(--dark);font-size:14px;}
-.items-table{width:100%;border-collapse:collapse;margin-top:10px;}
-.items-table th,.items-table td{padding:10px 8px;text-align:left;border-bottom:1px dashed var(--border);font-size:13px;}
-.items-table th{background:#f3f4f6;font-weight:600;color:var(--dark);font-size:11px;text-transform:uppercase;}
-.items-table th:nth-child(2),.items-table th:nth-child(3),.items-table th:nth-child(4),.items-table th:nth-child(5){text-align:center;}
-.items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4),.items-table td:nth-child(5){text-align:center;}
-.items-table .item-name{font-weight:500;}
-.items-table .item-name small{display:block;color:var(--muted);font-size:11px;font-weight:400;}
-.summary{width:100%;border-collapse:collapse;margin-top:16px;}
-.summary td{padding:8px 0;border-bottom:1px dashed var(--border);}
-.summary td:last-child{text-align:right;font-weight:500;}
-.summary .grand-total{font-weight:700;font-size:17px;border-top:2px solid var(--dark);border-bottom:2px solid var(--dark);color:var(--dark);}
-.summary .grand-total td{padding:12px 0;color:var(--dark);}
-.barcode-section{margin-top:28px;text-align:center;padding-top:16px;border-top:1px dashed var(--border);}
-.barcode-text{font-family:'Inter',Arial,sans-serif;font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:8px;}
-.qr-code{width:80px;height:80px;background:#f3f4f6;border-radius:8px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
-.qr-code i{font-size:32px;color:var(--primary);}
-.stamp-section{margin-top:20px;text-align:center;}
-.stamp{display:inline-block;border:2px dashed var(--primary);border-radius:8px;padding:8px 20px;transform:rotate(-5deg);opacity:0.8;}
-.stamp .text{font-size:12px;font-weight:600;color:var(--primary);letter-spacing:1px;}
-.footer{margin-top:30px;text-align:center;font-size:11px;color:var(--muted);padding-top:16px;border-top:1px dashed var(--border);}
-.footer .thank-you{font-family:'Playfair Display',Georgia,serif;font-size:18px;color:var(--dark);margin-bottom:6px;font-weight:700;}
-.footer .note{font-size:11px;margin-top:8px;}
-.empty{padding:30px;text-align:center;color:var(--muted);}
-@media print{
-  body{background:#fff;padding:0;}
-  .topbar{display:none;}
-  .receipt-paper{box-shadow:none;border-radius:0;max-width:100%;border:1px solid var(--border);}
-  .receipt-head{padding:20px;}
-  .receipt-body{padding:20px;}
-}
-@media(max-width:640px){
-  body{padding:10px;}
-  .receipt-body{padding:16px;}
-  .receipt-details{flex-direction:column;}
-  .items-table{font-size:12px;}
-  .items-table th,.items-table td{padding:6px 4px;}
-}
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #eff6ff;
+    --success: #10b981;
+    --success-light: #ecfdf5;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    padding: 20px;
+  }
+  .page { max-width: 860px; margin: 0 auto; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .topbar-title { font-size: 18px; font-weight: 700; color: var(--text); }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-success { background: var(--success); color: #fff; border-color: var(--success); font-weight: 600; }
+  .btn-success:hover { background: #059669; border-color: #059669; }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
+  .btn-ghost:hover { background: #f1f5f9; color: var(--text); }
+  .receipt {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .receipt-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #fff;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .receipt-header::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .receipt-header::before {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    right: 40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .brand { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+  .brand-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--primary), #60a5fa);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+  }
+  .brand-text h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand-text p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .business-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; position: relative; z-index: 1; font-size: 12px; opacity: 0.85; }
+  .business-meta span { display: flex; align-items: center; gap: 6px; }
+  .business-meta i { font-size: 11px; opacity: 0.7; }
+  .receipt-body { padding: 24px 28px; }
+  .section { margin-bottom: 22px; }
+  .section:last-child { margin-bottom: 0; }
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--primary);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .detail-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .detail-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 2px; }
+  .detail-card .value { font-size: 13px; font-weight: 600; color: var(--text); }
+  .customer-card {
+    background: var(--success-light);
+    border: 1px solid #a7f3d0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .customer-card i { color: var(--success); font-size: 16px; }
+  .customer-card .name { font-weight: 600; font-size: 14px; color: #065f46; }
+  .customer-card .sub { font-size: 12px; color: #047857; }
+  table { width: 100%; border-collapse: collapse; }
+  .items-table th {
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .items-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    vertical-align: top;
+  }
+  .items-table tbody tr:last-child td { border-bottom: 1px solid var(--border); }
+  .items-table .col-name { font-weight: 500; }
+  .items-table .col-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+  .items-table .col-price, .items-table .col-qty, .items-table .col-total { text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .items-table .col-total { font-weight: 600; }
+  .summary-table td { padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+  .summary-table td:last-child { text-align: right; font-weight: 500; }
+  .summary-table .grand-total td { padding: 12px 0; font-size: 16px; font-weight: 700; border-top: 2px solid var(--text); border-bottom: 2px solid var(--text); color: var(--text); }
+  .summary-table .grand-total td:last-child { font-family: 'IBM Plex Mono', monospace; }
+  .payment-card {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .payment-card .method { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+  .payment-card .method i { color: var(--primary); }
+  .payment-card .amount { font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 700; }
+  .qr-section { text-align: center; padding: 18px 0; border-top: 1px dashed var(--border); margin-top: 22px; }
+  .qr-box {
+    width: 72px; height: 72px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+  .qr-text { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+  .stamp {
+    display: inline-block;
+    border: 2px dashed var(--success);
+    color: var(--success);
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+    opacity: 0.85;
+    margin-top: 8px;
+  }
+  .receipt-footer {
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    padding: 18px 28px;
+    text-align: center;
+  }
+  .receipt-footer .thank { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .receipt-footer .note { font-size: 12px; color: var(--muted); }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty i { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.4; }
+  .empty p { font-size: 14px; }
+  .badge { display: inline-flex; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .badge-muted { background: #f1f5f9; color: var(--muted); }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .topbar { display: none !important; }
+    .receipt { box-shadow: none; border-radius: 0; border: 1px solid var(--border); }
+    .receipt-header { padding: 18px; }
+    .receipt-body { padding: 18px; }
+    .receipt-footer { padding: 14px; }
+  }
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .receipt-body { padding: 16px; }
+    .topbar { flex-direction: column; align-items: stretch; }
+    .topbar-actions { justify-content: flex-end; }
+    .details-grid { grid-template-columns: 1fr; }
+    .items-table th, .items-table td { padding: 8px 6px; font-size: 12px; }
+  }
 </style>
 </head>
 <body>
-<div class="receipt-wrapper">
-<div class="topbar">
-  <div class="actions">
-    <button type="button" onclick="editCheckout()"><i class="fas fa-edit"></i> Edit</button>
-    <button type="button" onclick="noop('Fulfillment Sheet')"><i class="fas fa-truck"></i> Fulfillment Sheet</button>
-    <button type="button" onclick="noop('Gift Receipt')"><i class="fas fa-gift"></i> Gift Receipt</button>
-    <button type="button" onclick="noop('Create PO')"><i class="fas fa-file-invoice"></i> Create PO</button>
-    <button type="button" onclick="noop('Clone')"><i class="fas fa-copy"></i> Clone</button>
-    <button type="button" class="btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
-    <button type="button" onclick="goNewSale()"><i class="fas fa-plus"></i> New Sale</button>
-  </div>
-</div>
-<div class="receipt-paper">
-  <div class="receipt-head">
-    <div class="logo-section">
-      <div class="logo"><i class="fas fa-shopping-cart"></i></div>
-      <div class="business-info">
-        <h1 id="businessName">SHEDS ENTERPRISE</h1>
-        <div class="tagline">Powered by SHEDS Enterprise</div>
-        <div class="contact-info">
-          <div><i class="fas fa-map-marker-alt"></i> <span id="businessLocation">Tudu Gwandara, Lafia, Nigeria</span></div>
-          <div><i class="fas fa-phone"></i> <span id="businessPhone">+234 800 000 0000</span></div>
-          <div><i class="fas fa-envelope"></i> <span id="businessEmail">info@shedspharm.com</span></div>
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-title"><i class="fas fa-receipt" style="color:var(--primary);margin-right:6px;"></i> Receipt</div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="editCheckout()"><i class="fas fa-edit"></i> Edit</button>
+        <button class="btn" onclick="noop('Fulfillment Sheet')"><i class="fas fa-truck"></i> Fulfillment Sheet</button>
+        <button class="btn" onclick="noop('Gift Receipt')"><i class="fas fa-gift"></i> Gift Receipt</button>
+        <button class="btn" onclick="noop('Create PO')"><i class="fas fa-file-invoice"></i> Create PO</button>
+        <button class="btn" onclick="noop('Clone')"><i class="fas fa-copy"></i> Clone</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+        <button class="btn btn-success" onclick="goNewSale()"><i class="fas fa-plus"></i> New Sale</button>
+      </div>
+    </div>
+
+    <div class="receipt" id="receiptPaper">
+      <div class="receipt-header">
+        <div class="brand">
+          <div class="brand-icon"><i class="fas fa-clinic-medical"></i></div>
+          <div class="brand-text">
+            <h1 id="businessName">SHEDS POS</h1>
+            <p id="businessTagline">Point of Sale System</p>
+          </div>
         </div>
+        <div class="business-meta">
+          <span><i class="fas fa-map-marker-alt"></i> <span id="businessLocation">Loading...</span></span>
+          <span><i class="fas fa-phone"></i> <span id="businessPhone">Loading...</span></span>
+          <span><i class="fas fa-envelope"></i> <span id="businessEmail">Loading...</span></span>
+        </div>
+      </div>
+
+      <div class="receipt-body" id="receiptBody">
+        <div class="empty">
+          <i class="fas fa-receipt"></i>
+          <p>Loading receipt...</p>
+        </div>
+      </div>
+
+      <div class="receipt-footer" id="receiptFooter" style="display:none;">
+        <div class="thank" id="footerThank">Thank You!</div>
+        <div class="note" id="footerNote">Please keep this receipt for your records</div>
       </div>
     </div>
   </div>
-  <div class="receipt-body" id="receiptBody">
-    <div class="empty">Loading receipt...</div>
-  </div>
-</div>
-</div>
-<script>
-function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
-function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
-function noop(label){window.alert(label+' action is available from this receipt view.');}
-function go(p){window.location.href=p;}
-function saveAsPDF(){window.print();}
-function goNewSale(){localStorage.removeItem('salesCart');localStorage.removeItem('last_receipt');go('sales.html');}
-function paymentLabel(method){var labels={cash:'Cash',store_account:'Store Account',bank_transfer:'Bank Transfer',suspended:'Suspended Sale'};return labels[method]||(method||'Cash').replace(/_/g,' ');}
-function fmtDate(value){var d=value?new Date(value):new Date();if(isNaN(d.getTime()))d=new Date();return d.toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});}
-function qty(n){return parseInt(n||0,10)||0;}
-function editCheckout(){
- var raw=localStorage.getItem('last_receipt');
- if(!raw){go('sales.html');return;}
- var r;
- try{r=JSON.parse(raw);}catch(e){go('sales.html');return;}
- var cartItems=r.items||[];
- if(cartItems.length){
-  var restored=cartItems.map(function(it){
-   return{product_id:parseInt(it.product_id)||0,qty:qty(it.qty),discount:parseFloat(it.discount)||0,name:it.name,price:parseFloat(it.unit_price||it.price||0),pkgType:it.pkg_type||'pkt'};
-  });
-  localStorage.setItem('salesCart',JSON.stringify(restored));
- }
- go('sales.html');
-}
-function load(){
-  var raw=localStorage.getItem('last_receipt');
-  if(!raw){document.getElementById('receiptBody').innerHTML='<div class="empty">No checkout receipt found. Complete a sale to view the receipt.</div>';return;}
-  var r;
-  try{r=JSON.parse(raw);}catch(e){document.getElementById('receiptBody').innerHTML='<div class="empty">Receipt data is invalid.</div>';return;}
-  var items=r.items||[];
-  var subtotal=items.reduce(function(s,it){return s+(parseFloat(it.unit_price||it.price||0)*qty(it.qty));},0);
-  var discount=items.reduce(function(s,it){return s+(parseFloat(it.discount)||0);},0);
-  var tax=parseFloat(r.tax_amount||r.sales_tax||0)||0;
-  var total=parseFloat(r.total)||Math.max(0,subtotal-discount+tax);
-  var tendered=parseFloat(r.cash_received||r.amount_tendered||r.tendered)||total;
-  var change=Math.max(0,tendered-total);
-  var sold=items.reduce(function(s,it){return s+qty(it.qty);},0);
-  var businessName=r.business_name||((window.API&&API.getPharmacyName)?API.getPharmacyName():'SHEDS ENTERPRISE');
-  var businessAddress=r.business_address||'Tudu Gwandara, Lafia, Nigeria';
-  document.getElementById('businessName').textContent=businessName;
-  document.getElementById('businessLocation').textContent=businessAddress;
-  var html='';
-  html+='<div class="section"><h3>Transaction Details</h3><div class="receipt-details">';
-  html+='<div class="detail"><span class="label">Receipt Type</span><span class="value">Sales Receipt</span></div>';
-  html+='<div class="detail"><span class="label">Date and Time</span><span class="value">'+esc(fmtDate(r.created_at||r.date))+'</span></div>';
-  html+='<div class="detail"><span class="label">Sale ID</span><span class="value">'+esc(r.sale_id||r.id||'POS -')+'</span></div>';
-  html+='<div class="detail"><span class="label">Employee</span><span class="value">'+esc(r.employee||r.cashier||'Cashier')+'</span></div>';
-  html+='</div></div>';
-  html+='<div class="section"><h3>Items Sold</h3><table class="items-table"><thead><tr><th style="width:45%;">Item Name</th><th style="width:15%;">Unit Price</th><th style="width:12%;">Quantity</th><th style="width:15%;">Total</th></tr></thead><tbody>';
-  items.forEach(function(it){
-    var itemTotal=(parseFloat(it.unit_price||it.price||0)*qty(it.qty))-(parseFloat(it.discount)||0);
-    var pkgName='';
-    if(it.pkg_type) pkgName='<br><small style="color:var(--muted);font-size:10px;">Qty Unit: '+esc(it.pkg_type.toUpperCase())+'</small>';
-    html+='<tr><td class="item-name">'+esc(it.name||'Item')+pkgName+'<small>'+esc(it.sku||'')+'</small></td><td>'+fmt(it.unit_price||it.price||0)+'</td><td>'+qty(it.qty)+'</td><td>'+fmt(itemTotal)+'</td></tr>';
-  });
-  html+='</tbody></table></div>';
-  if(items.length){
-    var it=items[0];
-    var pkgDetail='None';
-    var pkgQty='-';
-    html+='<div class="section"><h3>Additional Product Information</h3><div class="receipt-details">';
-    html+='<div class="detail"><span class="label">Quantity Unit Name</span><span class="value">'+esc((it.pkg_type||'pkt').toUpperCase())+'</span></div>';
-    html+='<div class="detail"><span class="label">Quantity Units</span><span class="value">'+qty(it.qty)+'</span></div>';
-    html+='</div></div>';
+
+  <script>
+  function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+  function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function noop(label){window.alert(label+' is available from the main POS interface.');}
+  function go(p){window.location.href=p;}
+  function goNewSale(){localStorage.removeItem('salesCart');localStorage.removeItem('last_receipt');go('sales.html');}
+  function paymentLabel(method){var labels={cash:'Cash',store_account:'Store Account',bank_transfer:'Bank Transfer',suspended:'Suspended Sale',card:'Card',pos:'POS',giftcard:'Gift Card'};return labels[method]||(method||'Cash').replace(/_/g,' ');}
+  function paymentIcon(method){var icons={cash:'fa-money-bill-wave',store_account:'fa-wallet',bank_transfer:'fa-university',suspended:'fa-pause-circle',card:'fa-credit-card',pos:'fa-cash-register',giftcard:'fa-gift'};return icons[method]||'fa-money-bill-wave';}
+  function fmtDate(value){var d=value?new Date(value):new Date();if(isNaN(d.getTime()))d=new Date();return d.toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});}
+  function qty(n){return parseInt(n||0,10)||0;}
+  function editCheckout(){
+    var raw=localStorage.getItem('last_receipt');
+    if(!raw){go('sales.html');return;}
+    var r;
+    try{r=JSON.parse(raw);}catch(e){go('sales.html');return;}
+    var cartItems=r.items||[];
+    if(cartItems.length){
+      var restored=cartItems.map(function(it){
+        return{product_id:parseInt(it.product_id)||0,qty:qty(it.qty),discount:parseFloat(it.discount)||0,name:it.name,price:parseFloat(it.unit_price||it.price||0),pkgType:it.pkg_type||'pkt'};
+      });
+      localStorage.setItem('salesCart',JSON.stringify(restored));
+    }
+    go('sales.html');
   }
-  html+='<div class="section"><h3>Sales Summary</h3><table class="summary"><tbody>';
-  html+='<tr><td>Subtotal</td><td>'+fmt(subtotal)+'</td></tr>';
-  if(discount>0){html+='<tr><td>Discount</td><td>'+fmt(discount)+'</td></tr>';}
-  var taxPct=subtotal>0?(tax/subtotal*100).toFixed(1)+'%':'0.0%';
-  html+='<tr><td>Sales Tax</td><td>'+fmt(tax)+' ('+taxPct+')</td></tr>';
-  html+='<tr class="grand-total"><td><strong>Total Amount</strong></td><td><strong>'+fmt(total)+'</strong></td></tr>';
-  html+='<tr><td>Weight</td><td>0</td></tr>';
-  html+='<tr><td>Number of Items Sold</td><td>'+sold+'</td></tr>';
-  html+='</tbody></table></div>';
-  html+='<div class="section"><h3>Payment Information</h3><table class="summary"><tbody>';
-  html+='<tr><td>Payment Type</td><td>'+esc(paymentLabel(r.payment_method||r.payment_type))+'</td></tr>';
-  html+='<tr><td>Amount Paid</td><td>'+fmt(tendered)+'</td></tr>';
-  html+='<tr><td>Change Due</td><td>'+fmt(change)+'</td></tr>';
-  html+='</tbody></table></div>';
-  html+='<div class="section"><h3>Interface Elements</h3><div class="r-actions">';
-  html+='<button class="r-btn" onclick="window.alert(\'Edit\')">Edit</button>';
-  html+='<button class="r-btn" onclick="window.alert(\'Fulfillment Sheet\')">Fulfillment Sheet</button>';
-  html+='<button class="r-btn" onclick="window.alert(\'Gift Receipt\')">Gift Receipt</button>';
-  html+='<button class="r-btn" onclick="window.alert(\'Create PO\')">Create PO</button>';
-  html+='<button class="r-btn" onclick="window.print()">Download</button>';
-  html+='<button class="r-btn" onclick="window.alert(\'Clone\')">Clone</button>';
-  html+='<button class="r-btn" onclick="window.print()">Print</button>';
-  html+='<button class="r-btn" onclick="saveAsPDF()"><i class="fas fa-file-pdf"></i> Save as PDF</button>';
-  html+='<button class="r-btn" onclick="goNewSale()">New Sale</button>';
-  html+='</div></div>';
-  html+='<div class="barcode-section">';
-  html+='<div class="qr-code"><i class="fas fa-qrcode"></i></div>';
-  html+='<div class="barcode-text">'+esc('SALE-'+(r.sale_id||r.id||'000000'))+'</div>';
-  html+='<div class="stamp-section"><div class="stamp"><span class="text">PAID</span></div></div>';
-  html+='</div>';
-  html+='<div class="footer">';
-  html+='<div class="thank-you">Thank You!</div>';
-  html+='<div class="note">Change Return Policy</div>';
-  html+='<div class="note">Printed on: '+esc(new Date().toLocaleString())+' | Store Manager: '+esc(r.employee||r.cashier||'Admin')+'</div>';
-  html+='</div>';
-  document.getElementById('receiptBody').innerHTML=html;
-}
-document.addEventListener('DOMContentLoaded',load);
-</script>
+
+  function load(){
+    var raw=localStorage.getItem('last_receipt');
+    if(!raw){
+      document.getElementById('receiptBody').innerHTML='<div class="empty"><i class="fas fa-receipt"></i><p>No checkout receipt found.<br>Complete a sale to view the receipt.</p></div>';
+      return;
+    }
+    var r;
+    try{r=JSON.parse(raw);}catch(e){
+      document.getElementById('receiptBody').innerHTML='<div class="empty"><i class="fas fa-exclamation-circle"></i><p>Receipt data is invalid or corrupted.</p></div>';
+      return;
+    }
+
+    var items=r.items||[];
+    var subtotal=items.reduce(function(s,it){return s+(parseFloat(it.unit_price||it.price||0)*qty(it.qty));},0);
+    var discount=items.reduce(function(s,it){return s+(parseFloat(it.discount)||0);},0);
+    var tax=parseFloat(r.tax_amount||r.sales_tax||0)||0;
+    var total=parseFloat(r.total)||Math.max(0,subtotal-discount+tax);
+    var tendered=parseFloat(r.cash_received||r.amount_tendered||r.tendered)||total;
+    var change=Math.max(0,tendered-total);
+    var sold=items.reduce(function(s,it){return s+qty(it.qty);},0);
+
+    var businessName=r.business_name||((window.API&&API.getPharmacyName)?API.getPharmacyName():'SHEDS POS');
+    var businessAddress=r.business_address||StoreConfig.get('storeAddress')||'';
+    var businessPhone=r.business_phone||StoreConfig.get('phoneNumber')||'';
+    var businessEmail=r.business_email||StoreConfig.get('emailAddress')||'';
+    var footerText=StoreConfig.get('footerText')||'Thank you for choosing SHEDS POS!';
+
+    document.getElementById('businessName').textContent=businessName;
+    document.getElementById('businessTagline').textContent=footerText;
+    document.getElementById('businessLocation').textContent=businessAddress||'Address not set';
+    document.getElementById('businessPhone').textContent=businessPhone||'Phone not set';
+    document.getElementById('businessEmail').textContent=businessEmail||'Email not set';
+
+    var html='';
+
+    html+='<div class="section"><div class="section-title"><i class="fas fa-info-circle"></i> Transaction Details</div><div class="details-grid">';
+    html+='<div class="detail-card"><div class="label">Receipt Type</div><div class="value">Sales Receipt</div></div>';
+    html+='<div class="detail-card"><div class="label">Date & Time</div><div class="value">'+esc(fmtDate(r.created_at||r.date))+'</div></div>';
+    html+='<div class="detail-card"><div class="label">Sale ID</div><div class="value">#'+esc(r.sale_id||r.id||'POS-')+'</div></div>';
+    html+='<div class="detail-card"><div class="label">Cashier</div><div class="value">'+esc(r.employee||r.cashier||'Cashier')+'</div></div>';
+    html+='</div></div>';
+
+    if(r.customer_name){
+      html+='<div class="section"><div class="section-title"><i class="fas fa-user"></i> Customer</div>';
+      html+='<div class="customer-card"><i class="fas fa-user-circle"></i><div><div class="name">'+esc(r.customer_name)+'</div><div class="sub">Walk-in Customer</div></div></div>';
+      html+='</div>';
+    }
+
+    html+='<div class="section"><div class="section-title"><i class="fas fa-shopping-bag"></i> Items Purchased ('+sold+')</div>';
+    html+='<table class="items-table"><thead><tr><th style="width:45%">Item</th><th style="width:15%" class="col-price">Unit Price</th><th style="width:10%" class="col-qty">Qty</th><th style="width:15%" class="col-total">Total</th></tr></thead><tbody>';
+    items.forEach(function(it){
+      var itemTotal=(parseFloat(it.unit_price||it.price||0)*qty(it.qty))-(parseFloat(it.discount)||0);
+      var pkgName='';
+      if(it.pkg_type) pkgName='<small>Unit: '+esc(it.pkg_type.toUpperCase())+'</small>';
+      html+='<tr><td class="col-name">'+esc(it.name||'Item')+pkgName+'<small>'+esc(it.sku||'')+'</small></td><td class="col-price">'+fmt(it.unit_price||it.price||0)+'</td><td class="col-qty">'+qty(it.qty)+'</td><td class="col-total">'+fmt(itemTotal)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+
+    html+='<div class="section"><div class="section-title"><i class="fas fa-calculator"></i> Sales Summary</div>';
+    html+='<table class="summary-table"><tbody>';
+    html+='<tr><td>Subtotal</td><td>'+fmt(subtotal)+'</td></tr>';
+    if(discount>0){html+='<tr><td>Discount</td><td style="color:var(--success);">-'+fmt(discount)+'</td></tr>';}
+    var taxPct=subtotal>0?(tax/subtotal*100).toFixed(1)+'%':'0.0%';
+    html+='<tr><td>Tax</td><td>'+fmt(tax)+' <span style="font-size:11px;color:var(--muted);">('+taxPct+')</span></td></tr>';
+    html+='<tr class="grand-total"><td>Total Amount</td><td>'+fmt(total)+'</td></tr>';
+    html+='</tbody></table></div>';
+
+    html+='<div class="section"><div class="section-title"><i class="fas fa-credit-card"></i> Payment</div>';
+    html+='<div class="payment-card">';
+    html+='<div class="method"><i class="fas '+paymentIcon(r.payment_method||r.payment_type)+'"></i> '+esc(paymentLabel(r.payment_method||r.payment_type))+'</div>';
+    html+='<div class="amount">'+fmt(tendered)+'</div>';
+    html+='</div>';
+    if(change>0){
+      html+='<div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:right;">Change Due: <strong style="color:var(--text);">'+fmt(change)+'</strong></div>';
+    }
+    html+='</div>';
+
+    html+='<div class="section" style="margin-top:18px;">';
+    html+='<div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    html+='<button class="btn" onclick="editCheckout()"><i class="fas fa-edit"></i> Edit</button>';
+    html+='<button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>';
+    html+='<button class="btn" onclick="goNewSale()"><i class="fas fa-plus"></i> New Sale</button>';
+    html+='<button class="btn" onclick="saveAsPDF()"><i class="fas fa-file-pdf"></i> Save PDF</button>';
+    html+='</div></div>';
+
+    html+='<div class="qr-section">';
+    html+='<div class="qr-box"><i class="fas fa-qrcode"></i></div>';
+    html+='<div class="qr-text">SALE-'+esc((r.sale_id||r.id||'000000'))+'</div>';
+    html+='<div class="stamp">PAID</div>';
+    html+='</div>';
+
+    document.getElementById('receiptBody').innerHTML=html;
+    document.getElementById('receiptFooter').style.display='block';
+    document.getElementById('footerThank').textContent=footerText;
+    document.getElementById('footerNote').textContent='Printed on: '+esc(new Date().toLocaleString())+' | Cashier: '+esc(r.employee||r.cashier||'Admin');
+  }
+
+  function saveAsPDF(){window.print();}
+
+  document.addEventListener('DOMContentLoaded',load);
+  </script>
 </body>
 </html>
-
-
