@@ -678,7 +678,7 @@ def admin_setup_login():
     if not api_key:
         return jsonify({'error': 'API key is required'}), 400
 
-    if master_username !== 'shedrack' or master_password !== 'admin123':
+    if master_username != 'shedrack' or master_password != 'admin123':
         return jsonify({'error': 'Invalid master admin credentials'}), 401
 
     db = get_db()
