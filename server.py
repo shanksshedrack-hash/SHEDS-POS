@@ -871,7 +871,16 @@ def get_sale(sid):
 @app.route('/api/customers', methods=['GET'])
 @require_auth
 def get_customers():
-    return table_response('customers')
+    db = get_db()
+    rows = db.execute('SELECT * FROM customers WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchall()
+    result = []
+    for r in rows:
+        row = dict(r)
+        row['firstName'] = row.get('first_name', '')
+        row['lastName'] = row.get('last_name', '')
+        row['fullName'] = (row.get('first_name', '') + ' ' + row.get('last_name', '')).strip()
+        result.append(row)
+    return jsonify(result)
 
 @app.route('/api/customers', methods=['POST'])
 @require_auth
