@@ -203,34 +203,8 @@
                 return;
             }
 
-            showToast('Registration successful! Logging you in...', 'success');
-
-            API.login(res.api_key, res.admin_username, adminPass).then(function(loginRes) {
-                if (loginRes.error) {
-                    showToast(loginRes.error, 'error');
-                    return;
-                }
-                if (loginRes.pharmacy && loginRes.pharmacy.address) {
-                    var storeId = loginRes.pharmacy.address.trim();
-                    if (!storeId) storeId = loginRes.pharmacy.id;
-                    API.init(loginRes.pharmacy.api_key || '', loginRes.user.username, loginRes.pharmacy.name, loginRes.user, storeId);
-                } else {
-                    API.init(loginRes.pharmacy.api_key || '', loginRes.user.username, loginRes.pharmacy && loginRes.pharmacy.name ? loginRes.pharmacy.name : '', loginRes.user, '');
-                }
-                var roleName = loginRes.user.role ? loginRes.user.role.toUpperCase() : 'USER';
-                showToast('Welcome, ' + loginRes.user.name + ' (' + roleName + ')!', 'success');
-                setTimeout(function() {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
-        }).catch(function(err) {
-            console.error('Login fetch error:', err);
-            var errMsg = 'Connection error. Is the server running?';
-            if (err && err.message) errMsg = err.message;
-            else if (typeof err === 'string') errMsg = err;
-            showToast(errMsg, 'error');
-            });
-
-            document.querySelector('form[onsubmit="registerPharmacy(event)"]').reset();
+            showToast('Pharmacy registered! Redirecting to admin login...', 'success');
+            window.location.href = 'admin-setup.html?pharmacy_id=' + res.pharmacy_id + '&username=' + encodeURIComponent(res.admin_username) + '&pharmacy_name=' + encodeURIComponent(res.name || '');
         }).catch(function(err) {
             showToast('Connection error. Is the server running?', 'error');
             console.error(err);

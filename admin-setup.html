@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHEDS POS - Admin Setup</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #2c3e50, #1a2533); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-container { background: white; border-radius: 10px; padding: 2.5rem; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .login-container h2 { color: #2c3e50; margin-bottom: 0.5rem; text-align: center; }
+    .login-container .subtitle { color: #718096; text-align: center; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; color: #4a5568; font-weight: 500; font-size: 0.9rem; }
+    .form-group input { width: 100%; padding: 0.75rem; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.95rem; transition: border-color 0.3s; }
+    .form-group input:focus { outline: none; border-color: #3498db; }
+    .form-group .readonly-field { background: #f7fafc; color: #4a5568; }
+    .login-btn { width: 100%; padding: 0.85rem; background: #3498db; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 0.5rem; }
+    .login-btn:hover { background: #2980b9; }
+    .back-link { display: block; text-align: center; margin-top: 1.5rem; color: #3498db; text-decoration: none; cursor: pointer; font-size: 0.9rem; }
+    .notification-toast { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 5px; display: none; z-index: 1000; color: white; font-weight: 500; }
+    .notification-toast.success { background: #48bb78; }
+    .notification-toast.error { background: #f56565; }
+    .notification-toast.info { background: #4299e1; }
+    .info-box { background: #ebf8ff; border: 1px solid #bee3f8; padding: 12px; border-radius: 6px; margin-bottom: 1.2rem; font-size: 0.85rem; color: #2b6cb0; }
+    .info-box strong { display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+    <div class="login-container">
+        <h2><i class="fas fa-clinic-medical"></i> SHEDS POS</h2>
+        <p class="subtitle">Admin Setup — Enter Your Personal Password</p>
+
+        <div class="info-box">
+            <strong><i class="fas fa-info-circle"></i> Pharmacy Registered Successfully</strong>
+            <span id="pharmNameDisplay">Loading pharmacy info...</span>
+        </div>
+
+        <form onsubmit="adminSetupLogin(event)">
+            <div class="form-group">
+                <label><i class="fas fa-user-shield"></i> Admin Username</label>
+                <input type="text" id="adminUser" class="readonly-field" readonly>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Personal Password</label>
+                <input type="password" id="adminPass" required placeholder="Enter your personal password">
+            </div>
+            <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</button>
+        </form>
+
+        <a class="back-link" onclick="window.location.href='login.html'"><i class="fas fa-arrow-left"></i> Back to Login</a>
+    </div>
+    <div class="notification-toast" id="toast"></div>
+
+    <script src="api.js"></script>
+    <script>
+    var API_URL = window.location.origin || '';
+
+    function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'notification-toast ' + (type || 'success');
+        t.style.display = 'block';
+        setTimeout(function() { t.style.display = 'none'; }, 4000);
+    }
+
+    function getQueryParameter(name) {
+        return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    function adminSetupLogin(e) {
+        e.preventDefault();
+        var username = document.getElementById('adminUser').value.trim();
+        var password = document.getElementById('adminPass').value;
+
+        if (!username || !password) {
+            showToast('Please enter your password', 'error');
+            return;
+        }
+
+        showToast('Logging in...', 'info');
+
+        API.login('', username, password).then(function(res) {
+            if (res.error) {
+                showToast(res.error, 'error');
+                return;
+            }
+            if (res.pharmacy && res.pharmacy.address) {
+                var storeId = res.pharmacy.address.trim();
+                if (!storeId) storeId = res.pharmacy.id;
+                API.init(res.pharmacy.api_key || '', res.user.username, res.pharmacy.name, res.user, storeId);
+            } else {
+                API.init(res.pharmacy.api_key || '', res.user.username, res.pharmacy && res.pharmacy.name ? res.pharmacy.name : '', res.user, '');
+            }
+            var roleName = res.user.role ? res.user.role.toUpperCase() : 'USER';
+            showToast('Welcome, ' + res.user.name + ' (' + roleName + ')!', 'success');
+            setTimeout(function() {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }).catch(function(err) {
+            showToast('Connection error. Is the server running?', 'error');
+            console.error(err);
+        });
+    }
+
+    (function init() {
+        var pharmacyName = getQueryParameter('pharmacy_name');
+        var username = getQueryParameter('username');
+        var displayName = document.getElementById('pharmNameDisplay');
+        var userInput = document.getElementById('adminUser');
+
+        if (pharmacyName) {
+            displayName.innerHTML = '<strong>Pharmacy:</strong> ' + pharmacyName;
+        } else {
+            displayName.innerHTML = 'Your pharmacy has been registered. Enter your password below to continue.';
+        }
+
+        if (username) {
+            userInput.value = username;
+        }
+    })();
+    </script>
+</body>
+</html>
