@@ -9,148 +9,810 @@
 <script src="api.js"></script>
 <script src="common.js"></script>
 <style>
-.panel{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px}
-.form-group{display:flex;flex-direction:column;gap:6px}
-.form-group label{font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.3px}
-.form-control{padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff}
-.btn{padding:8px 12px;border:0;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px}
-.btn-primary{background:#10b981;color:#fff}
-.btn-outline{background:#fff;color:#374151;border:1px solid #d1d5db}
-.btn-danger{background:#ef4444;color:#fff}
-.btn-success{background:#10b981;color:#fff}
-.table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;font-size:13px}
-.table th,.table td{padding:8px 10px;border-bottom:1px solid #e5e7eb}
-.table th{background:#f8fafc;color:#4a5568;font-size:11px;text-transform:uppercase;font-weight:600}
-.badge{padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600;text-transform:uppercase}
-.badge-success{background:#d1fae5;color:#065f46}
-.badge-info{background:#dbeafe;color:#1e40af}
-.badge-muted{background:#f3f4f6;color:#6b7280}
-.empty-state{text-align:center;color:#94a3b8;padding:40px 16px;font-size:14px}
-.toast{position:fixed;top:20px;right:20px;background:#48bb78;color:#fff;padding:12px 16px;border-radius:8px;display:none;z-index:1000}
-.toast.error{background:#ef4444}
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --info: #3b82f6;
+  --warning: #f59e0b;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+.btn-outline.active { background: #ecfdf5; border-color: var(--primary); color: #065f46; }
+.btn-danger { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.form-control {
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+}
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.permissions-grid label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.permissions-grid label:hover { background: #f3f4f6; }
+.permissions-grid input[type="checkbox"] { accent-color: var(--primary); }
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.table th, .table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.table th {
+  background: #f9fafb;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.table tbody tr:hover { background: #f9fafb; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-info { background: #dbeafe; color: #1e40af; }
+.badge-muted { background: #f3f4f6; color: #6b7280; }
+.empty-state {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px 16px;
+  font-size: 14px;
+}
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
+  z-index: 2000;
+  font-weight: 500;
+  font-size: 13px;
+}
+.toast.error { background: var(--danger); }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: transparent;
+  border-radius: 6px; cursor: pointer;
+  color: var(--muted); font-size: 18px;
+}
+.modal-close:hover { background: #f3f4f6; color: var(--text); }
+.modal-body { padding: 16px 20px; }
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-box i {
+  position: absolute;
+  left: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.search-box input {
+  padding: 8px 12px 8px 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  width: 220px;
+}
+.search-box input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.08);
+}
+.actions-cell { display: flex; gap: 4px; }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.stat-icon.green { background: #d1fae5; color: #065f46; }
+.stat-icon.blue { background: #dbeafe; color: #1e40af; }
+.stat-icon.purple { background: #f3e8ff; color: #7c3aed; }
+.stat-icon.orange { background: #fef3c7; color: #92400e; }
+.stat-value { font-size: 20px; font-weight: 800; }
+.stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
 </style>
 </head>
 <body>
 <div class="sidebar" id="sidebar"></div>
 <div class="main-content">
-<div class="header"><h2><i class="fas fa-user-shield"></i> User Roles & Accounts</h2><div id="userMenu"></div><div class="header-clock" id="topClock"></div></div>
-<div class="content">
-<div style="display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #e5e7eb">
-<button class="btn btn-outline active" onclick="switchTab('roles',this)" id="tabBtn-roles"><i class="fas fa-shield-alt"></i> Roles</button>
-<button class="btn btn-outline" onclick="switchTab('accounts',this)" id="tabBtn-accounts"><i class="fas fa-users"></i> Accounts</button>
-<button class="btn btn-outline" onclick="switchTab('pending',this)" id="tabBtn-pending"><i class="fas fa-user-clock"></i> Pending <span id="pendingBadge" class="badge badge-info">0</span></button>
-</div>
+  <div class="header">
+    <h2><i class="fas fa-user-shield"></i> User Roles & Accounts</h2>
+    <div id="userMenu"></div>
+    <div class="header-clock" id="topClock"></div>
+  </div>
+  <div class="content">
 
-<div id="tab-roles" class="tab-pane" style="display:block;">
-<div class="panel">
-<h3><i class="fas fa-plus"></i> Create Role</h3>
-<div class="form-row">
-<div class="form-group"><label>Name</label><input type="text" id="roleName" class="form-control"></div>
-<div class="form-group"><label>Description</label><input type="text" id="roleDesc" class="form-control"></div>
-</div>
-<div style="margin:10px 0;">
-<label style="font-weight:600;margin-bottom:5px;display:block;">Permissions</label>
-<div style="display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:8px;">
-<label><input type="checkbox" value="sales"> Sales</label>
-<label><input type="checkbox" value="inventory"> Inventory</label>
-<label><input type="checkbox" value="reports"> Reports</label>
-<label><input type="checkbox" value="customers"> Customers</label>
-<label><input type="checkbox" value="suppliers"> Suppliers</label>
-<label><input type="checkbox" value="employees"> Employees</label>
-<label><input type="checkbox" value="settings"> Settings</label>
-<label><input type="checkbox" value="audit"> Audit</label>
-</div>
-</div>
-<button class="btn btn-primary" onclick="saveRole()"><i class="fas fa-save"></i> Save</button>
-</div>
-<div class="panel">
-<h3><i class="fas fa-list"></i> Roles</h3>
-<table class="table"><thead><tr><th>Name</th><th>Desc</th><th>Perms</th><th>Users</th><th>Actions</th></tr></thead>
-<tbody id="rolesBody"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody></table>
-</div>
-</div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-shield-alt"></i></div>
+        <div><div class="stat-value" id="statRoles">0</div><div class="stat-label">Roles</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+        <div><div class="stat-value" id="statAccounts">0</div><div class="stat-label">Accounts</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-user-clock"></i></div>
+        <div><div class="stat-value" id="statPending">0</div><div class="stat-label">Pending</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange"><i class="fas fa-user-check"></i></div>
+        <div><div class="stat-value" id="statActive">0</div><div class="stat-label">Active Users</div></div>
+      </div>
+    </div>
 
-<div id="tab-accounts" class="tab-pane" style="display:none;">
-<div class="panel">
-<h3><i class="fas fa-user-plus"></i> Create Account</h3>
-<div class="form-row">
-<div class="form-group"><label>Full Name</label><input type="text" id="userFullName" class="form-control"></div>
-<div class="form-group"><label>Username</label><input type="text" id="userName" class="form-control"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Password</label><input type="password" id="userPassword" class="form-control"></div>
-<div class="form-group"><label>Role</label><select id="userRole" class="form-control"><option value="">Select</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Phone</label><input type="tel" id="userPhone" class="form-control"></div>
-<div class="form-group"><label>Email</label><input type="email" id="userEmail" class="form-control"></div>
-</div>
-<label style="margin:10px 0;display:block;"><input type="checkbox" id="userActive" checked> Active</label>
-<button class="btn btn-primary" onclick="saveAccount()"><i class="fas fa-save"></i> Create</button>
-<button onclick="testData()" class="btn" style="margin-left:10px;background:#6b7280;color:#fff;"><i class="fas fa-vial"></i> Test Data</button>
-</div>
-<div class="panel">
-<h3><i class="fas fa-users"></i> Accounts</h3>
-<table class="table"><thead><tr><th>Name</th><th>User</th><th>Role</th><th>Phone</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
-<tbody id="accountsBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody></table>
-</div>
-</div>
+    <div class="tabs">
+      <button class="btn btn-outline active" onclick="switchTab('roles', this)"><i class="fas fa-shield-alt"></i> Roles</button>
+      <button class="btn btn-outline" onclick="switchTab('accounts', this)"><i class="fas fa-users"></i> Accounts</button>
+      <button class="btn btn-outline" onclick="switchTab('pending', this)"><i class="fas fa-user-clock"></i> Pending <span id="pendingBadge" class="badge badge-info" style="display:none">0</span></button>
+    </div>
 
-<div id="tab-pending" class="tab-pane" style="display:none;">
-<div class="panel">
-<h3><i class="fas fa-user-clock"></i> Pending Requests</h3>
-<p style="color:#64748b;font-size:13px;margin-bottom:12px;">Requests from create-account.html appear here.</p>
-<button class="btn btn-outline" onclick="loadPending();showToast('Refreshed')"><i class="fas fa-sync-alt"></i> Refresh</button>
-<table class="table" style="margin-top:12px;"><thead><tr><th>Date</th><th>Name</th><th>User</th><th>Role</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
-<tbody id="pendingBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody></table>
-</div>
+    <div id="tab-roles" class="tab-pane active">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-plus-circle"></i> Create Role</div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Role Name</label><input type="text" id="roleName" class="form-control" placeholder="e.g. Pharmacist"></div>
+          <div class="form-group"><label>Description</label><input type="text" id="roleDesc" class="form-control" placeholder="e.g. Pharmacy operations"></div>
+        </div>
+        <div class="form-group">
+          <label>Permissions</label>
+          <div class="permissions-grid" id="permissionsGrid">
+            <label><input type="checkbox" value="sales"> Sales</label>
+            <label><input type="checkbox" value="inventory"> Inventory</label>
+            <label><input type="checkbox" value="reports"> Reports</label>
+            <label><input type="checkbox" value="customers"> Customers</label>
+            <label><input type="checkbox" value="suppliers"> Suppliers</label>
+            <label><input type="checkbox" value="employees"> Employees</label>
+            <label><input type="checkbox" value="settings"> Settings</label>
+            <label><input type="checkbox" value="audit"> Audit</label>
+            <label><input type="checkbox" value="products"> Products</label>
+            <label><input type="checkbox" value="purchase_orders"> Purchase Orders</label>
+            <label><input type="checkbox" value="expenses"> Expenses</label>
+            <label><input type="checkbox" value="giftcards"> Gift Cards</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveRole()"><i class="fas fa-save"></i> Save Role</button>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-list"></i> Existing Roles</div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Name</th><th>Description</th><th>Permissions</th><th>Users</th><th>Actions</th></tr></thead>
+          <tbody id="rolesBody"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-accounts" class="tab-pane">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-user-plus"></i> Create Account</div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Full Name</label><input type="text" id="userFullName" class="form-control" placeholder="John Doe"></div>
+          <div class="form-group"><label>Username</label><input type="text" id="userName" class="form-control" placeholder="johnd"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="userPassword" class="form-control" placeholder="Min 6 chars"></div>
+          <div class="form-group"><label>Role</label><select id="userRole" class="form-control"><option value="">Select Role</option></select></div>
+          <div class="form-group"><label>Phone</label><input type="tel" id="userPhone" class="form-control" placeholder="+234 801 234 5678"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="userEmail" class="form-control" placeholder="user@pharmacy.com"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:12px;cursor:pointer;">
+          <input type="checkbox" id="userActive" checked> Active Account
+        </label>
+        <button class="btn btn-primary" onclick="saveAccount()"><i class="fas fa-save"></i> Create Account</button>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-users"></i> All Accounts</div>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="accountSearch" placeholder="Search accounts..." oninput="renderAccounts()">
+          </div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Phone</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="accountsBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-pending" class="tab-pane">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fas fa-user-clock"></i> Pending Requests</div>
+          <button class="btn btn-outline btn-sm" onclick="loadPending();showToast('Refreshed')"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Account requests from the public registration page.</p>
+        <table class="table">
+          <thead><tr><th>Date</th><th>Name</th><th>Username</th><th>Role</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+          <tbody id="pendingBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="roleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="roleModalTitle">Edit Role</div>
+      <button class="modal-close" onclick="closeModal('roleModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editRoleId">
+      <div class="form-grid">
+        <div class="form-group"><label>Role Name</label><input type="text" id="editRoleName" class="form-control"></div>
+        <div class="form-group"><label>Description</label><input type="text" id="editRoleDesc" class="form-control"></div>
+      </div>
+      <div class="form-group">
+        <label>Permissions</label>
+        <div class="permissions-grid" id="editPermissionsGrid">
+          <label><input type="checkbox" value="sales"> Sales</label>
+          <label><input type="checkbox" value="inventory"> Inventory</label>
+          <label><input type="checkbox" value="reports"> Reports</label>
+          <label><input type="checkbox" value="customers"> Customers</label>
+          <label><input type="checkbox" value="suppliers"> Suppliers</label>
+          <label><input type="checkbox" value="employees"> Employees</label>
+          <label><input type="checkbox" value="settings"> Settings</label>
+          <label><input type="checkbox" value="audit"> Audit</label>
+          <label><input type="checkbox" value="products"> Products</label>
+          <label><input type="checkbox" value="purchase_orders"> Purchase Orders</label>
+          <label><input type="checkbox" value="expenses"> Expenses</label>
+          <label><input type="checkbox" value="giftcards"> Gift Cards</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('roleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEditRole()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
 </div>
-</div>
+
 <script>
-var DB={roles:[],accounts:[],pending:[]};
-function $(id){return document.getElementById(id);}
-function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return m=='&'?'&amp;':m=='<'?'&lt;':m=='>'?'&gt;':m=='"'?'&quot;':'&#39;';});}
-function showToast(msg,err){var t=$('toast');t.textContent=msg;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
-window.switchTab=function(tab,el){document.querySelectorAll('[id^=tabBtn-]').forEach(function(b){b.classList.remove('active');});document.querySelectorAll('.tab-pane').forEach(function(p){p.style.display='none';});if(el)el.classList.add('active');$('tab-'+tab).style.display='block';if(tab==='pending')loadPending();if(tab==='accounts')populateRoleDropdown();};
-async function loadRoles(){try{DB.roles=await API.get('/roles')||[];}catch(e){DB.roles=[];}if(!DB.roles.length){var defaults=[{name:'Administrator',desc:'Full system access with all permissions',permissions:['sales','inventory','reports','customers','suppliers','employees','settings','audit']},{name:'Pharmacist',desc:'Pharmacy operations, dispensing, and inventory oversight',permissions:['sales','inventory','reports','customers','suppliers','employees','audit']},{name:'Cashier',desc:'Sales transactions and customer service at counter',permissions:['sales','customers']},{name:'Sales Representative',desc:'Customer management, sales outreach, and reporting',permissions:['sales','customers','reports']}];for(var r of defaults){try{await API.post('/roles',r);}catch(e){}}}loadRolesFromLocal();renderRoles();populateRoleDropdown();}
-function loadRolesFromLocal(){try{var local=JSON.parse(localStorage.getItem('danzona_roles')||'[]');if(local.length&&!DB.roles.length)DB.roles=local;}catch(e){}}
-function saveRolesToLocal(){try{localStorage.setItem('danzona_roles',JSON.stringify(DB.roles));}catch(e){}}
-async function saveRole(){var name=$('roleName').value.trim();if(!name){showToast('Name required',true);return;}var perms=[];document.querySelectorAll('#tab-roles input:checked').forEach(function(c){perms.push(c.value);});var data={name:name,desc:$('roleDesc').value,permissions:perms};try{if(window._editingRoleId){data.id=window._editingRoleId;var res=await API.put('/roles/'+window._editingRoleId,data);var idx=DB.roles.findIndex(function(r){return String(r.id)===String(window._editingRoleId);});if(idx>-1)DB.roles[idx]=Object.assign(DB.roles[idx],res);showToast('Role updated');window._editingRoleId=null;}else{var res=await API.post('/roles',data);DB.roles.push(res);showToast('Role saved');}saveRolesToLocal();renderRoles();}catch(e){showToast(e.message||'Save failed',true);}$('roleName').value='';$('roleDesc').value='';document.querySelectorAll('#tab-roles input').forEach(function(c){c.checked=false;});}
-function renderRoles(){var tb=$('rolesBody');if(!DB.roles.length){tb.innerHTML='<tr><td colspan="5" class="empty-state">No roles</td></tr>';return;}tb.innerHTML=DB.roles.map(function(r){return'<tr><td>'+esc(r.name)+'</td><td>'+esc(r.desc||'')+'</td><td>'+(r.permissions||[]).length+'</td><td class="badge badge-success">'+DB.accounts.filter(function(a){return a.roleId==r.id;}).length+' users</td><td><button class="btn btn-outline btn-sm" onclick="editRole(\''+r.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteRole(\''+r.id+'\')">Del</button></td></tr>';}).join('');}
-async function editRole(id){var r=DB.roles.find(function(x){return String(x.id)===String(id);});if(!r)return;$('roleName').value=r.name;$('roleDesc').value=r.desc;document.querySelectorAll('#tab-roles input').forEach(function(c){c.checked=(r.permissions||[]).indexOf(c.value)>-1;});window._editingRoleId=id;showToast('Editing role');}
-async function deleteRole(id){if(!confirm('Delete?'))return;try{await API.delete('/roles/'+id);DB.roles=DB.roles.filter(function(r){return String(r.id)!==String(id);});saveRolesToLocal();renderRoles();showToast('Deleted');}catch(e){showToast(e.message||'Delete failed',true);}}
-async function loadAccounts(){try{DB.accounts=await API.get('/users')||[];}catch(e){DB.accounts=[];}renderAccounts();}
-function saveAccountsToLocal(){try{localStorage.setItem('danzona_accounts',JSON.stringify(DB.accounts));}catch(e){}}
-async function saveAccount(){var name=$('userFullName').value.trim(),user=$('userName').value.trim(),pwd=$('userPassword').value;if(!name||!user||!pwd){showToast('All required',true);return;}var roleId=$('userRole').value;var data={name:name,username:user,password:pwd,role:roleId?getRoleName(roleId):'staff',store:'main'};try{var res=await API.post('/users/register',data);DB.accounts.push({id:'USR-'+res.id,name:name,username:user,roleId:roleId,roleName:data.role,phone:$('userPhone').value,email:$('userEmail').value,active:$('userActive').checked,createdAt:new Date().toISOString()});saveAccountsToLocal();renderAccounts();showToast('Created');$('userFullName').value='';$('userName').value='';$('userPassword').value='';$('userPhone').value='';$('userEmail').value='';$('userActive').checked=true;}catch(e){showToast(e.message||'Create failed',true);}}
-function getRoleName(rid){var r=DB.roles.find(function(x){return String(x.id)===String(rid);});return r?r.name:'Unassigned';}
-function renderAccounts(){var tb=$('accountsBody');if(!DB.accounts.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">No accounts</td></tr>';return;}tb.innerHTML=DB.accounts.map(function(a){return'<tr><td>'+esc(a.name||a.fullName)+'</td><td>'+esc(a.username)+'</td><td>'+esc(a.role||a.roleName||'Unassigned')+'</td><td>'+esc(a.phone||'-')+'</td><td class="badge '+(a.active!==false?'badge-success':'badge-danger')+'">'+(a.active!==false?'Active':'Disabled')+'</td><td>'+(a.created_at?new Date(a.created_at).toLocaleDateString():'-')+'</td><td><button class="btn btn-outline btn-sm" onclick="editAccount(\''+a.id+'\')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteAccount(\''+a.id+'\')">Del</button></td></tr>';}).join('');}
-async function editAccount(id){var a=DB.accounts.find(function(x){return String(x.id)===String(id);});if(!a)return;$('userFullName').value=a.name||a.fullName;$('userName').value=a.username;$('userPassword').value='';$('userRole').value=a.roleId;$('userPhone').value=a.phone||'';$('userEmail').value=a.email||'';$('userActive').checked=a.active!==false;window._editingAccountId=id;switchTab('accounts');showToast('Editing');}
-async function deleteAccount(id){if(!confirm('Delete?'))return;try{await API.delete('/users/'+id);DB.accounts=DB.accounts.filter(function(a){return String(a.id)!==String(id);});saveAccountsToLocal();renderAccounts();showToast('Deleted');}catch(e){showToast(e.message||'Delete failed',true);}}
-function populateRoleDropdown(){var s=$('userRole');if(!s)return;s.innerHTML='<option value="">Select</option>'+DB.roles.map(function(r){return'<option value="'+r.id+'">'+esc(r.name)+'</option>';}).join('');}
-window.loadPending=function(){try{DB.pending=JSON.parse(localStorage.getItem('danzona_pending_accounts')||'[]');console.log('Pending:',DB.pending.length);}catch(e){DB.pending=[];}renderPending();};
-function savePending(){localStorage.setItem('danzona_pending_accounts',JSON.stringify(DB.pending));}
-function renderPending(){var b=$('pendingBadge');if(b)b.style.display=DB.pending.length?'inline':'none';b.textContent=DB.pending.length;var tb=$('pendingBody');if(!DB.pending.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">No pending</td></tr>';return;}tb.innerHTML=DB.pending.map(function(p){return'<tr><td>'+new Date(p.requestedAt).toLocaleDateString()+'</td><td>'+esc(p.fullName)+'</td><td>'+esc(p.username)+'</td><td>'+esc(p.role)+'</td><td>'+esc(p.phone||'-')+'</td><td>'+esc(p.email||'-')+'</td><td><button class="btn btn-success btn-sm" onclick="approvePending(\''+p.id+'\')">Approve</button> <button class="btn btn-danger btn-sm" onclick="rejectPending(\''+p.id+'\')">Reject</button></td></tr>';}).join('');}
-function approvePending(id){var p=DB.pending.find(function(x){return x.id===id;});if(!p)return;var roleKey=(p.role||'Cashier').toLowerCase();var roleMap={cashier:'Cashier',pharmacist:'Pharmacist',sales':'Sales Representative','sales representative':'Sales Representative'};var roleName=roleMap[roleKey]||(p.role||'Cashier');var r=DB.roles.find(function(r){return r.name.toLowerCase()===roleName.toLowerCase();});saveAccountDirect(p.fullName,p.username,p.password,r?r.id:'',roleName,p.phone,p.email);DB.pending=DB.pending.filter(function(x){return x.id!==id;});savePending();renderPending();showToast('Approved');}
-async function saveAccountDirect(name,user,pwd,roleId,roleName,phone,email){var data={name:name,username:user,password:pwd,role:roleName||'staff',store:'main'};try{var res=await API.post('/users/register',data);DB.accounts.push({id:'USR-'+res.id,name:name,username:user,roleId:roleId||'',roleName:roleName||'staff',phone:phone,email:email,active:true,createdAt:new Date().toISOString()});saveAccountsToLocal();renderAccounts();showToast('Account created');}catch(e){showToast(e.message||'Create failed',true);}}
-function rejectPending(id){if(!confirm('Reject?'))return;DB.pending=DB.pending.filter(function(p){return p.id!==id;});savePending();}
-function testData(){DB.pending.push({id:'REQ-'+Date.now(),fullName:'Test User',username:'testuser',password:'test123',role:'cashier',phone:'+234',email:'test@test.com',notes:'test',requestedAt:new Date().toISOString()});savePending();renderPending();showToast('Test data added');}
-window.init=async function(){console.log('init start');try{if(typeof POS!=='undefined'){try{POS.renderSidebar();}catch(e){}try{POS.renderUserMenu();}catch(e){}try{POS.startClock();}catch(e){}}catch(e){}try{await loadRoles();}catch(e){console.error('loadRoles error:',e);}try{await loadAccounts();}catch(e){console.error('loadAccounts error:',e);}try{await loadPending();}catch(e){console.error('loadPending error:',e);}console.log('Ready:',DB.roles.length,'roles',DB.accounts.length,'accounts',DB.pending.length,'pending');};
-document.addEventListener('DOMContentLoaded',function(){setTimeout(window.init,100);});
-if (document.readyState !== 'loading') setTimeout(window.init, 100);
-window.saveRole = saveRole;
-window.editRole = editRole;
-window.deleteRole = deleteRole;
-window.saveAccount = saveAccount;
-window.editAccount = editAccount;
-window.deleteAccount = deleteAccount;
-window.approvePending = approvePending;
-window.rejectPending = rejectPending;
-window.testData = testData;
-console.log('Script loaded');
+(function() {
+  var DB = { roles: [], accounts: [], pending: [] };
+  var editingRoleId = null;
+  var editingAccountId = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s || '').replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+  function showToast(msg, err) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (err ? ' error' : '');
+    t.style.display = 'block';
+    setTimeout(function() { t.style.display = 'none'; }, 3000);
+  }
+
+  function closeModal(id) { $(id).classList.remove('open'); }
+  function openModal(id) { $(id).classList.add('open'); }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tabs .btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+    if (el) el.classList.add('active');
+    $('tab-' + tab).classList.add('active');
+    if (tab === 'pending') loadPending();
+    if (tab === 'accounts') populateRoleDropdown();
+  }
+
+  function getCheckedPermissions(containerId) {
+    var perms = [];
+    $(containerId).querySelectorAll('input[type="checkbox"]:checked').forEach(function(c) { perms.push(c.value); });
+    return perms;
+  }
+
+  function setCheckedPermissions(containerId, perms) {
+    $(containerId).querySelectorAll('input[type="checkbox"]').forEach(function(c) {
+      c.checked = (perms || []).indexOf(c.value) > -1;
+    });
+  }
+
+  async function loadRoles() {
+    try {
+      DB.roles = await API.get('/roles') || [];
+    } catch (e) {
+      DB.roles = [];
+    }
+    if (!DB.roles.length) {
+      var defaults = [
+        { name: 'Administrator', desc: 'Full system access', permissions: ['sales','inventory','reports','customers','suppliers','employees','settings','audit','products','purchase_orders','expenses','giftcards'] },
+        { name: 'Pharmacist', desc: 'Pharmacy operations', permissions: ['sales','inventory','reports','customers','suppliers','employees','audit','products','purchase_orders','expiry_alerts','prescriptions'] },
+        { name: 'Cashier', desc: 'Sales and customer service', permissions: ['sales','customers'] },
+        { name: 'Sales Representative', desc: 'Customer management', permissions: ['sales','customers','reports'] }
+      ];
+      for (var r of defaults) {
+        try { await API.post('/roles', r); } catch (e) {}
+      }
+      try { DB.roles = await API.get('/roles') || []; } catch (e) {}
+    }
+    renderRoles();
+    updateStats();
+  }
+
+  async function saveRole() {
+    var name = $('roleName').value.trim();
+    if (!name) { showToast('Role name is required', true); return; }
+    var perms = getCheckedPermissions('permissionsGrid');
+    var data = { name: name, desc: $('roleDesc').value, permissions: perms };
+    try {
+      if (editingRoleId) {
+        data.id = editingRoleId;
+        await API.put('/roles/' + editingRoleId, data);
+        var idx = DB.roles.findIndex(function(r) { return String(r.id) === String(editingRoleId); });
+        if (idx > -1) DB.roles[idx] = Object.assign(DB.roles[idx], data);
+        showToast('Role updated');
+        editingRoleId = null;
+      } else {
+        var res = await API.post('/roles', data);
+        DB.roles.push(res);
+        showToast('Role created');
+      }
+      $('roleName').value = '';
+      $('roleDesc').value = '';
+      setCheckedPermissions('permissionsGrid', []);
+      renderRoles();
+      updateStats();
+    } catch (e) { showToast(e.message || 'Save failed', true); }
+  }
+
+  function editRole(id) {
+    var r = DB.roles.find(function(x) { return String(x.id) === String(id); });
+    if (!r) return;
+    editingRoleId = id;
+    $('roleModalTitle').textContent = 'Edit Role';
+    $('editRoleName').value = r.name;
+    $('editRoleDesc').value = r.desc || '';
+    setCheckedPermissions('editPermissionsGrid', r.permissions || []);
+    openModal('roleModal');
+  }
+
+  async function submitEditRole() {
+    var name = $('editRoleName').value.trim();
+    if (!name) { showToast('Role name is required', true); return; }
+    var perms = getCheckedPermissions('editPermissionsGrid');
+    try {
+      await API.put('/roles/' + editingRoleId, { name: name, desc: $('editRoleDesc').value, permissions: perms });
+      var idx = DB.roles.findIndex(function(r) { return String(r.id) === String(editingRoleId); });
+      if (idx > -1) DB.roles[idx] = Object.assign(DB.roles[idx], { name: name, desc: $('editRoleDesc').value, permissions: perms });
+      showToast('Role updated');
+      closeModal('roleModal');
+      editingRoleId = null;
+      renderRoles();
+    } catch (e) { showToast(e.message || 'Update failed', true); }
+  }
+
+  async function deleteRole(id) {
+    if (!confirm('Delete this role?')) return;
+    try {
+      await API.delete('/roles/' + id);
+      DB.roles = DB.roles.filter(function(r) { return String(r.id) !== String(id); });
+      renderRoles();
+      updateStats();
+      showToast('Role deleted');
+    } catch (e) { showToast(e.message || 'Delete failed', true); }
+  }
+
+  function renderRoles() {
+    var tb = $('rolesBody');
+    if (!DB.roles.length) { tb.innerHTML = '<tr><td colspan="5" class="empty-state">No roles configured</td></tr>'; return; }
+    tb.innerHTML = DB.roles.map(function(r) {
+      var userCount = DB.accounts.filter(function(a) { return a.role === r.name; }).length;
+      var permList = (r.permissions || []).slice(0, 4).join(', ');
+      var extra = (r.permissions || []).length > 4 ? '...' : '';
+      return '<tr>' +
+        '<td><strong>' + esc(r.name) + '</strong></td>' +
+        '<td>' + esc(r.desc || '-') + '</td>' +
+        '<td><span class="badge badge-info">' + esc(permList + extra) + ' (' + (r.permissions || []).length + ')</span></td>' +
+        '<td><span class="badge badge-success">' + userCount + ' users</span></td>' +
+        '<td class="actions-cell">' +
+          '<button class="btn btn-outline btn-sm" onclick="editRole(\'' + r.id + '\')"><i class="fas fa-edit"></i></button> ' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteRole(\'' + r.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  async function loadAccounts() {
+    try {
+      DB.accounts = await API.get('/users') || [];
+    } catch (e) {
+      DB.accounts = [];
+    }
+    renderAccounts();
+    updateStats();
+  }
+
+  function renderAccounts() {
+    var tb = $('accountsBody');
+    var query = ($('accountSearch') ? $('accountSearch').value : '').toLowerCase();
+    var filtered = DB.accounts.filter(function(a) {
+      return (a.name || '').toLowerCase().indexOf(query) > -1 ||
+             (a.username || '').toLowerCase().indexOf(query) > -1 ||
+             (a.role || '').toLowerCase().indexOf(query) > -1;
+    });
+    if (!filtered.length) { tb.innerHTML = '<tr><td colspan="7" class="empty-state">No accounts found</td></tr>'; return; }
+    tb.innerHTML = filtered.map(function(a) {
+      return '<tr>' +
+        '<td><strong>' + esc(a.name || a.fullName || '-') + '</strong></td>' +
+        '<td>' + esc(a.username) + '</td>' +
+        '<td><span class="badge badge-info">' + esc(a.role || 'staff') + '</span></td>' +
+        '<td>' + esc(a.phone || '-') + '</td>' +
+        '<td><span class="badge ' + (a.active !== false ? 'badge-success' : 'badge-danger') + '">' + (a.active !== false ? 'Active' : 'Disabled') + '</span></td>' +
+        '<td>' + (a.created_at ? new Date(a.created_at).toLocaleDateString() : '-') + '</td>' +
+        '<td class="actions-cell">' +
+          '<button class="btn btn-outline btn-sm" onclick="editAccount(\'' + a.id + '\')"><i class="fas fa-edit"></i></button> ' +
+          '<button class="btn btn-danger btn-sm" onclick="deleteAccount(\'' + a.id + '\')"><i class="fas fa-trash"></i></button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  async function saveAccount() {
+    var name = $('userFullName').value.trim();
+    var user = $('userName').value.trim();
+    var pwd = $('userPassword').value;
+    if (!name || !user || !pwd) { showToast('All fields required', true); return; }
+    if (pwd.length < 6) { showToast('Password must be at least 6 characters', true); return; }
+    var roleId = $('userRole').value;
+    var data = {
+      name: name,
+      username: user,
+      password: pwd,
+      role: roleId ? getRoleName(roleId) : 'staff',
+      store: 'main'
+    };
+    try {
+      var res = await API.post('/users/register', data);
+      DB.accounts.push({
+        id: String(res.username || 'USR-' + Date.now()),
+        name: name,
+        username: user,
+        role: data.role,
+        phone: $('userPhone').value,
+        email: $('userEmail').value,
+        active: $('userActive').checked,
+        created_at: new Date().toISOString()
+      });
+      showToast('Account created');
+      $('userFullName').value = '';
+      $('userName').value = '';
+      $('userPassword').value = '';
+      $('userPhone').value = '';
+      $('userEmail').value = '';
+      $('userActive').checked = true;
+      renderAccounts();
+      updateStats();
+    } catch (e) { showToast(e.message || 'Create failed', true); }
+  }
+
+  function getRoleName(rid) {
+    var r = DB.roles.find(function(x) { return String(x.id) === String(rid); });
+    return r ? r.name : 'staff';
+  }
+
+  function populateRoleDropdown() {
+    var s = $('userRole');
+    if (!s) return;
+    s.innerHTML = '<option value="">Select Role</option>' + DB.roles.map(function(r) {
+      return '<option value="' + r.id + '">' + esc(r.name) + '</option>';
+    }).join('');
+  }
+
+  async function editAccount(id) {
+    var a = DB.accounts.find(function(x) { return String(x.id) === String(id); });
+    if (!a) return;
+    editingAccountId = id;
+    $('userFullName').value = a.name || a.fullName || '';
+    $('userName').value = a.username;
+    $('userPassword').value = '';
+    $('userPhone').value = a.phone || '';
+    $('userEmail').value = a.email || '';
+    $('userActive').checked = a.active !== false;
+    var roleId = DB.roles.find(function(r) { return r.name === a.role; });
+    $('userRole').value = roleId ? roleId.id : '';
+    switchTab('accounts', $('tabBtn-accounts'));
+    showToast('Editing account');
+  }
+
+  async function deleteAccount(id) {
+    if (!confirm('Delete this account?')) return;
+    try {
+      await API.delete('/users/' + id);
+      DB.accounts = DB.accounts.filter(function(a) { return String(a.id) !== String(id); });
+      renderAccounts();
+      updateStats();
+      showToast('Account deleted');
+    } catch (e) { showToast(e.message || 'Delete failed', true); }
+  }
+
+  async function loadPending() {
+    try {
+      DB.pending = JSON.parse(localStorage.getItem('danzona_pending_accounts') || '[]');
+    } catch (e) { DB.pending = []; }
+    renderPending();
+    updateStats();
+  }
+
+  function savePending() {
+    localStorage.setItem('danzona_pending_accounts', JSON.stringify(DB.pending));
+  }
+
+  function renderPending() {
+    var badge = $('pendingBadge');
+    if (badge) { badge.textContent = DB.pending.length; badge.style.display = DB.pending.length ? 'inline' : 'none'; }
+    var tb = $('pendingBody');
+    if (!DB.pending.length) { tb.innerHTML = '<tr><td colspan="7" class="empty-state">No pending requests</td></tr>'; return; }
+    tb.innerHTML = DB.pending.map(function(p) {
+      return '<tr>' +
+        '<td>' + new Date(p.requestedAt).toLocaleDateString() + '</td>' +
+        '<td><strong>' + esc(p.fullName) + '</strong></td>' +
+        '<td>' + esc(p.username) + '</td>' +
+        '<td><span class="badge badge-info">' + esc(p.role || 'Cashier') + '</span></td>' +
+        '<td>' + esc(p.phone || '-') + '</td>' +
+        '<td>' + esc(p.email || '-') + '</td>' +
+        '<td class="actions-cell">' +
+          '<button class="btn btn-primary btn-sm" onclick="approvePending(\'' + p.id + '\')"><i class="fas fa-check"></i></button> ' +
+          '<button class="btn btn-danger btn-sm" onclick="rejectPending(\'' + p.id + '\')"><i class="fas fa-times"></i></button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function approvePending(id) {
+    var p = DB.pending.find(function(x) { return x.id === id; });
+    if (!p) return;
+    var roleKey = (p.role || 'Cashier').toLowerCase();
+    var roleMap = { cashier: 'Cashier', pharmacist: 'Pharmacist', sales: 'Sales Representative', 'sales representative': 'Sales Representative' };
+    var roleName = roleMap[roleKey] || (p.role || 'Cashier');
+    var r = DB.roles.find(function(role) { return role.name.toLowerCase() === roleName.toLowerCase(); });
+    saveAccountDirect(p.fullName, p.username, p.password, r ? r.id : '', roleName, p.phone, p.email);
+    DB.pending = DB.pending.filter(function(x) { return x.id !== id; });
+    savePending();
+    renderPending();
+    showToast('Request approved');
+  }
+
+  async function saveAccountDirect(name, user, pwd, roleId, roleName, phone, email) {
+    var data = { name: name, username: user, password: pwd, role: roleName || 'staff', store: 'main' };
+    try {
+      var res = await API.post('/users/register', data);
+      DB.accounts.push({
+        id: String(res.username || 'USR-' + Date.now()),
+        name: name,
+        username: user,
+        role: roleName || 'staff',
+        phone: phone,
+        email: email,
+        active: true,
+        created_at: new Date().toISOString()
+      });
+      renderAccounts();
+      updateStats();
+    } catch (e) { showToast(e.message || 'Create failed', true); }
+  }
+
+  function rejectPending(id) {
+    if (!confirm('Reject this request?')) return;
+    DB.pending = DB.pending.filter(function(p) { return p.id !== id; });
+    savePending();
+    renderPending();
+    updateStats();
+    showToast('Request rejected');
+  }
+
+  function updateStats() {
+    $('statRoles').textContent = DB.roles.length;
+    $('statAccounts').textContent = DB.accounts.length;
+    $('statPending').textContent = DB.pending.length;
+    $('statActive').textContent = DB.accounts.filter(function(a) { return a.active !== false; }).length;
+  }
+
+  window.init = async function() {
+    if (typeof POS !== 'undefined') {
+      try { POS.renderSidebar(); } catch (e) {}
+      try { POS.renderUserMenu(); } catch (e) {}
+      try { POS.startClock(); } catch (e) {}
+    }
+    await loadRoles();
+    await loadAccounts();
+    await loadPending();
+  };
+
+  document.addEventListener('DOMContentLoaded', function() { setTimeout(window.init, 100); });
+  if (document.readyState !== 'loading') setTimeout(window.init, 100);
+
+  window.switchTab = switchTab;
+  window.saveRole = saveRole;
+  window.editRole = editRole;
+  window.deleteRole = deleteRole;
+  window.submitEditRole = submitEditRole;
+  window.saveAccount = saveAccount;
+  window.editAccount = editAccount;
+  window.deleteAccount = deleteAccount;
+  window.approvePending = approvePending;
+  window.rejectPending = rejectPending;
+  window.loadPending = loadPending;
+  window.closeModal = closeModal;
 })();
 </script>
 </body>
