@@ -204,7 +204,7 @@
             }
 
             showToast('Pharmacy registered! Redirecting to admin login...', 'success');
-            window.location.href = 'admin-setup.html?pharmacy_id=' + res.pharmacy_id + '&username=' + encodeURIComponent(res.admin_username) + '&pharmacy_name=' + encodeURIComponent(res.name || '');
+            window.location.href = 'admin-setup.html?pharmacy_id=' + res.pharmacy_id + '&api_key=' + encodeURIComponent(res.api_key) + '&username=' + encodeURIComponent(res.admin_username) + '&pharmacy_name=' + encodeURIComponent(res.name || '');
         }).catch(function(err) {
             showToast('Connection error. Is the server running?', 'error');
             console.error(err);

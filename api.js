@@ -115,6 +115,13 @@ var API = (function() {
                 body: JSON.stringify({ username: uname, password: pwd })
             }).then(function(res) { return res.json(); });
         },
+        adminSetupLogin: function(apiKey, masterUser, masterPwd) {
+            return fetch(BASE_URL + '/auth/admin-setup-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: apiKey, master_username: masterUser, master_password: masterPwd })
+            }).then(function(res) { return res.json(); });
+        },
 
         // Products
         getProducts: function() { return this.get('/products'); },

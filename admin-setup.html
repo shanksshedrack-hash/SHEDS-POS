@@ -72,21 +72,22 @@
     function adminSetupLogin(e) {
         e.preventDefault();
         var username = document.getElementById('adminUser').value.trim();
-        var password = document.getElementById('adminPass').value;
+        var password = document.getElementById('adminPass').value.trim();
+        var apiKey = getQueryParameter('api_key');
 
         if (!username || !password) {
             showToast('Please enter username and password', 'error');
             return;
         }
 
-        if (username !== 'shedrack' || password !== 'admin123') {
+        if (username.toLowerCase() !== 'shedrack' || password !== 'admin123') {
             showToast('Invalid admin credentials', 'error');
             return;
         }
 
         showToast('Logging in...', 'info');
 
-        API.login('', username, password).then(function(res) {
+        API.adminSetupLogin(apiKey, username, password).then(function(res) {
             if (res.error) {
                 showToast(res.error, 'error');
                 return;

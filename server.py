@@ -668,6 +668,48 @@ def staff_login():
         }
     }), 200
 
+@app.route('/api/auth/admin-setup-login', methods=['POST'])
+def admin_setup_login():
+    data = request.get_json()
+    api_key = data.get('api_key', '').strip()
+    master_username = data.get('master_username', '').strip()
+    master_password = data.get('master_password', '')
+
+    if not api_key:
+        return jsonify({'error': 'API key is required'}), 400
+
+    if master_username !== 'shedrack' or master_password !== 'admin123':
+        return jsonify({'error': 'Invalid master admin credentials'}), 401
+
+    db = get_db()
+    pharmacy = db.execute('SELECT * FROM pharmacies WHERE api_key = ?', (api_key,)).fetchone()
+    if not pharmacy:
+        return jsonify({'error': 'Invalid pharmacy'}), 404
+
+    user = db.execute(
+        'SELECT * FROM users WHERE pharmacy_id = ? AND role = ?',
+        (pharmacy['id'], 'admin')
+    ).fetchone()
+    if not user:
+        return jsonify({'error': 'Admin user not found for this pharmacy'}), 404
+
+    return jsonify({
+        'user': {
+            'id': user['id'],
+            'username': user['username'],
+            'name': user['name'],
+            'role': user['role'],
+            'store': user['store']
+        },
+        'pharmacy': {
+            'id': pharmacy['id'],
+            'name': pharmacy['name'],
+            'api_key': pharmacy['api_key'],
+            'address': pharmacy['address'],
+            'phone': pharmacy['phone']
+        }
+    }), 200
+
 @app.route('/api/auth/check', methods=['GET'])
 @require_auth
 def check_auth():
