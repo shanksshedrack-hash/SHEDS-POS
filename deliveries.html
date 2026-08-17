@@ -149,7 +149,7 @@ async function loadCustomerOptions() {
         $id('customerSelect').innerHTML = '<option value="">Select Customer</option>' + customersCache.map(function(c) {
             return '<option value="' + c.id + '">' + POS.esc((c.firstName || '') + ' ' + (c.lastName || '')) + '</option>';
         }).join('');
-    } catch (err) {}
+    } catch (err) { POS.showToast('Failed to load customers: '+(err.message||'API error'), true); }
 }
 async function scheduleDelivery() {
     var customer = $id('customerSelect').value;

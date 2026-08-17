@@ -146,9 +146,9 @@ async function loadCustomerOptions() {
         $id('invoiceCustomerSelect').innerHTML = '<option value="">Select Customer</option>' + customers.map(function(c) {
             return '<option value="' + c.id + '">' + POS.esc((c.firstName || '') + ' ' + (c.lastName || '')) + '</option>';
         }).join('');
-    } catch (err) {}
-}
-async function addInvoice() {
+    } catch (err) { POS.showToast('Failed to load customers: '+(err.message||'API error'), true); }
+  }
+  async function addInvoice() {
     var customer = $id('invoiceCustomerSelect').value;
     var date = $id('invoiceDate').value;
     var dueDate = $id('dueDate').value;

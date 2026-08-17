@@ -186,17 +186,17 @@ async function loadCustomers() {
         $id('customerSelect').innerHTML = '<option value="">Select Customer</option>' + customersCache.map(function(c) {
             return '<option value="' + c.id + '">' + POS.esc((c.firstName || '') + ' ' + (c.lastName || '')) + '</option>';
         }).join('');
-    } catch (err) {}
-}
-async function loadSuppliers() {
+    } catch (err) { POS.showToast('Failed to load customers: '+(err.message||'API error'), true); }
+  }
+  async function loadSuppliers() {
     try {
         suppliersCache = await API.getSuppliers() || [];
         $id('supplierSelect').innerHTML = '<option value="">Select Supplier</option>' + suppliersCache.map(function(s) {
             return '<option value="' + s.id + '">' + POS.esc(s.name || '') + '</option>';
         }).join('');
-    } catch (err) {}
-}
-async function addPayment() {
+    } catch (err) { POS.showToast('Failed to load suppliers: '+(err.message||'API error'), true); }
+  }
+  async function addPayment() {
     var customer = $id('customerSelect').value;
     var supplier = $id('supplierSelect').value;
     var invoice = $id('invoiceNumber').value;

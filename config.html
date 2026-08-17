@@ -236,14 +236,14 @@
       }
   }
 
-  function init() {
+  async function init() {
       try {
           if (typeof POS !== 'undefined') {
               POS.renderSidebar();
               POS.renderUserMenu();
               POS.startClock();
           }
-          loadForm();
+          await loadForm();
       } catch (err) {
           console.error('Store Config init error:', err);
       }

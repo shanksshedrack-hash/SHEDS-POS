@@ -367,6 +367,7 @@
           employees = Array.isArray(data) ? data : [];
       } catch (err) {
           employees = safeGet('danzona_employees', []);
+          POS.showToast('Failed to load employees: '+(err.message||'API error'), true);
       }
       if (!employees.length) employees = safeGet('danzona_employees', []);
       filterEmployees();
@@ -399,6 +400,8 @@
   window.exportEmployeesCSV = exportEmployeesCSV;
   window.printEmployeeList = printEmployeeList;
   window.clearFilters = clearFilters;
+  window.filterEmployees = filterEmployees;
+  window.renderEmployees = renderEmployees;
 })();
 </script>
 </body>

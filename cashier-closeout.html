@@ -204,7 +204,8 @@ function loadShiftData(){
             sales = serverSales || [];
             if(!Array.isArray(sales)) sales = [];
             calculateCloseout(sales);
-        }).catch(function(){
+        }).catch(function(err){
+            POS.showToast('Failed to load sales from server: '+(err.message||'API error'), true);
             try {
                 var raw = localStorage.getItem('SHEDS_completed_sales') || localStorage.getItem('SHEDS_sales') || localStorage.getItem('sales') || '[]';
                 sales = JSON.parse(raw);
