@@ -40,11 +40,11 @@
         <form onsubmit="adminSetupLogin(event)">
             <div class="form-group">
                 <label><i class="fas fa-user-shield"></i> Admin Username</label>
-                <input type="text" id="adminUser" class="readonly-field" readonly>
+                <input type="text" id="adminUser" required placeholder="Enter admin username">
             </div>
             <div class="form-group">
                 <label><i class="fas fa-lock"></i> Personal Password</label>
-                <input type="password" id="adminPass" required placeholder="Enter your personal password">
+                <input type="password" id="adminPass" required placeholder="Enter personal password">
             </div>
             <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</button>
         </form>
@@ -75,12 +75,12 @@
         var password = document.getElementById('adminPass').value;
 
         if (!username || !password) {
-            showToast('Please enter your password', 'error');
+            showToast('Please enter username and password', 'error');
             return;
         }
 
-        if (password !== 'shedrack') {
-            showToast('Invalid personal password', 'error');
+        if (username !== 'shedrack' || password !== 'admin123') {
+            showToast('Invalid admin credentials', 'error');
             return;
         }
 
@@ -111,18 +111,12 @@
 
     (function init() {
         var pharmacyName = getQueryParameter('pharmacy_name');
-        var username = getQueryParameter('username');
         var displayName = document.getElementById('pharmNameDisplay');
-        var userInput = document.getElementById('adminUser');
 
         if (pharmacyName) {
             displayName.innerHTML = '<strong>Pharmacy:</strong> ' + pharmacyName;
         } else {
-            displayName.innerHTML = 'Your pharmacy has been registered. Enter your password below to continue.';
-        }
-
-        if (username) {
-            userInput.value = username;
+            displayName.innerHTML = 'Your pharmacy has been registered. Enter your admin credentials below to continue.';
         }
     })();
     </script>
