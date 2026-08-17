@@ -38,6 +38,7 @@
         </div>
 
         <form onsubmit="adminSetupLogin(event)">
+            <input type="hidden" id="apiKeyField">
             <div class="form-group">
                 <label><i class="fas fa-user-shield"></i> Admin Username</label>
                 <input type="text" id="adminUser" required placeholder="Enter admin username">
@@ -73,10 +74,15 @@
         e.preventDefault();
         var username = document.getElementById('adminUser').value.trim();
         var password = document.getElementById('adminPass').value.trim();
-        var apiKey = getQueryParameter('api_key');
+        var apiKey = document.getElementById('apiKeyField').value.trim();
 
         if (!username || !password) {
             showToast('Please enter username and password', 'error');
+            return;
+        }
+
+        if (!apiKey) {
+            showToast('Session expired. Please register your pharmacy again.', 'error');
             return;
         }
 
@@ -112,7 +118,13 @@
 
     (function init() {
         var pharmacyName = getQueryParameter('pharmacy_name');
+        var apiKey = getQueryParameter('api_key');
         var displayName = document.getElementById('pharmNameDisplay');
+        var apiKeyField = document.getElementById('apiKeyField');
+
+        if (apiKey) {
+            apiKeyField.value = apiKey;
+        }
 
         if (pharmacyName) {
             displayName.innerHTML = '<strong>Pharmacy:</strong> ' + pharmacyName;
