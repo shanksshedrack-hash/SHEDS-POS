@@ -73,7 +73,35 @@
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     border: 1px solid var(--border);
+    max-width: 100%;
   }
+  .receipt.size-58mm { max-width: 58mm; }
+  .receipt.size-80mm { max-width: 80mm; }
+  .receipt.size-a4 { max-width: 210mm; }
+  .receipt.size-letter { max-width: 216mm; }
+  .receipt-body { padding: 24px 28px; }
+  .receipt.size-58mm .receipt-body,
+  .receipt.size-80mm .receipt-body { padding: 10px 8px; }
+  .receipt.size-58mm .brand-text h1,
+  .receipt.size-80mm .brand-text h1 { font-size: 16px; }
+  .receipt.size-58mm .business-meta,
+  .receipt.size-80mm .business-meta { font-size: 10px; gap: 6px; }
+  .receipt.size-58mm .items-table,
+  .receipt.size-80mm .items-table { font-size: 11px; }
+  .receipt.size-58mm .items-table th,
+  .receipt.size-80mm .items-table th,
+  .receipt.size-58mm .items-table td,
+  .receipt.size-80mm .items-table td { padding: 5px 4px; }
+  .receipt.size-58mm .detail-card,
+  .receipt.size-80mm .detail-card { padding: 6px 8px; }
+  .receipt.size-58mm .section,
+  .receipt.size-80mm .section { margin-bottom: 12px; }
+  .receipt.size-58mm .section-title,
+  .receipt.size-80mm .section-title { font-size: 9px; margin-bottom: 6px; padding-bottom: 4px; }
+  .receipt.size-58mm .summary-table td,
+  .receipt.size-80mm .summary-table td { padding: 4px 0; font-size: 11px; }
+  .receipt.size-58mm .summary-table .grand-total td,
+  .receipt.size-80mm .summary-table .grand-total td { font-size: 13px; padding: 8px 0; }
   .receipt-header {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #fff;
@@ -334,7 +362,31 @@
     go('sales.html');
   }
 
+  function applyReceiptStyles(){
+    var paper = document.getElementById('receiptPaper');
+    if(!paper) return;
+    var size = (StoreConfig.get('receiptPageSize') || '80mm').toLowerCase();
+    paper.classList.remove('size-58mm', 'size-80mm', 'size-a4', 'size-letter');
+    if(size === '58mm') paper.classList.add('size-58mm');
+    else if(size === 'a4') paper.classList.add('size-a4');
+    else if(size === 'letter') paper.classList.add('size-letter');
+    else paper.classList.add('size-80mm');
+
+    var fontSize = StoreConfig.get('receiptFontSize') || 12;
+    var margin = StoreConfig.get('receiptMargin') || 10;
+    var body = document.querySelector('.receipt-body');
+    if(body){
+      body.style.fontSize = fontSize + 'px';
+      body.style.padding = margin + 'px';
+    }
+    var header = document.querySelector('.receipt-header');
+    if(header){
+      header.style.padding = (parseInt(margin) + 8) + 'px';
+    }
+  }
+
   function load(){
+    applyReceiptStyles();
     var raw=localStorage.getItem('last_receipt');
     if(!raw){
       document.getElementById('receiptBody').innerHTML='<div class="empty"><i class="fas fa-receipt"></i><p>No checkout receipt found.<br>Complete a sale to view the receipt.</p></div>';

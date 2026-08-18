@@ -37,6 +37,10 @@
 <div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="info@danzonapharm.com"></div>
 <div class="form-group"><label>Store Logo URL</label><input type="text" id="storeLogo" placeholder="https://... or leave blank"></div>
 </div>
+<div class="form-row">
+<div class="form-group"><label>Site Tagline</label><input type="text" id="siteTagline" placeholder="e.g. Point of Sale System"></div>
+<div class="form-group"><label>Site Description</label><input type="text" id="siteDescription" placeholder="Short description for SEO / meta"></div>
+</div>
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
@@ -102,10 +106,17 @@
 <div class="form-group"><label>Printer Type</label><select id="printerType"><option value="small">Small (58mm / 80mm)</option><option value="large">Large (A4 / Letter)</option></select></div>
 </div>
 <div class="form-row">
+<div class="form-group"><label>Receipt Page Size</label><select id="receiptPageSize"><option value="58mm">58mm (Small Thermal)</option><option value="80mm">80mm (Standard Thermal)</option><option value="a4">A4</option><option value="letter">Letter</option></select></div>
+<div class="form-group"><label>Receipt Font Size (px)</label><input type="number" id="receiptFontSize" min="8" max="24" value="12"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Receipt Margin (px)</label><input type="number" id="receiptMargin" min="0" max="60" value="10"></div>
+<div class="form-group"><label>Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
+</div>
+<div class="form-row">
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoPrintReceipt" style="width:16px;height:16px;"> Auto-print After Sale</label></div>
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showReceiptLogo" style="width:16px;height:16px;"> Show Logo on Receipt</label></div>
 </div>
-<div class="form-group"><label>Receipt Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
@@ -158,13 +169,18 @@
       $('currencyLocale').value = StoreConfig.get('currencyLocale') || 'en-NG';
       $('printerType').value = StoreConfig.get('printerType') || 'small';
       $('storeLogo').value = StoreConfig.get('storeLogo') || '';
+      $('siteTagline').value = StoreConfig.get('siteTagline') || '';
+      $('siteDescription').value = StoreConfig.get('siteDescription') || '';
       $('footerText').value = StoreConfig.get('footerText') || '';
+      $('receiptPrefix').value = StoreConfig.get('receiptPrefix') || 'DAN';
+      $('receiptPageSize').value = StoreConfig.get('receiptPageSize') || '80mm';
+      $('receiptFontSize').value = StoreConfig.get('receiptFontSize') || '12';
+      $('receiptMargin').value = StoreConfig.get('receiptMargin') || '10';
       $('lowStockThreshold').value = StoreConfig.get('lowStockThreshold') || 5;
       $('sessionTimeout').value = StoreConfig.get('sessionTimeout') || 30;
       $('openingTime').value = StoreConfig.get('openingTime') || '08:00';
       $('closingTime').value = StoreConfig.get('closingTime') || '20:00';
       $('openDays').value = StoreConfig.get('openDays') || 'Mon-Sat';
-      $('receiptPrefix').value = StoreConfig.get('receiptPrefix') || 'DAN';
       $('taxEnabled').checked = StoreConfig.get('taxEnabled') || false;
       $('taxRate').value = StoreConfig.get('taxRate') || 7.5;
       $('taxName').value = StoreConfig.get('taxName') || 'VAT';
@@ -194,13 +210,18 @@
           currencyLocale: $('currencyLocale').value || 'en-NG',
           printerType: $('printerType').value || 'small',
           storeLogo: $('storeLogo').value.trim(),
+          siteTagline: $('siteTagline').value.trim(),
+          siteDescription: $('siteDescription').value.trim(),
           footerText: $('footerText').value.trim(),
+          receiptPrefix: $('receiptPrefix').value.trim() || 'DAN',
+          receiptPageSize: $('receiptPageSize').value || '80mm',
+          receiptFontSize: parseInt($('receiptFontSize').value) || 12,
+          receiptMargin: parseInt($('receiptMargin').value) || 10,
           lowStockThreshold: parseInt($('lowStockThreshold').value) || 5,
           sessionTimeout: parseInt($('sessionTimeout').value) || 30,
           openingTime: $('openingTime').value || '08:00',
           closingTime: $('closingTime').value || '20:00',
           openDays: $('openDays').value || 'Mon-Sat',
-          receiptPrefix: $('receiptPrefix').value.trim() || 'DAN',
           taxEnabled: $('taxEnabled').checked,
           taxRate: parseFloat($('taxRate').value) || 7.5,
           taxName: $('taxName').value.trim() || 'VAT',
