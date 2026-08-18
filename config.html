@@ -453,6 +453,8 @@
               POS.startClock();
           }
           await loadForm();
+          if (window.POS && POS.applyAppearanceSettings) POS.applyAppearanceSettings();
+          document.body.classList.remove('sidebar-collapsed', 'sidebar-mini');
       } catch (err) {
           console.error('Store Config init error:', err);
       }
