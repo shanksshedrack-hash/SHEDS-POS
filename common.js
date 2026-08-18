@@ -268,10 +268,6 @@ function applyAppearanceSettings() {
         if (cfg.themeMode === 'dark') body.classList.add('theme-dark');
         else body.classList.remove('theme-dark');
 
-        if (cfg.sidebarMode === 'collapsed') { body.classList.add('sidebar-collapsed'); body.classList.remove('sidebar-mini'); }
-        else if (cfg.sidebarMode === 'mini') { body.classList.add('sidebar-mini'); body.classList.remove('sidebar-collapsed'); }
-        else { body.classList.remove('sidebar-collapsed', 'sidebar-mini'); }
-
         if (cfg.compactMode) body.classList.add('compact-mode');
         else body.classList.remove('compact-mode');
 
