@@ -106,6 +106,9 @@ tr:hover{background:#f8fafc}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
 .toast{position:fixed;top:18px;right:18px;background:#022c22;color:#fff;padding:13px 18px;border-radius:12px;display:none;z-index:4000;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.18);max-width:420px}
 .toast.error{background:#dc2626}
+.toast.top-left{top:18px;right:auto;left:18px}
+.toast.bottom-right{top:auto;bottom:18px;right:18px}
+.toast.bottom-left{top:auto;bottom:18px;right:auto;left:18px}
 .empty-state{text-align:center;color:var(--muted);padding:28px!important}
 .alert{border-radius:14px;padding:13px 15px;border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;font-size:13px;margin-bottom:16px}
 .alert.warning{border-color:#fde68a;background:#fffbeb;color:#92400e}

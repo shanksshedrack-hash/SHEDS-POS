@@ -22,7 +22,16 @@ var StoreConfig = (function() {
         themeMode: 'light', primaryColor: '#10b981', fontFamily: 'Inter, Arial, sans-serif',
         baseFontSize: 14, borderRadius: '10px', shadowIntensity: 'normal',
         headerStyle: 'gradient', tableStyle: 'bordered', contentWidth: 'full',
-        cardStyle: 'shadow', customCSS: ''
+        cardStyle: 'shadow', customCSS: '',
+        defaultPaymentMethod: 'cash', productsPerRow: '4',
+        confirmBeforeSale: false, showProductImages: true, allowNegativeStock: false,
+        requireCustomerForSale: false, enableSound: false,
+        notificationPosition: 'top-right', lowStockNotification: false,
+        expiryNotification: false, notificationDuration: 4,
+        showDesktopNotification: false, lockScreenTimeout: 5,
+        requirePasswordForVoid: false, requirePasswordForDiscount: false,
+        requirePasswordForRefund: false, enableAuditLog: false,
+        autoBackup: false, backupTime: '02:00', autoSync: false, syncInterval: 15
     };
     function getAll() { try { var raw = localStorage.getItem(KEY); if (!raw) return JSON.parse(JSON.stringify(defaults)); var parsed = JSON.parse(raw); return Object.assign({}, defaults, parsed); } catch (e) { return JSON.parse(JSON.stringify(defaults)); } }
     function get(key) { var cfg = getAll(); return cfg[key] !== undefined ? cfg[key] : defaults[key]; }

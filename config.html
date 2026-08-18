@@ -158,6 +158,66 @@
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-shopping-cart" style="color:#10b981;"></i> Sales & POS Behavior</h3>
+<div class="form-row">
+<div class="form-group"><label>Default Payment Method</label><select id="defaultPaymentMethod"><option value="cash">Cash</option><option value="card">Card</option><option value="pos">POS</option><option value="bank_transfer">Bank Transfer</option><option value="store_account">Store Account</option></select></div>
+<div class="form-group"><label>Products Per Row (Sales)</label><select id="productsPerRow"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="confirmBeforeSale" style="width:16px;height:16px;"> Confirm Before Completing Sale</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showProductImages" style="width:16px;height:16px;"> Show Product Images in Sales</label></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowNegativeStock" style="width:16px;height:16px;"> Allow Selling Below Stock</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requireCustomerForSale" style="width:16px;height:16px;"> Require Customer Selection</label></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-bell" style="color:#f59e0b;"></i> Notifications & Alerts</h3>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableSound" style="width:16px;height:16px;"> Enable Sound Effects</label></div>
+<div class="form-group"><label>Notification Position</label><select id="notificationPosition"><option value="top-right">Top Right</option><option value="top-left">Top Left</option><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="lowStockNotification" style="width:16px;height:16px;"> Low Stock Popup Alert</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="expiryNotification" style="width:16px;height:16px;"> Expiry Alert Popup</label></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Auto-dismiss Notifications (sec)</label><input type="number" id="notificationDuration" min="1" max="30" value="4"></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showDesktopNotification" style="width:16px;height:16px;"> Desktop Notifications</label></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-shield-alt" style="color:#ef4444;"></i> Security & Access</h3>
+<div class="form-row">
+<div class="form-group"><label>Session Timeout (minutes)</label><input type="number" id="sessionTimeout" min="5" max="480" placeholder="30"></div>
+<div class="form-group"><label>Lock Screen Timeout (minutes)</label><input type="number" id="lockScreenTimeout" min="1" max="60" placeholder="5"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForVoid" style="width:16px;height:16px;"> Require Password to Void Sale</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForDiscount" style="width:16px;height:16px;"> Require Password for Discount</label></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForRefund" style="width:16px;height:16px;"> Require Password for Refund</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableAuditLog" style="width:16px;height:16px;"> Enable Audit Logging</label></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-download" style="color:#3b82f6;"></i> Data & Backup</h3>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoBackup" style="width:16px;height:16px;"> Auto Backup Daily</label></div>
+<div class="form-group"><label>Backup Time</label><input type="time" id="backupTime" value="02:00"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoSync" style="width:16px;height:16px;"> Auto Sync to Server</label></div>
+<div class="form-group"><label>Sync Interval (minutes)</label><input type="number" id="syncInterval" min="1" max="120" value="15"></div>
+</div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
 <h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-desktop" style="color:#6366f1;"></i> Page & Display</h3>
 <div class="form-row">
 <div class="form-group"><label>Sidebar Mode</label><select id="sidebarMode"><option value="expanded">Expanded</option><option value="collapsed">Collapsed</option><option value="mini">Mini / Icons Only</option></select></div>
@@ -191,9 +251,11 @@
       var t = $('toast');
       t.textContent = msg;
       t.className = 'toast' + (isError ? ' error' : '');
+      var pos = StoreConfig.get('notificationPosition') || 'top-right';
+      if (pos !== 'top-right') t.classList.add(pos);
       t.style.display = 'block';
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(function(){ t.style.display = 'none'; }, 3000);
+      toastTimer = setTimeout(function(){ t.style.display = 'none'; t.classList.remove('top-left','bottom-right','bottom-left'); }, 3000);
   }
 
   async function loadForm() {
@@ -262,6 +324,27 @@
       $('contentWidth').value = StoreConfig.get('contentWidth') || 'full';
       $('cardStyle').value = StoreConfig.get('cardStyle') || 'shadow';
       $('customCSS').value = StoreConfig.get('customCSS') || '';
+      $('defaultPaymentMethod').value = StoreConfig.get('defaultPaymentMethod') || 'cash';
+      $('productsPerRow').value = StoreConfig.get('productsPerRow') || '4';
+      $('confirmBeforeSale').checked = StoreConfig.get('confirmBeforeSale') || false;
+      $('showProductImages').checked = StoreConfig.get('showProductImages') !== false;
+      $('allowNegativeStock').checked = StoreConfig.get('allowNegativeStock') || false;
+      $('requireCustomerForSale').checked = StoreConfig.get('requireCustomerForSale') || false;
+      $('enableSound').checked = StoreConfig.get('enableSound') || false;
+      $('notificationPosition').value = StoreConfig.get('notificationPosition') || 'top-right';
+      $('lowStockNotification').checked = StoreConfig.get('lowStockNotification') || false;
+      $('expiryNotification').checked = StoreConfig.get('expiryNotification') || false;
+      $('notificationDuration').value = StoreConfig.get('notificationDuration') || '4';
+      $('showDesktopNotification').checked = StoreConfig.get('showDesktopNotification') || false;
+      $('lockScreenTimeout').value = StoreConfig.get('lockScreenTimeout') || '5';
+      $('requirePasswordForVoid').checked = StoreConfig.get('requirePasswordForVoid') || false;
+      $('requirePasswordForDiscount').checked = StoreConfig.get('requirePasswordForDiscount') || false;
+      $('requirePasswordForRefund').checked = StoreConfig.get('requirePasswordForRefund') || false;
+      $('enableAuditLog').checked = StoreConfig.get('enableAuditLog') || false;
+      $('autoBackup').checked = StoreConfig.get('autoBackup') || false;
+      $('backupTime').value = StoreConfig.get('backupTime') || '02:00';
+      $('autoSync').checked = StoreConfig.get('autoSync') || false;
+      $('syncInterval').value = StoreConfig.get('syncInterval') || '15';
   }
 
   function collectForm() {
@@ -321,7 +404,28 @@
           tableStyle: $('tableStyle').value || 'bordered',
           contentWidth: $('contentWidth').value || 'full',
           cardStyle: $('cardStyle').value || 'shadow',
-          customCSS: $('customCSS').value.trim()
+          customCSS: $('customCSS').value.trim(),
+          defaultPaymentMethod: $('defaultPaymentMethod').value || 'cash',
+          productsPerRow: $('productsPerRow').value || '4',
+          confirmBeforeSale: $('confirmBeforeSale').checked,
+          showProductImages: $('showProductImages').checked,
+          allowNegativeStock: $('allowNegativeStock').checked,
+          requireCustomerForSale: $('requireCustomerForSale').checked,
+          enableSound: $('enableSound').checked,
+          notificationPosition: $('notificationPosition').value || 'top-right',
+          lowStockNotification: $('lowStockNotification').checked,
+          expiryNotification: $('expiryNotification').checked,
+          notificationDuration: parseInt($('notificationDuration').value) || 4,
+          showDesktopNotification: $('showDesktopNotification').checked,
+          lockScreenTimeout: parseInt($('lockScreenTimeout').value) || 5,
+          requirePasswordForVoid: $('requirePasswordForVoid').checked,
+          requirePasswordForDiscount: $('requirePasswordForDiscount').checked,
+          requirePasswordForRefund: $('requirePasswordForRefund').checked,
+          enableAuditLog: $('enableAuditLog').checked,
+          autoBackup: $('autoBackup').checked,
+          backupTime: $('backupTime').value || '02:00',
+          autoSync: $('autoSync').checked,
+          syncInterval: parseInt($('syncInterval').value) || 15
       };
   }
 
