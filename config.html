@@ -37,10 +37,6 @@
 <div class="form-group"><label>Email Address</label><input type="email" id="emailAddress" placeholder="info@danzonapharm.com"></div>
 <div class="form-group"><label>Store Logo URL</label><input type="text" id="storeLogo" placeholder="https://... or leave blank"></div>
 </div>
-<div class="form-row">
-<div class="form-group"><label>Site Tagline</label><input type="text" id="siteTagline" placeholder="e.g. Point of Sale System"></div>
-<div class="form-group"><label>Site Description</label><input type="text" id="siteDescription" placeholder="Short description for SEO / meta"></div>
-</div>
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
@@ -106,17 +102,10 @@
 <div class="form-group"><label>Printer Type</label><select id="printerType"><option value="small">Small (58mm / 80mm)</option><option value="large">Large (A4 / Letter)</option></select></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>Receipt Page Size</label><select id="receiptPageSize"><option value="58mm">58mm (Small Thermal)</option><option value="80mm">80mm (Standard Thermal)</option><option value="a4">A4</option><option value="letter">Letter</option></select></div>
-<div class="form-group"><label>Receipt Font Size (px)</label><input type="number" id="receiptFontSize" min="8" max="24" value="12"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Receipt Margin (px)</label><input type="number" id="receiptMargin" min="0" max="60" value="10"></div>
-<div class="form-group"><label>Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
-</div>
-<div class="form-row">
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoPrintReceipt" style="width:16px;height:16px;"> Auto-print After Sale</label></div>
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showReceiptLogo" style="width:16px;height:16px;"> Show Logo on Receipt</label></div>
 </div>
+<div class="form-group"><label>Receipt Footer Text</label><input type="text" id="footerText" placeholder="Thank you for your patronage!"></div>
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
@@ -130,111 +119,6 @@
 <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="expiryBlockSales" style="width:16px;height:16px;"> Block Sale of Expired Items</label></div>
 </div>
 <div class="form-group"><label>Low Stock Alert Email</label><input type="email" id="lowStockEmail" placeholder="manager@danzonapharm.com"></div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-palette" style="color:#ec4899;"></i> Appearance & Theme</h3>
-<div class="form-row">
-<div class="form-group"><label>Theme Mode</label><select id="themeMode"><option value="light">Light</option><option value="dark">Dark</option></select></div>
-<div class="form-group"><label>Primary Color</label><input type="color" id="primaryColor" value="#10b981" style="width:100%;height:38px;padding:2px;border-radius:8px;cursor:pointer;"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Font Family</label><select id="fontFamily"><option value="Inter, Arial, sans-serif">Inter (Default)</option><option value="Segoe UI, Tahoma, sans-serif">Segoe UI</option><option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option><option value="'Courier New', monospace">Monospace</option><option value="system-ui, sans-serif">System UI</option></select></div>
-<div class="form-group"><label>Base Font Size (px)</label><input type="number" id="baseFontSize" min="11" max="18" value="14"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Border Radius</label><select id="borderRadius"><option value="0">None / Sharp</option><option value="6px">Small (6px)</option><option value="10px">Medium (10px)</option><option value="16px">Large (16px)</option><option value="999px">Pill / Fully Rounded</option></select></div>
-<div class="form-group"><label>Shadow Intensity</label><select id="shadowIntensity"><option value="none">None</option><option value="light">Light</option><option value="normal">Normal</option><option value="heavy">Heavy</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Header Style</label><select id="headerStyle"><option value="solid">Solid Color</option><option value="gradient">Gradient</option><option value="minimal">Minimal / Flat</option></select></div>
-<div class="form-group"><label>Table Style</label><select id="tableStyle"><option value="bordered">Bordered</option><option value="striped">Striped</option><option value="minimal">Minimal</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Content Width</label><select id="contentWidth"><option value="full">Full Width</option><option value="boxed">Boxed / Centered</option><option value="narrow">Narrow</option></select></div>
-<div class="form-group"><label>Card Style</label><select id="cardStyle"><option value="shadow">Shadow Cards</option><option value="bordered">Bordered Cards</option><option value="flat">Flat / No Style</option></select></div>
-</div>
-<div class="form-group"><label>Custom CSS (advanced)</label><textarea id="customCSS" class="notes-area" placeholder="/* Add custom CSS here */&#10;.my-class { color: red; }" rows="3"></textarea></div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-shopping-cart" style="color:#10b981;"></i> Sales & POS Behavior</h3>
-<div class="form-row">
-<div class="form-group"><label>Default Payment Method</label><select id="defaultPaymentMethod"><option value="cash">Cash</option><option value="card">Card</option><option value="pos">POS</option><option value="bank_transfer">Bank Transfer</option><option value="store_account">Store Account</option></select></div>
-<div class="form-group"><label>Products Per Row (Sales)</label><select id="productsPerRow"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="confirmBeforeSale" style="width:16px;height:16px;"> Confirm Before Completing Sale</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showProductImages" style="width:16px;height:16px;"> Show Product Images in Sales</label></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="allowNegativeStock" style="width:16px;height:16px;"> Allow Selling Below Stock</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requireCustomerForSale" style="width:16px;height:16px;"> Require Customer Selection</label></div>
-</div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-bell" style="color:#f59e0b;"></i> Notifications & Alerts</h3>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableSound" style="width:16px;height:16px;"> Enable Sound Effects</label></div>
-<div class="form-group"><label>Notification Position</label><select id="notificationPosition"><option value="top-right">Top Right</option><option value="top-left">Top Left</option><option value="bottom-right">Bottom Right</option><option value="bottom-left">Bottom Left</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="lowStockNotification" style="width:16px;height:16px;"> Low Stock Popup Alert</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="expiryNotification" style="width:16px;height:16px;"> Expiry Alert Popup</label></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Auto-dismiss Notifications (sec)</label><input type="number" id="notificationDuration" min="1" max="30" value="4"></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showDesktopNotification" style="width:16px;height:16px;"> Desktop Notifications</label></div>
-</div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-shield-alt" style="color:#ef4444;"></i> Security & Access</h3>
-<div class="form-row">
-<div class="form-group"><label>Session Timeout (minutes)</label><input type="number" id="sessionTimeout" min="5" max="480" placeholder="30"></div>
-<div class="form-group"><label>Lock Screen Timeout (minutes)</label><input type="number" id="lockScreenTimeout" min="1" max="60" placeholder="5"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForVoid" style="width:16px;height:16px;"> Require Password to Void Sale</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForDiscount" style="width:16px;height:16px;"> Require Password for Discount</label></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="requirePasswordForRefund" style="width:16px;height:16px;"> Require Password for Refund</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableAuditLog" style="width:16px;height:16px;"> Enable Audit Logging</label></div>
-</div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-download" style="color:#3b82f6;"></i> Data & Backup</h3>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoBackup" style="width:16px;height:16px;"> Auto Backup Daily</label></div>
-<div class="form-group"><label>Backup Time</label><input type="time" id="backupTime" value="02:00"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="autoSync" style="width:16px;height:16px;"> Auto Sync to Server</label></div>
-<div class="form-group"><label>Sync Interval (minutes)</label><input type="number" id="syncInterval" min="1" max="120" value="15"></div>
-</div>
-</div>
-
-<div class="panel" style="margin-bottom:18px;">
-<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-desktop" style="color:#6366f1;"></i> Page & Display</h3>
-<div class="form-row">
-<div class="form-group"><label>Sidebar Mode</label><select id="sidebarMode"><option value="expanded">Expanded</option><option value="collapsed">Collapsed</option><option value="mini">Mini / Icons Only</option></select></div>
-<div class="form-group"><label>Table Density</label><select id="tableDensity"><option value="compact">Compact</option><option value="normal">Normal</option><option value="comfortable">Comfortable</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Date Format</label><select id="dateFormat"><option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="YYYY-MM-DD">YYYY-MM-DD</option></select></div>
-<div class="form-group"><label>Time Format</label><select id="timeFormat"><option value="12">12 Hour (AM/PM)</option><option value="24">24 Hour</option></select></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Dashboard Cards Per Row</label><select id="dashboardCardsPerRow"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableAnimations" style="width:16px;height:16px;"> Enable Animations</label></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showQuickActions" style="width:16px;height:16px;"> Show Quick Action Buttons</label></div>
-<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="compactMode" style="width:16px;height:16px;"> Compact Mode</label></div>
-</div>
 </div>
 
 <div id="saveStatus" style="margin-top:12px;"></div>
@@ -251,11 +135,9 @@
       var t = $('toast');
       t.textContent = msg;
       t.className = 'toast' + (isError ? ' error' : '');
-      var pos = StoreConfig.get('notificationPosition') || 'top-right';
-      if (pos !== 'top-right') t.classList.add(pos);
       t.style.display = 'block';
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(function(){ t.style.display = 'none'; t.classList.remove('top-left','bottom-right','bottom-left'); }, 3000);
+      toastTimer = setTimeout(function(){ t.style.display = 'none'; }, 3000);
   }
 
   async function loadForm() {
@@ -276,18 +158,13 @@
       $('currencyLocale').value = StoreConfig.get('currencyLocale') || 'en-NG';
       $('printerType').value = StoreConfig.get('printerType') || 'small';
       $('storeLogo').value = StoreConfig.get('storeLogo') || '';
-      $('siteTagline').value = StoreConfig.get('siteTagline') || '';
-      $('siteDescription').value = StoreConfig.get('siteDescription') || '';
       $('footerText').value = StoreConfig.get('footerText') || '';
-      $('receiptPrefix').value = StoreConfig.get('receiptPrefix') || 'DAN';
-      $('receiptPageSize').value = StoreConfig.get('receiptPageSize') || '80mm';
-      $('receiptFontSize').value = StoreConfig.get('receiptFontSize') || '12';
-      $('receiptMargin').value = StoreConfig.get('receiptMargin') || '10';
       $('lowStockThreshold').value = StoreConfig.get('lowStockThreshold') || 5;
       $('sessionTimeout').value = StoreConfig.get('sessionTimeout') || 30;
       $('openingTime').value = StoreConfig.get('openingTime') || '08:00';
       $('closingTime').value = StoreConfig.get('closingTime') || '20:00';
       $('openDays').value = StoreConfig.get('openDays') || 'Mon-Sat';
+      $('receiptPrefix').value = StoreConfig.get('receiptPrefix') || 'DAN';
       $('taxEnabled').checked = StoreConfig.get('taxEnabled') || false;
       $('taxRate').value = StoreConfig.get('taxRate') || 7.5;
       $('taxName').value = StoreConfig.get('taxName') || 'VAT';
@@ -305,46 +182,6 @@
       $('allowPosPayment').checked = StoreConfig.get('allowPosPayment') !== false;
       $('autoPrintReceipt').checked = StoreConfig.get('autoPrintReceipt') !== false;
       $('showReceiptLogo').checked = StoreConfig.get('showReceiptLogo') !== false;
-      $('sidebarMode').value = StoreConfig.get('sidebarMode') || 'expanded';
-      $('tableDensity').value = StoreConfig.get('tableDensity') || 'normal';
-      $('dateFormat').value = StoreConfig.get('dateFormat') || 'DD/MM/YYYY';
-      $('timeFormat').value = StoreConfig.get('timeFormat') || '12';
-      $('dashboardCardsPerRow').value = StoreConfig.get('dashboardCardsPerRow') || '4';
-      $('enableAnimations').checked = StoreConfig.get('enableAnimations') !== false;
-      $('showQuickActions').checked = StoreConfig.get('showQuickActions') !== false;
-      $('compactMode').checked = StoreConfig.get('compactMode') || false;
-      $('themeMode').value = StoreConfig.get('themeMode') || 'light';
-      $('primaryColor').value = StoreConfig.get('primaryColor') || '#10b981';
-      $('fontFamily').value = StoreConfig.get('fontFamily') || 'Inter, Arial, sans-serif';
-      $('baseFontSize').value = StoreConfig.get('baseFontSize') || '14';
-      $('borderRadius').value = StoreConfig.get('borderRadius') || '10px';
-      $('shadowIntensity').value = StoreConfig.get('shadowIntensity') || 'normal';
-      $('headerStyle').value = StoreConfig.get('headerStyle') || 'gradient';
-      $('tableStyle').value = StoreConfig.get('tableStyle') || 'bordered';
-      $('contentWidth').value = StoreConfig.get('contentWidth') || 'full';
-      $('cardStyle').value = StoreConfig.get('cardStyle') || 'shadow';
-      $('customCSS').value = StoreConfig.get('customCSS') || '';
-      $('defaultPaymentMethod').value = StoreConfig.get('defaultPaymentMethod') || 'cash';
-      $('productsPerRow').value = StoreConfig.get('productsPerRow') || '4';
-      $('confirmBeforeSale').checked = StoreConfig.get('confirmBeforeSale') || false;
-      $('showProductImages').checked = StoreConfig.get('showProductImages') !== false;
-      $('allowNegativeStock').checked = StoreConfig.get('allowNegativeStock') || false;
-      $('requireCustomerForSale').checked = StoreConfig.get('requireCustomerForSale') || false;
-      $('enableSound').checked = StoreConfig.get('enableSound') || false;
-      $('notificationPosition').value = StoreConfig.get('notificationPosition') || 'top-right';
-      $('lowStockNotification').checked = StoreConfig.get('lowStockNotification') || false;
-      $('expiryNotification').checked = StoreConfig.get('expiryNotification') || false;
-      $('notificationDuration').value = StoreConfig.get('notificationDuration') || '4';
-      $('showDesktopNotification').checked = StoreConfig.get('showDesktopNotification') || false;
-      $('lockScreenTimeout').value = StoreConfig.get('lockScreenTimeout') || '5';
-      $('requirePasswordForVoid').checked = StoreConfig.get('requirePasswordForVoid') || false;
-      $('requirePasswordForDiscount').checked = StoreConfig.get('requirePasswordForDiscount') || false;
-      $('requirePasswordForRefund').checked = StoreConfig.get('requirePasswordForRefund') || false;
-      $('enableAuditLog').checked = StoreConfig.get('enableAuditLog') || false;
-      $('autoBackup').checked = StoreConfig.get('autoBackup') || false;
-      $('backupTime').value = StoreConfig.get('backupTime') || '02:00';
-      $('autoSync').checked = StoreConfig.get('autoSync') || false;
-      $('syncInterval').value = StoreConfig.get('syncInterval') || '15';
   }
 
   function collectForm() {
@@ -357,18 +194,13 @@
           currencyLocale: $('currencyLocale').value || 'en-NG',
           printerType: $('printerType').value || 'small',
           storeLogo: $('storeLogo').value.trim(),
-          siteTagline: $('siteTagline').value.trim(),
-          siteDescription: $('siteDescription').value.trim(),
           footerText: $('footerText').value.trim(),
-          receiptPrefix: $('receiptPrefix').value.trim() || 'DAN',
-          receiptPageSize: $('receiptPageSize').value || '80mm',
-          receiptFontSize: parseInt($('receiptFontSize').value) || 12,
-          receiptMargin: parseInt($('receiptMargin').value) || 10,
           lowStockThreshold: parseInt($('lowStockThreshold').value) || 5,
           sessionTimeout: parseInt($('sessionTimeout').value) || 30,
           openingTime: $('openingTime').value || '08:00',
           closingTime: $('closingTime').value || '20:00',
           openDays: $('openDays').value || 'Mon-Sat',
+          receiptPrefix: $('receiptPrefix').value.trim() || 'DAN',
           taxEnabled: $('taxEnabled').checked,
           taxRate: parseFloat($('taxRate').value) || 7.5,
           taxName: $('taxName').value.trim() || 'VAT',
@@ -385,47 +217,7 @@
           allowCardPayment: $('allowCardPayment').checked,
           allowPosPayment: $('allowPosPayment').checked,
           autoPrintReceipt: $('autoPrintReceipt').checked,
-          showReceiptLogo: $('showReceiptLogo').checked,
-          sidebarMode: $('sidebarMode').value || 'expanded',
-          tableDensity: $('tableDensity').value || 'normal',
-          dateFormat: $('dateFormat').value || 'DD/MM/YYYY',
-          timeFormat: $('timeFormat').value || '12',
-          dashboardCardsPerRow: $('dashboardCardsPerRow').value || '4',
-          enableAnimations: $('enableAnimations').checked,
-          showQuickActions: $('showQuickActions').checked,
-          compactMode: $('compactMode').checked,
-          themeMode: $('themeMode').value || 'light',
-          primaryColor: $('primaryColor').value || '#10b981',
-          fontFamily: $('fontFamily').value || 'Inter, Arial, sans-serif',
-          baseFontSize: parseInt($('baseFontSize').value) || 14,
-          borderRadius: $('borderRadius').value || '10px',
-          shadowIntensity: $('shadowIntensity').value || 'normal',
-          headerStyle: $('headerStyle').value || 'gradient',
-          tableStyle: $('tableStyle').value || 'bordered',
-          contentWidth: $('contentWidth').value || 'full',
-          cardStyle: $('cardStyle').value || 'shadow',
-          customCSS: $('customCSS').value.trim(),
-          defaultPaymentMethod: $('defaultPaymentMethod').value || 'cash',
-          productsPerRow: $('productsPerRow').value || '4',
-          confirmBeforeSale: $('confirmBeforeSale').checked,
-          showProductImages: $('showProductImages').checked,
-          allowNegativeStock: $('allowNegativeStock').checked,
-          requireCustomerForSale: $('requireCustomerForSale').checked,
-          enableSound: $('enableSound').checked,
-          notificationPosition: $('notificationPosition').value || 'top-right',
-          lowStockNotification: $('lowStockNotification').checked,
-          expiryNotification: $('expiryNotification').checked,
-          notificationDuration: parseInt($('notificationDuration').value) || 4,
-          showDesktopNotification: $('showDesktopNotification').checked,
-          lockScreenTimeout: parseInt($('lockScreenTimeout').value) || 5,
-          requirePasswordForVoid: $('requirePasswordForVoid').checked,
-          requirePasswordForDiscount: $('requirePasswordForDiscount').checked,
-          requirePasswordForRefund: $('requirePasswordForRefund').checked,
-          enableAuditLog: $('enableAuditLog').checked,
-          autoBackup: $('autoBackup').checked,
-          backupTime: $('backupTime').value || '02:00',
-          autoSync: $('autoSync').checked,
-          syncInterval: parseInt($('syncInterval').value) || 15
+          showReceiptLogo: $('showReceiptLogo').checked
       };
   }
 
@@ -435,7 +227,6 @@
       try {
           await API.put('/store-config', cfg);
           StoreConfig.save(cfg);
-          if (window.POS && POS.applyAppearanceSettings) POS.applyAppearanceSettings();
           showToast('Configuration saved successfully!');
           $('saveStatus').innerHTML = '<div style="color:#10b981;font-size:13px;"><i class="fas fa-check-circle"></i> Saved at ' + new Date().toLocaleTimeString() + '</div>';
       } catch (err) {
@@ -447,7 +238,6 @@
 
   async function init() {
       try {
-          document.body.classList.remove('sidebar-collapsed', 'sidebar-mini');
           if (typeof POS !== 'undefined') {
               POS.renderSidebar();
               POS.renderUserMenu();

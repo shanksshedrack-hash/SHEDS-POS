@@ -6,32 +6,14 @@ var StoreConfig = (function() {
         currency: '₦', currencyLocale: 'en-NG', lowStockThreshold: 5, sessionTimeout: 30,
         storeLogo: '', footerText: 'Thank you for choosing SHEDS POS!', printerType: 'small',
         pharmacyName: 'SHEDS POS',
-        siteTagline: 'Point of Sale System', siteDescription: '',
         taxEnabled: false, taxRate: 7.5, taxName: 'VAT',
         allowDiscount: true, maxDiscount: 20,
         requireManagerForDiscount: false, requireManagerForVoid: true,
         receiptPrefix: 'DAN', autoPrintReceipt: true, showReceiptLogo: true,
-        receiptPageSize: '80mm', receiptFontSize: '12', receiptMargin: '10',
         expiryAlertDays: 30, expiryBlockSales: false,
         lowStockAlert: true, lowStockEmail: '',
         openingTime: '08:00', closingTime: '20:00', openDays: 'Mon-Sat',
-        allowStoreAccount: true, allowGiftCard: true, allowCardPayment: true, allowPosPayment: true,
-        sidebarMode: 'expanded', tableDensity: 'normal', dateFormat: 'DD/MM/YYYY',
-        timeFormat: '12', enableAnimations: true, dashboardCardsPerRow: '4',
-        showQuickActions: true, compactMode: false,
-        themeMode: 'light', primaryColor: '#10b981', fontFamily: 'Inter, Arial, sans-serif',
-        baseFontSize: 14, borderRadius: '10px', shadowIntensity: 'normal',
-        headerStyle: 'gradient', tableStyle: 'bordered', contentWidth: 'full',
-        cardStyle: 'shadow', customCSS: '',
-        defaultPaymentMethod: 'cash', productsPerRow: '4',
-        confirmBeforeSale: false, showProductImages: true, allowNegativeStock: false,
-        requireCustomerForSale: false, enableSound: false,
-        notificationPosition: 'top-right', lowStockNotification: false,
-        expiryNotification: false, notificationDuration: 4,
-        showDesktopNotification: false, lockScreenTimeout: 5,
-        requirePasswordForVoid: false, requirePasswordForDiscount: false,
-        requirePasswordForRefund: false, enableAuditLog: false,
-        autoBackup: false, backupTime: '02:00', autoSync: false, syncInterval: 15
+        allowStoreAccount: true, allowGiftCard: true, allowCardPayment: true, allowPosPayment: true
     };
     function getAll() { try { var raw = localStorage.getItem(KEY); if (!raw) return JSON.parse(JSON.stringify(defaults)); var parsed = JSON.parse(raw); return Object.assign({}, defaults, parsed); } catch (e) { return JSON.parse(JSON.stringify(defaults)); } }
     function get(key) { var cfg = getAll(); return cfg[key] !== undefined ? cfg[key] : defaults[key]; }
@@ -255,88 +237,9 @@ function initCommon() {
     renderUserMenu();
     startClock();
     checkSubscription();
-    applyAppearanceSettings();
     var name = $('pharmacyName') || $('pharmacyNameDisplay');
     if (name && API.getPharmacyName) name.innerHTML = '<i class="fas fa-clinic-medical"></i> ' + esc(API.getPharmacyName() || 'SHEDS POS');
 }
-function applyAppearanceSettings() {
-    try {
-        var cfg = StoreConfig.getAll();
-        var body = document.body;
-        if (!body) return;
-
-        if (cfg.themeMode === 'dark') body.classList.add('theme-dark');
-        else body.classList.remove('theme-dark');
-
-        if (cfg.compactMode) body.classList.add('compact-mode');
-        else body.classList.remove('compact-mode');
-
-        if (cfg.enableAnimations === false) body.classList.add('no-animations');
-        else body.classList.remove('no-animations');
-
-        if (cfg.fontFamily) document.documentElement.style.setProperty('--app-font', cfg.fontFamily);
-        if (cfg.primaryColor) document.documentElement.style.setProperty('--app-primary', cfg.primaryColor);
-        if (cfg.baseFontSize) document.documentElement.style.fontSize = cfg.baseFontSize + 'px';
-        if (cfg.borderRadius) document.documentElement.style.setProperty('--app-radius', cfg.borderRadius);
-        if (cfg.shadowIntensity === 'none') document.documentElement.style.setProperty('--app-shadow', 'none');
-        else if (cfg.shadowIntensity === 'light') document.documentElement.style.setProperty('--app-shadow', '0 1px 2px rgba(0,0,0,0.04)');
-        else if (cfg.shadowIntensity === 'heavy') document.documentElement.style.setProperty('--app-shadow', '0 20px 50px rgba(0,0,0,0.15)');
-        else document.documentElement.style.setProperty('--app-shadow', '0 12px 30px rgba(15,23,42,.08)');
-
-        var kpiGrid = document.querySelector('.kpi-grid');
-        if (kpiGrid) {
-            kpiGrid.classList.remove('density-compact', 'density-comfortable');
-            if (cfg.tableDensity === 'compact') kpiGrid.classList.add('density-compact');
-            else if (cfg.tableDensity === 'comfortable') kpiGrid.classList.add('density-comfortable');
-        }
-
-        var fastStats = document.querySelector('.fast-stats');
-        if (fastStats) {
-            fastStats.classList.remove('density-compact', 'density-comfortable');
-            if (cfg.tableDensity === 'compact') fastStats.classList.add('density-compact');
-            else if (cfg.tableDensity === 'comfortable') fastStats.classList.add('density-comfortable');
-            var cols = cfg.dashboardCardsPerRow || '4';
-            fastStats.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(160px, 1fr))';
-        }
-
-        var header = document.querySelector('.header');
-        if (header) {
-            header.classList.remove('header-gradient', 'header-solid', 'header-minimal');
-            if (cfg.headerStyle === 'gradient') header.classList.add('header-gradient');
-            else if (cfg.headerStyle === 'solid') header.classList.add('header-solid');
-            else if (cfg.headerStyle === 'minimal') header.classList.add('header-minimal');
-            header.style.background = '';
-            header.style.color = '';
-        }
-
-        if (cfg.contentWidth === 'boxed') { body.classList.add('content-boxed'); body.classList.remove('content-narrow'); }
-        else if (cfg.contentWidth === 'narrow') { body.classList.add('content-narrow'); body.classList.remove('content-boxed'); }
-        else { body.classList.remove('content-boxed', 'content-narrow'); }
-
-        if (cfg.cardStyle === 'shadow') document.body.classList.add('card-shadow-body');
-        else if (cfg.cardStyle === 'bordered') document.body.classList.add('card-bordered-body');
-        else document.body.classList.add('card-flat-body');
-
-        if (cfg.tableStyle === 'striped') document.body.classList.add('table-striped');
-        else document.body.classList.remove('table-striped');
-        if (cfg.tableStyle === 'minimal') document.body.classList.add('table-minimal');
-        else document.body.classList.remove('table-minimal');
-        if (cfg.tableStyle === 'bordered') document.body.classList.add('table-bordered');
-        else document.body.classList.remove('table-bordered');
-
-        if (cfg.customCSS) {
-            var styleEl = document.getElementById('custom-store-css');
-            if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = 'custom-store-css'; document.head.appendChild(styleEl); }
-            styleEl.textContent = cfg.customCSS;
-        } else {
-            var existing = document.getElementById('custom-store-css');
-            if (existing) existing.remove();
-        }
-    } catch (e) {
-        console.error('applyAppearanceSettings error:', e);
-    }
-}
-window.POS.applyAppearanceSettings = applyAppearanceSettings;
     function requireAuth() {
         if (API.isLoggedIn && API.isLoggedIn()) return true;
         if (getQueryParameter('demo') === '1') return true;
