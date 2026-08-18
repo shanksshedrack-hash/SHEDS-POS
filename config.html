@@ -133,6 +133,31 @@
 </div>
 
 <div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-palette" style="color:#ec4899;"></i> Appearance & Theme</h3>
+<div class="form-row">
+<div class="form-group"><label>Theme Mode</label><select id="themeMode"><option value="light">Light</option><option value="dark">Dark</option></select></div>
+<div class="form-group"><label>Primary Color</label><input type="color" id="primaryColor" value="#10b981" style="width:100%;height:38px;padding:2px;border-radius:8px;cursor:pointer;"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Font Family</label><select id="fontFamily"><option value="Inter, Arial, sans-serif">Inter (Default)</option><option value="Segoe UI, Tahoma, sans-serif">Segoe UI</option><option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option><option value="'Courier New', monospace">Monospace</option><option value="system-ui, sans-serif">System UI</option></select></div>
+<div class="form-group"><label>Base Font Size (px)</label><input type="number" id="baseFontSize" min="11" max="18" value="14"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Border Radius</label><select id="borderRadius"><option value="0">None / Sharp</option><option value="6px">Small (6px)</option><option value="10px">Medium (10px)</option><option value="16px">Large (16px)</option><option value="999px">Pill / Fully Rounded</option></select></div>
+<div class="form-group"><label>Shadow Intensity</label><select id="shadowIntensity"><option value="none">None</option><option value="light">Light</option><option value="normal">Normal</option><option value="heavy">Heavy</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Header Style</label><select id="headerStyle"><option value="solid">Solid Color</option><option value="gradient">Gradient</option><option value="minimal">Minimal / Flat</option></select></div>
+<div class="form-group"><label>Table Style</label><select id="tableStyle"><option value="bordered">Bordered</option><option value="striped">Striped</option><option value="minimal">Minimal</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Content Width</label><select id="contentWidth"><option value="full">Full Width</option><option value="boxed">Boxed / Centered</option><option value="narrow">Narrow</option></select></div>
+<div class="form-group"><label>Card Style</label><select id="cardStyle"><option value="shadow">Shadow Cards</option><option value="bordered">Bordered Cards</option><option value="flat">Flat / No Style</option></select></div>
+</div>
+<div class="form-group"><label>Custom CSS (advanced)</label><textarea id="customCSS" class="notes-area" placeholder="/* Add custom CSS here */&#10;.my-class { color: red; }" rows="3"></textarea></div>
+</div>
+
+<div class="panel" style="margin-bottom:18px;">
 <h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-desktop" style="color:#6366f1;"></i> Page & Display</h3>
 <div class="form-row">
 <div class="form-group"><label>Sidebar Mode</label><select id="sidebarMode"><option value="expanded">Expanded</option><option value="collapsed">Collapsed</option><option value="mini">Mini / Icons Only</option></select></div>
@@ -226,6 +251,17 @@
       $('enableAnimations').checked = StoreConfig.get('enableAnimations') !== false;
       $('showQuickActions').checked = StoreConfig.get('showQuickActions') !== false;
       $('compactMode').checked = StoreConfig.get('compactMode') || false;
+      $('themeMode').value = StoreConfig.get('themeMode') || 'light';
+      $('primaryColor').value = StoreConfig.get('primaryColor') || '#10b981';
+      $('fontFamily').value = StoreConfig.get('fontFamily') || 'Inter, Arial, sans-serif';
+      $('baseFontSize').value = StoreConfig.get('baseFontSize') || '14';
+      $('borderRadius').value = StoreConfig.get('borderRadius') || '10px';
+      $('shadowIntensity').value = StoreConfig.get('shadowIntensity') || 'normal';
+      $('headerStyle').value = StoreConfig.get('headerStyle') || 'gradient';
+      $('tableStyle').value = StoreConfig.get('tableStyle') || 'bordered';
+      $('contentWidth').value = StoreConfig.get('contentWidth') || 'full';
+      $('cardStyle').value = StoreConfig.get('cardStyle') || 'shadow';
+      $('customCSS').value = StoreConfig.get('customCSS') || '';
   }
 
   function collectForm() {
@@ -274,7 +310,18 @@
           dashboardCardsPerRow: $('dashboardCardsPerRow').value || '4',
           enableAnimations: $('enableAnimations').checked,
           showQuickActions: $('showQuickActions').checked,
-          compactMode: $('compactMode').checked
+          compactMode: $('compactMode').checked,
+          themeMode: $('themeMode').value || 'light',
+          primaryColor: $('primaryColor').value || '#10b981',
+          fontFamily: $('fontFamily').value || 'Inter, Arial, sans-serif',
+          baseFontSize: parseInt($('baseFontSize').value) || 14,
+          borderRadius: $('borderRadius').value || '10px',
+          shadowIntensity: $('shadowIntensity').value || 'normal',
+          headerStyle: $('headerStyle').value || 'gradient',
+          tableStyle: $('tableStyle').value || 'bordered',
+          contentWidth: $('contentWidth').value || 'full',
+          cardStyle: $('cardStyle').value || 'shadow',
+          customCSS: $('customCSS').value.trim()
       };
   }
 
@@ -284,6 +331,7 @@
       try {
           await API.put('/store-config', cfg);
           StoreConfig.save(cfg);
+          if (window.POS && POS.applyAppearanceSettings) POS.applyAppearanceSettings();
           showToast('Configuration saved successfully!');
           $('saveStatus').innerHTML = '<div style="color:#10b981;font-size:13px;"><i class="fas fa-check-circle"></i> Saved at ' + new Date().toLocaleTimeString() + '</div>';
       } catch (err) {
