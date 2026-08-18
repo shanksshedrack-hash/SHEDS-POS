@@ -401,8 +401,8 @@ function loadShiftData(){
 function calculateCloseout(sales){
   var today = new Date().toISOString().split('T')[0];
   var filtered = sales.filter(function(s){
-    var d = s.date ? POS.getDatePart(s.date) : '';
-    return d === today;
+      var d = s.date ? String(s.date).split('T')[0] : '';
+      return d === today;
   });
 
   shiftSales = 0; cashSalesTotal = 0; digitalTotal = 0; storeAccountTotal = 0;
