@@ -132,6 +132,26 @@
 <div class="form-group"><label>Low Stock Alert Email</label><input type="email" id="lowStockEmail" placeholder="manager@danzonapharm.com"></div>
 </div>
 
+<div class="panel" style="margin-bottom:18px;">
+<h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-desktop" style="color:#6366f1;"></i> Page & Display</h3>
+<div class="form-row">
+<div class="form-group"><label>Sidebar Mode</label><select id="sidebarMode"><option value="expanded">Expanded</option><option value="collapsed">Collapsed</option><option value="mini">Mini / Icons Only</option></select></div>
+<div class="form-group"><label>Table Density</label><select id="tableDensity"><option value="compact">Compact</option><option value="normal">Normal</option><option value="comfortable">Comfortable</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Date Format</label><select id="dateFormat"><option value="DD/MM/YYYY">DD/MM/YYYY</option><option value="MM/DD/YYYY">MM/DD/YYYY</option><option value="YYYY-MM-DD">YYYY-MM-DD</option></select></div>
+<div class="form-group"><label>Time Format</label><select id="timeFormat"><option value="12">12 Hour (AM/PM)</option><option value="24">24 Hour</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Dashboard Cards Per Row</label><select id="dashboardCardsPerRow"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="enableAnimations" style="width:16px;height:16px;"> Enable Animations</label></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="showQuickActions" style="width:16px;height:16px;"> Show Quick Action Buttons</label></div>
+<div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="compactMode" style="width:16px;height:16px;"> Compact Mode</label></div>
+</div>
+</div>
+
 <div id="saveStatus" style="margin-top:12px;"></div>
 </div>
 </div>
@@ -198,6 +218,14 @@
       $('allowPosPayment').checked = StoreConfig.get('allowPosPayment') !== false;
       $('autoPrintReceipt').checked = StoreConfig.get('autoPrintReceipt') !== false;
       $('showReceiptLogo').checked = StoreConfig.get('showReceiptLogo') !== false;
+      $('sidebarMode').value = StoreConfig.get('sidebarMode') || 'expanded';
+      $('tableDensity').value = StoreConfig.get('tableDensity') || 'normal';
+      $('dateFormat').value = StoreConfig.get('dateFormat') || 'DD/MM/YYYY';
+      $('timeFormat').value = StoreConfig.get('timeFormat') || '12';
+      $('dashboardCardsPerRow').value = StoreConfig.get('dashboardCardsPerRow') || '4';
+      $('enableAnimations').checked = StoreConfig.get('enableAnimations') !== false;
+      $('showQuickActions').checked = StoreConfig.get('showQuickActions') !== false;
+      $('compactMode').checked = StoreConfig.get('compactMode') || false;
   }
 
   function collectForm() {
@@ -238,7 +266,15 @@
           allowCardPayment: $('allowCardPayment').checked,
           allowPosPayment: $('allowPosPayment').checked,
           autoPrintReceipt: $('autoPrintReceipt').checked,
-          showReceiptLogo: $('showReceiptLogo').checked
+          showReceiptLogo: $('showReceiptLogo').checked,
+          sidebarMode: $('sidebarMode').value || 'expanded',
+          tableDensity: $('tableDensity').value || 'normal',
+          dateFormat: $('dateFormat').value || 'DD/MM/YYYY',
+          timeFormat: $('timeFormat').value || '12',
+          dashboardCardsPerRow: $('dashboardCardsPerRow').value || '4',
+          enableAnimations: $('enableAnimations').checked,
+          showQuickActions: $('showQuickActions').checked,
+          compactMode: $('compactMode').checked
       };
   }
 

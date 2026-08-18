@@ -15,7 +15,10 @@ var StoreConfig = (function() {
         expiryAlertDays: 30, expiryBlockSales: false,
         lowStockAlert: true, lowStockEmail: '',
         openingTime: '08:00', closingTime: '20:00', openDays: 'Mon-Sat',
-        allowStoreAccount: true, allowGiftCard: true, allowCardPayment: true, allowPosPayment: true
+        allowStoreAccount: true, allowGiftCard: true, allowCardPayment: true, allowPosPayment: true,
+        sidebarMode: 'expanded', tableDensity: 'normal', dateFormat: 'DD/MM/YYYY',
+        timeFormat: '12', enableAnimations: true, dashboardCardsPerRow: '4',
+        showQuickActions: true, compactMode: false
     };
     function getAll() { try { var raw = localStorage.getItem(KEY); if (!raw) return JSON.parse(JSON.stringify(defaults)); var parsed = JSON.parse(raw); return Object.assign({}, defaults, parsed); } catch (e) { return JSON.parse(JSON.stringify(defaults)); } }
     function get(key) { var cfg = getAll(); return cfg[key] !== undefined ? cfg[key] : defaults[key]; }

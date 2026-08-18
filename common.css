@@ -132,3 +132,43 @@ tr:hover{background:#f8fafc}
 .cp-btn-update:hover{background:#059669}
 .cp-btn-detach{background:#fff;color:#ef4444;border:1px solid #fecaca}
 .cp-btn-detach:hover{background:#fef2f2}
+
+/* Page & Display Modes */
+body.sidebar-collapsed .sidebar{display:none}
+body.sidebar-collapsed .main-content{margin:0}
+body.sidebar-mini .sidebar{width:70px}
+body.sidebar-mini .sidebar-header h1,body.sidebar-mini .sidebar-header p,body.sidebar-mini .sidebar-section-title,body.sidebar-mini .sidebar-link span{display:none}
+body.sidebar-mini .sidebar-link{justify-content:center;padding:12px 0}
+body.sidebar-mini .sidebar-link i{width:auto;font-size:18px}
+body.sidebar-mini .sidebar-footer{justify-content:center}
+body.sidebar-mini .sidebar-footer strong,body.sidebar-mini .sidebar-footer span{display:none}
+body.sidebar-mini .main-content{margin-left:0}
+
+.kpi-grid.density-compact{gap:10px}
+.kpi-grid.density-compact .kpi-card{padding:12px}
+.kpi-grid.density-compact .kpi-value{font-size:20px;margin-top:4px}
+.kpi-grid.density-compact .kpi-label{font-size:10px}
+.kpi-grid.density-compact .kpi-sub{font-size:10px;margin-top:2px}
+
+.kpi-grid.density-comfortable{gap:20px}
+.kpi-grid.density-comfortable .kpi-card{padding:22px}
+.kpi-grid.density-comfortable .kpi-value{font-size:30px;margin-top:10px}
+.kpi-grid.density-comfortable .kpi-label{font-size:12px}
+.kpi-grid.density-comfortable .kpi-sub{font-size:13px;margin-top:6px}
+
+body.compact-mode .panel{padding:12px;margin-bottom:12px}
+body.compact-mode .form-row{gap:8px;margin-bottom:8px}
+body.compact-mode .form-group input,.compact-mode .form-group select,.compact-mode .form-group textarea{padding:8px 10px}
+body.compact-mode .btn{padding:8px 12px;font-size:12px}
+body.compact-mode .content{padding:14px}
+body.compact-mode th,body.compact-mode td{padding:8px 10px;font-size:12px}
+
+body.no-animations *{transition:none !important;animation:none !important}
+
+.dashboard-grid-cols-2 .kpi-grid{grid-template-columns:repeat(2,1fr)}
+.dashboard-grid-cols-3 .kpi-grid{grid-template-columns:repeat(3,1fr)}
+.dashboard-grid-cols-4 .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.dashboard-grid-cols-5 .kpi-grid{grid-template-columns:repeat(5,1fr)}
+
+@media(max-width:900px){.sidebar{display:none}.main-content{margin:0}.header{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.search-input{min-width:0;width:100%}.kpi-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.kpi-grid{grid-template-columns:1fr}.btn{width:100%}.page-head,.toolbar,.filters,.actions{align-items:stretch;flex-direction:column}}
