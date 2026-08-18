@@ -285,12 +285,23 @@ function applyAppearanceSettings() {
             else if (cfg.tableDensity === 'comfortable') kpiGrid.classList.add('density-comfortable');
         }
 
+        var fastStats = document.querySelector('.fast-stats');
+        if (fastStats) {
+            fastStats.classList.remove('density-compact', 'density-comfortable');
+            if (cfg.tableDensity === 'compact') fastStats.classList.add('density-compact');
+            else if (cfg.tableDensity === 'comfortable') fastStats.classList.add('density-comfortable');
+            var cols = cfg.dashboardCardsPerRow || '4';
+            fastStats.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(160px, 1fr))';
+        }
+
         var header = document.querySelector('.header');
         if (header) {
             header.classList.remove('header-gradient', 'header-solid', 'header-minimal');
             if (cfg.headerStyle === 'gradient') header.classList.add('header-gradient');
             else if (cfg.headerStyle === 'solid') header.classList.add('header-solid');
             else if (cfg.headerStyle === 'minimal') header.classList.add('header-minimal');
+            header.style.background = '';
+            header.style.color = '';
         }
 
         if (cfg.contentWidth === 'boxed') { body.classList.add('content-boxed'); body.classList.remove('content-narrow'); }

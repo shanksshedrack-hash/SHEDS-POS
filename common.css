@@ -150,6 +150,18 @@ body.sidebar-mini .main-content{margin-left:0}
 .kpi-grid.density-compact .kpi-label{font-size:10px}
 .kpi-grid.density-compact .kpi-sub{font-size:10px;margin-top:2px}
 
+.fast-stats.density-compact{gap:10px}
+.fast-stats.density-compact .stat-card{padding:12px}
+.fast-stats.density-compact .stat-val{font-size:18px;margin-top:4px}
+.fast-stats.density-compact .stat-lbl{font-size:9px}
+.fast-stats.density-compact .stat-icon{width:32px;height:32px;font-size:14px;margin-bottom:4px}
+
+.fast-stats.density-comfortable{gap:20px}
+.fast-stats.density-comfortable .stat-card{padding:22px}
+.fast-stats.density-comfortable .stat-val{font-size:28px;margin-top:10px}
+.fast-stats.density-comfortable .stat-lbl{font-size:12px}
+.fast-stats.density-comfortable .stat-icon{width:48px;height:48px;font-size:22px;margin-bottom:8px}
+
 .kpi-grid.density-comfortable{gap:20px}
 .kpi-grid.density-comfortable .kpi-card{padding:22px}
 .kpi-grid.density-comfortable .kpi-value{font-size:30px;margin-top:10px}
