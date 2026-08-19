@@ -151,6 +151,10 @@ ul{list-style:none;}
 /* Responsive */
 @media(max-width:968px){.nav-links{display:none;}.stats-grid{grid-template-columns:repeat(2,1fr);}.footer-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:640px){.stats-grid{grid-template-columns:1fr;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px;}.stat-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}.footer-grid{grid-template-columns:1fr;}}
+
+/* WhatsApp Float */
+.whatsapp-float{position:fixed;width:60px;height:60px;bottom:24px;right:24px;background:#25D366;color:#fff;border-radius:50%;text-align:center;font-size:30px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:9999;display:flex;align-items:center;justify-content:center;transition:.2s;text-decoration:none;}
+.whatsapp-float:hover{transform:scale(1.1);background:#128C7E;}
 </style>
 </head>
 <body>
@@ -168,6 +172,7 @@ ul{list-style:none;}
                 <a onclick="navigateTo('config.html')">Config</a>
             </nav>
             <button class="header-cta" onclick="navigateTo('login.html')">Get Started</button>
+            <button class="header-cta" onclick="toggleChat()" style="background:#fff;color:var(--primary);border:1px solid var(--border);margin-left:8px;"><i class="fas fa-comments"></i> Chat</button>
         </div>
     </header>
 
@@ -457,6 +462,11 @@ ul{list-style:none;}
                     <h4>Support Hours</h4>
                     <p>24/7 Support Available</p>
                 </div>
+                <div class="contact-card" onclick="toggleChat()" style="cursor:pointer;">
+                    <div class="contact-icon" style="background:#dcfce7;color:#166534;"><i class="fas fa-comments"></i></div>
+                    <h4>Live Chat</h4>
+                    <p>Chat with our team instantly</p>
+                </div>
             </div>
         </div>
     </section>
@@ -504,7 +514,20 @@ ul{list-style:none;}
 
     <script>
         function navigateTo(p){window.location.href=p;}
+        function toggleChat(){if(typeof Tawk_API!=='undefined'){Tawk_API.toggle();}}
     </script>
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/678f2d2faf5191910ea8c54a/1iocqb97j';
+    s1.charset='UTF-8';
+    s1.setAttribute("crossorigin","*");
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <a href="https://wa.me/2348012345678" class="whatsapp-float" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
 </body>
 </html>
 

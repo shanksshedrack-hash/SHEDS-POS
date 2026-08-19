@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHEDS POS - Professional Pharmacy Point of Sale</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#10b981;--primary-dark:#059669;--primary-light:#ecfdf5;--accent:#4f46e5;--dark:#0f172a;--dark-2:#1e293b;--text:#111827;--muted:#64748b;--light:#f8fafc;--border:#e5e7eb;--shadow:0 20px 40px rgba(15,23,42,.08);--shadow-lg:0 25px 50px rgba(15,23,42,.12);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        html{scroll-behavior:smooth;}
+        body{font-family:'Inter',Arial,sans-serif;background:#fff;color:var(--text);line-height:1.6;overflow-x:hidden;}
+        .container{max-width:1200px;margin:0 auto;padding:0 24px;}
+        a{text-decoration:none;color:inherit;}
+        ul{list-style:none;}
+
+        /* Header */
+        .site-header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);background:rgba(255,255,255,.95);}
+        .header-inner{display:flex;justify-content:space-between;align-items:center;height:72px;max-width:1200px;margin:0 auto;padding:0 24px;}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;color:var(--dark);}
+        .logo-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+        .nav-links{display:flex;gap:32px;}
+        .nav-links a{font-size:14px;font-weight:600;color:var(--muted);transition:.2s;cursor:pointer;}
+        .nav-links a:hover{color:var(--primary);}
+        .header-cta{background:var(--primary);color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;transition:.2s;cursor:pointer;border:none;}
+        .header-cta:hover{background:var(--primary-dark);transform:translateY(-1px);}
+
+        /* Hero */
+        .hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:100px 0 120px;position:relative;overflow:hidden;}
+        .hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 70%);border-radius:50%;}
+        .hero::after{content:'';position:absolute;bottom:-30%;left:-5%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,70,229,.12) 0%,transparent 70%);border-radius:50%;}
+        .hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px;text-align:center;}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:24px;color:#a5b4fc;}
+        .hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-.02em;}
+        .hero h1 span{background:linear-gradient(135deg,#10b981,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .hero p{font-size:18px;color:#94a3b8;max-width:640px;margin:0 auto 32px;line-height:1.7;}
+        .hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;transition:.2s;cursor:pointer;border:none;}
+        .btn-primary{background:var(--primary);color:#fff;box-shadow:0 10px 30px rgba(16,185,129,.3);}
+        .btn-primary:hover{background:var(--primary-dark);transform:translateY(-2px);box-shadow:0 15px 35px rgba(16,185,129,.35);}
+        .btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2);}
+        .btn-outline:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);}
+
+        /* Stats Bar */
+        .stats-bar{background:#fff;border-bottom:1px solid var(--border);position:relative;z-index:2;margin-top:-60px;}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);padding:32px;border:1px solid var(--border);}
+        .stat-item{text-align:center;padding:0 16px;border-right:1px solid var(--border);}
+        .stat-item:last-child{border-right:none;}
+        .stat-number{font-size:32px;font-weight:900;color:var(--dark);line-height:1;margin-bottom:6px;}
+        .stat-label{font-size:13px;color:var(--muted);font-weight:600;}
+
+        /* Features */
+        .features{padding:100px 0;background:#fff;}
+        .section-header{text-align:center;max-width:640px;margin:0 auto 60px;}
+        .section-header h2{font-size:36px;font-weight:900;margin-bottom:16px;letter-spacing:-.02em;}
+        .section-header p{font-size:17px;color:var(--muted);}
+        .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+        .feature-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;transition:.3s;box-shadow:var(--shadow);}
+        .feature-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--primary);}
+        .feature-icon{width:56px;height:56px;border-radius:16px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--primary);margin-bottom:20px;}
+        .feature-card h3{font-size:18px;font-weight:800;margin-bottom:10px;}
+        .feature-card p{font-size:14px;color:var(--muted);line-height:1.7;}
+
+        /* Why */
+        .why{background:var(--light);padding:100px 0;}
+        .why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+        .why-card{background:#fff;border-radius:20px;padding:32px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);}
+        .why-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--primary-light),#e0e7ff);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--primary);margin:0 auto 20px;}
+        .why-card h3{font-size:18px;font-weight:800;margin-bottom:10px;}
+        .why-card p{font-size:14px;color:var(--muted);}
+
+        /* CTA */
+        .cta{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);padding:100px 0;text-align:center;color:#fff;position:relative;overflow:hidden;}
+        .cta::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 70%);border-radius:50%;}
+        .cta-inner{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:0 24px;}
+        .cta h2{font-size:40px;font-weight:900;margin-bottom:16px;letter-spacing:-.02em;}
+        .cta p{font-size:18px;color:#94a3b8;margin-bottom:32px;}
+        .cta .btn-primary{font-size:16px;padding:16px 36px;}
+
+        /* Footer */
+        .footer{background:#fff;border-top:1px solid var(--border);padding:60px 0 30px;}
+        .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;margin-bottom:40px;}
+        .footer-col h4{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--dark);margin-bottom:16px;}
+        .footer-col a{display:block;font-size:14px;color:var(--muted);margin-bottom:10px;transition:.2s;}
+        .footer-col a:hover{color:var(--primary);}
+        .footer-bottom{text-align:center;font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:24px;}
+
+        @media(max-width:768px){
+            .nav-links{display:none;}
+            .stats-grid{grid-template-columns:1fr 1fr;}
+            .hero{padding:60px 0 80px;}
+            .cta h2{font-size:28px;}
+        }
+
+        /* WhatsApp Float */
+        .whatsapp-float{position:fixed;width:60px;height:60px;bottom:24px;right:24px;background:#25D366;color:#fff;border-radius:50%;text-align:center;font-size:30px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:9999;display:flex;align-items:center;justify-content:center;transition:.2s;text-decoration:none;}
+        .whatsapp-float:hover{transform:scale(1.1);background:#128C7E;}
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-clinic-medical"></i></div>
+                <span>SHEDS POS</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#why">Why Us</a>
+                <a href="#cta">Get Started</a>
+            </nav>
+            <a href="login.html" class="header-cta"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="javascript:void(0)" onclick="toggleChat()" class="header-cta" style="background:#fff;color:var(--primary);border:1px solid var(--border);margin-left:8px;"><i class="fas fa-comments"></i> Chat</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-badge"><i class="fas fa-star"></i> Trusted by 500+ Pharmacies</div>
+            <h1>Modern Point of Sale <span>Built for Pharmacies</span></h1>
+            <p>Streamline sales, manage inventory, track prescriptions, and grow your pharmacy with an all-in-one POS designed for speed and reliability.</p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn btn-primary"><i class="fas fa-rocket"></i> Start Free Trial</a>
+                <a href="#features" class="btn btn-outline"><i class="fas fa-play-circle"></i> See How It Works</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Pharmacies</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1M+</div>
+                    <div class="stat-label">Transactions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Everything you need to run your pharmacy</h2>
+                <p>From quick checkout to inventory management, SHEDS POS handles it all with ease.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h3>Lightning Fast POS</h3>
+                    <p>Process sales in seconds with barcode search, quick-tender buttons, and multiple payment methods.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-boxes"></i></div>
+                    <h3>Smart Inventory</h3>
+                    <p>Track stock levels, expiry dates, batches, and get automatic low-stock alerts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-prescription"></i></div>
+                    <h3>Prescription Management</h3>
+                    <p>Manage Rx status, refill reminders, and prescriber records in one place.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Real-time Analytics</h3>
+                    <p>Visualize sales trends, top products, and customer behavior with interactive charts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h3>Customer Loyalty</h3>
+                    <p>Track customer points, balances, and segments to build lasting relationships.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Role-based access, audit logs, and automatic backups keep your data safe.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why" id="why">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why pharmacies choose SHEDS POS</h2>
+                <p>Built by pharmacists, for pharmacists. We understand your workflow.</p>
+            </div>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>Offline Ready</h3>
+                    <p>Keep selling even when the internet is down. Data syncs automatically when you're back online.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>Works on Any Device</h3>
+                    <p>Use your existing tablet, phone, or desktop. No expensive hardware required.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon"><i class="fas fa-headset"></i></div>
+                    <h3>Dedicated Support</h3>
+                    <p>Our team is available 24/7 to help you with setup, training, and troubleshooting.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta" id="cta">
+        <div class="cta-inner">
+            <h2>Ready to transform your pharmacy?</h2>
+            <p>Join hundreds of pharmacies already using SHEDS POS to streamline operations and delight customers.</p>
+            <a href="login.html" class="btn btn-primary"><i class="fas fa-rocket"></i> Get Started Now</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#why">Why Us</a>
+                    <a href="#">Pricing</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Security</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 SHEDS POS. All rights reserved. Built for pharmacies worldwide.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleChat(){if(typeof Tawk_API!=='undefined'){Tawk_API.toggle();}}
+    </script>
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/678f2d2faf5191910ea8c54a/1iocqb97j';
+    s1.charset='UTF-8';
+    s1.setAttribute("crossorigin","*");
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <a href="https://wa.me/2348012345678" class="whatsapp-float" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
+</body>
+</html>
