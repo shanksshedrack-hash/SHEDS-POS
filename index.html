@@ -514,8 +514,23 @@ ul{list-style:none;}
 
     <script>
         function navigateTo(p){window.location.href=p;}
-        function toggleChat(){if(typeof Tawk_API!=='undefined'){Tawk_API.toggle();}}
+        function toggleChat(){
+            if(typeof Tawk_API!=='undefined' && Tawk_API.toggle){
+                Tawk_API.toggle();
+            } else {
+                window.open('https://wa.me/2348012345678','_blank');
+            }
+        }
     </script>
+    <!--
+    LIVE CHAT SETUP (Tawk.to):
+    1. Go to https://tawk.to and create a free account
+    2. Add your website property
+    3. Copy your Property ID and Widget ID from the embed code
+    4. Replace '678f2d2faf5191910ea8c54a' with your Property ID
+    5. Replace '1iocqb97j' with your Widget ID
+    Example: https://embed.tawk.to/PROPERTY_ID/WIDGET_ID
+    -->
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){
