@@ -26,92 +26,57 @@
                 <button class="btn btn-info" onclick="exportCSV()"><i class="fas fa-file-export"></i> Export</button>
             </div>
         </div>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('favorites', this)">Favorites</button>
-            <button class="tab-btn" onclick="switchTab('closeout', this)">Closeout</button>
-            <button class="tab-btn" onclick="switchTab('employees', this)">Employees</button>
-        </div>
-        <div id="favorites" class="tab-content active">
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-label"><i class="fas fa-shopping-cart"></i> Total Sales</div>
-                    <div class="kpi-value" id="totalSalesMTD">₦0.00</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label"><i class="fas fa-receipt"></i> Total Orders</div>
-                    <div class="kpi-value" id="totalOrders">0</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label"><i class="fas fa-chart-line"></i> Avg Order Value</div>
-                    <div class="kpi-value" id="avgOrderValue">₦0.00</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-label"><i class="fas fa-triangle-exclamation"></i> Low Stock Items</div>
-                    <div class="kpi-value" style="color:#f59e0b;" id="lowStockItems">0</div>
-                </div>
-            </div>
-            <div class="chart-container">
-                <h3 style="margin-bottom:15px;"><i class="fas fa-chart-line"></i> Sales Trend</h3>
-                <div id="salesTrendChart" style="display:flex;align-items:flex-end;height:200px;gap:20px;padding:20px 0;"></div>
-            </div>
-            <div class="table-panel">
-                <div class="table-top"><strong><i class="fas fa-star"></i> Top Selling Products</strong></div>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>#</th><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr></thead>
-                        <tbody id="topProducts"><tr><td colspan="4" class="empty-state">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div id="closeout" class="tab-content">
-            <div class="panel">
-                <div class="toolbar">
-                    <input type="date" id="closeoutDate" class="form-control" style="width:auto;">
-                    <button class="btn btn-primary" onclick="generateCloseout()"><i class="fas fa-sync"></i> Generate</button>
-                    <button class="btn btn-info" onclick="exportCloseout()"><i class="fas fa-download"></i> Export</button>
-                </div>
-            </div>
-            <div class="kpi-grid">
-                <div class="kpi-card"><div class="kpi-label">Total Sales Today</div><div class="kpi-value" id="closeoutTotalSales">₦0.00</div></div>
-                <div class="kpi-card"><div class="kpi-label">Tax Collected</div><div class="kpi-value" id="closeoutTax">₦0.00</div></div>
-                <div class="kpi-card"><div class="kpi-label">Transactions</div><div class="kpi-value" id="closeoutTransactions">0</div></div>
-                <div class="kpi-card"><div class="kpi-label">Avg Transaction</div><div class="kpi-value" id="closeoutAvg">₦0.00</div></div>
-            </div>
-            <div class="table-panel">
-                <div class="table-top"><strong><i class="fas fa-credit-card"></i> Payment Breakdown</strong></div>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Payment Method</th><th>Amount</th><th>Count</th></tr></thead>
-                        <tbody id="closeoutPaymentBreakdown"><tr><td colspan="3" class="empty-state">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div id="employees" class="tab-content">
-            <div class="table-panel">
-                <div class="table-top"><strong><i class="fas fa-user-tie"></i> Employee Performance</strong></div>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>Employee</th><th>Role</th><th>Sales Amount</th><th>Transactions</th></tr></thead>
-                        <tbody id="employeeData"><tr><td colspan="4" class="empty-state">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <div class="tabs" id="reportTabs"></div>
+        <div id="reportContent"></div>
     </div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
 var currentSales = [];
 var currentProducts = [];
+var currentCustomers = [];
+var currentExpenses = [];
+var currentGiftCards = [];
+var currentPurchaseOrders = [];
+var currentPrescriptions = [];
+var currentEmployees = [];
+var currentInventory = [];
+var currentExpiryBatches = [];
+var currentPayments = [];
 var dataReady = null;
-function toLocalDateStr(d) { var dd = String(d.getDate()).padStart(2, '0'); var mm = String(d.getMonth() + 1).padStart(2, '0'); return d.getFullYear() + '-' + mm + '-' + dd; }
+var currentTab = 'favorites';
+
+function toLocalDateStr(d) {
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    return d.getFullYear() + '-' + mm + '-' + dd;
+}
 function $id(id) { return document.getElementById(id); }
-function formatCurrency(amount) { return POS.formatCurrency(amount); }
-function formatNumber(num) { return POS.formatNumber(num || 0); }
-function safeGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
-async function loadData() {
+function fmt(n) { try { return POS.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2}); } }
+function fmtNum(n) { try { return POS.formatNumber(n || 0); } catch(e) { return (parseFloat(n) || 0).toLocaleString(); } }
+function esc(s) { return String(s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+function safeGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
+
+var TABS = [
+    {id:'favorites', label:'Favorites', icon:'fa-star'},
+    {id:'sales-trend', label:'Sales Trend', icon:'fa-chart-line'},
+    {id:'sales-category', label:'By Category', icon:'fa-tags'},
+    {id:'sales-payment', label:'By Payment', icon:'fa-credit-card'},
+    {id:'customers', label:'Customers', icon:'fa-users'},
+    {id:'inventory-val', label:'Inventory', icon:'fa-boxes'},
+    {id:'expiry', label:'Expiry', icon:'fa-triangle-exclamation'},
+    {id:'purchase-orders', label:'POs', icon:'fa-file-invoice'},
+    {id:'expenses', label:'Expenses', icon:'fa-receipt'},
+    {id:'tax', label:'Tax/VAT', icon:'fa-percent'},
+    {id:'margins', label:'Margins', icon:'fa-chart-pie'},
+    {id:'discounts', label:'Discounts', icon:'fa-tags'},
+    {id:'giftcards', label:'Gift Cards', icon:'fa-gift'},
+    {id:'peak-hours', label:'Peak Hours', icon:'fa-clock'},
+    {id:'store-account', label:'Store Acct', icon:'fa-wallet'},
+    {id:'prescriptions', label:'Rx', icon:'fa-prescription'},
+    {id:'closeout', label:'Closeout', icon:'fa-calculator'},
+    {id:'employees', label:'Employees', icon:'fa-user-tie'}
+];
     dataReady = (async function() {
         try {
             var data = await API.getSales();
