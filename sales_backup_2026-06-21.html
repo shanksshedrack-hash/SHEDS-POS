@@ -169,11 +169,11 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <span id="customerText">Select Customer (optional)</span>
 </div>
 <div class="totals-section" style="margin-top:auto;padding-top:16px;border-top:1px solid #e5e7eb;">
-<div class="totals-row"><span>Sub Total</span><span id="subTotal">â‚¦0.00</span></div>
-<div class="totals-row"><span>Sales Tax (0.000%)</span><span id="taxAmount">â‚¦0.00</span></div>
-<div class="totals-row total" style="color:#10b981;"><span>Total</span><span id="totalAmount">â‚¦0.00</span></div>
-<div class="totals-row due" style="color:#f59e0b;"><span>Amount Due</span><span id="amountDue" style="color:#f59e0b;">â‚¦0.00</span></div>
-<div class="totals-row" id="changeRow" style="display:none;"><span>Change</span><span id="changeAmount" style="color:#10b981;">â‚¦0.00</span></div>
+<div class="totals-row"><span>Sub Total</span><span id="subTotal">₦0.00</span></div>
+<div class="totals-row"><span>Sales Tax (0.000%)</span><span id="taxAmount">₦0.00</span></div>
+<div class="totals-row total" style="color:#10b981;"><span>Total</span><span id="totalAmount">₦0.00</span></div>
+<div class="totals-row due" style="color:#f59e0b;"><span>Amount Due</span><span id="amountDue" style="color:#f59e0b;">₦0.00</span></div>
+<div class="totals-row" id="changeRow" style="display:none;"><span>Change</span><span id="changeAmount" style="color:#10b981;">₦0.00</span></div>
 </div>
 <div class="add-payment-section" style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e7eb;">
 <h3 class="payment-heading"><i class="fas fa-credit-card"></i> Payment Details</h3>
@@ -188,8 +188,8 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <input type="hidden" id="paymentMethod" value="cash">
 <input type="number" id="amountTendered" placeholder="Amount Tendered" step="0.01" min="0" style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:12px;">
 <div class="quick-tender">
-<button onclick="quickTender(500)">â‚¦500</button><button onclick="quickTender(1000)">â‚¦1,000</button><button onclick="quickTender(2000)">â‚¦2,000</button><button onclick="quickTender(5000)">â‚¦5,000</button>
-<button onclick="quickTender(10000)">â‚¦10,000</button><button onclick="quickTender(20000)">â‚¦20,000</button><button onclick="quickTender(50000)">â‚¦50,000</button><button onclick="quickTender(100000)">â‚¦100,000</button>
+<button onclick="quickTender(500)">₦500</button><button onclick="quickTender(1000)">₦1,000</button><button onclick="quickTender(2000)">₦2,000</button><button onclick="quickTender(5000)">₦5,000</button>
+<button onclick="quickTender(10000)">₦10,000</button><button onclick="quickTender(20000)">₦20,000</button><button onclick="quickTender(50000)">₦50,000</button><button onclick="quickTender(100000)">₦100,000</button>
 </div>
 <textarea id="saleNotes" placeholder="Comments or sale notes..." style="width:100%;height:60px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;resize:vertical;"></textarea>
 <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#6b7280;cursor:pointer;margin-bottom:12px;"><input type="checkbox" id="showComments" style="width:16px;height:16px;"> Show comments on receipt</label>
@@ -205,7 +205,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <script>
 var allProducts=[],cart=loadCart(),selectedCustomer=null,searchTimer=null;
 function $(id){return document.getElementById(id);}
-function fmt(n){return 'â‚¦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}
+function fmt(n){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
 function jsAttr(v){return esc(JSON.stringify(v===undefined?null:v));}
 function productPrice(p){return parseFloat(p&&p.selling_price!==undefined?p.selling_price:p&&p.price)||0;}

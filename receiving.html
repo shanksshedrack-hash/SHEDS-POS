@@ -58,9 +58,9 @@
                             <th>Product</th>
                             <th>Pkg Type</th>
                             <th>Qty</th>
-                            <th>Cost Price (â‚¦)</th>
+                            <th>Cost Price (₦)</th>
                             <th>Expiry</th>
-                            <th>Line Total (â‚¦)</th>
+                            <th>Line Total (₦)</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -72,7 +72,7 @@
         </div>
         <div class="kpi-grid" style="margin-top:15px;">
             <div class="kpi-card"><div class="kpi-label">Total Items</div><div class="kpi-value" id="totalItems">0</div></div>
-            <div class="kpi-card"><div class="kpi-label">Total Cost</div><div class="kpi-value" id="totalCost">â‚¦0.00</div></div>
+            <div class="kpi-card"><div class="kpi-label">Total Cost</div><div class="kpi-value" id="totalCost">₦0.00</div></div>
         </div>
         <div class="action-buttons" style="margin-top:15px;">
             <button class="btn btn-success" onclick="saveToInventory()"><i class="fas fa-check"></i> Confirm & Save</button>
@@ -228,7 +228,7 @@ function updateReceiving() {
     var b = $id('receivingBody');
     if (!receivingItems.length) {
         b.innerHTML = '<tr><td colspan="7" class="empty-state">No items added. Search or click All Products to add.</td></tr>';
-        $id('totalItems').textContent = '0'; $id('totalCost').textContent = 'â‚¦0.00'; return;
+        $id('totalItems').textContent = '0'; $id('totalCost').textContent = '₦0.00'; return;
     }
     var totalQty = 0, totalCost = 0, h = '';
     receivingItems.forEach(function(x, i) {

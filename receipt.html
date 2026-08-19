@@ -339,7 +339,7 @@
   </div>
 
   <script>
-  function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return 'â‚¦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+  function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
   function noop(label){window.alert(label+' is available from the main POS interface.');}
   function go(p){window.location.href=p;}

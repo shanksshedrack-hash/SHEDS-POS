@@ -43,8 +43,8 @@
 <div class="panel" style="margin-bottom:18px;">
 <h3 style="font-size:15px;font-weight:850;color:#111827;margin-bottom:14px;display:flex;align-items:center;gap:8px;"><i class="fas fa-coins" style="color:#f59e0b;"></i> Currency & Formatting</h3>
 <div class="form-row">
-<div class="form-group"><label class="required">Currency Symbol</label><input type="text" id="currency" placeholder="â‚¦" maxlength="3"></div>
-<div class="form-group"><label class="required">Currency Code / Locale</label><select id="currencyLocale"><option value="en-NG">Nigeria (â‚¦ â€” en-NG)</option><option value="en-US">USA ($ â€” en-US)</option><option value="en-GB">UK (Â£ â€” en-GB)</option><option value="en-KE">Kenya (KSh â€” en-KE)</option><option value="en-GH">Ghana (GHâ‚µ â€” en-GH)</option><option value="en-ZA">South Africa (R â€” en-ZA)</option></select></div>
+<div class="form-group"><label class="required">Currency Symbol</label><input type="text" id="currency" placeholder="₦" maxlength="3"></div>
+<div class="form-group"><label class="required">Currency Code / Locale</label><select id="currencyLocale"><option value="en-NG">Nigeria (₦ — en-NG)</option><option value="en-US">USA ($ — en-US)</option><option value="en-GB">UK (Â£ — en-GB)</option><option value="en-KE">Kenya (KSh — en-KE)</option><option value="en-GH">Ghana (GHâ‚µ — en-GH)</option><option value="en-ZA">South Africa (R — en-ZA)</option></select></div>
 </div>
 </div>
 
@@ -155,7 +155,7 @@
       $('storeAddress').value = StoreConfig.get('storeAddress') || '';
       $('phoneNumber').value = StoreConfig.get('phoneNumber') || '';
       $('emailAddress').value = StoreConfig.get('emailAddress') || '';
-      $('currency').value = StoreConfig.get('currency') || 'â‚¦';
+      $('currency').value = StoreConfig.get('currency') || '₦';
       $('currencyLocale').value = StoreConfig.get('currencyLocale') || 'en-NG';
       $('printerType').value = StoreConfig.get('printerType') || 'small';
       $('storeLogo').value = StoreConfig.get('storeLogo') || '';
@@ -191,7 +191,7 @@
           storeAddress: $('storeAddress').value.trim(),
           phoneNumber: $('phoneNumber').value.trim(),
           emailAddress: $('emailAddress').value.trim(),
-          currency: $('currency').value.trim() || 'â‚¦',
+          currency: $('currency').value.trim() || '₦',
           currencyLocale: $('currencyLocale').value || 'en-NG',
           printerType: $('printerType').value || 'small',
           storeLogo: $('storeLogo').value.trim(),

@@ -179,7 +179,7 @@
           <div class="kpi-icon green"><i class="fas fa-cash-register"></i></div>
           <div class="kpi-body">
             <div class="kpi-label">Shift Total</div>
-            <div class="kpi-value" id="shiftSales">â‚¦0.00</div>
+            <div class="kpi-value" id="shiftSales">₦0.00</div>
             <div class="kpi-sub">All transactions today</div>
           </div>
         </div>
@@ -187,7 +187,7 @@
           <div class="kpi-icon blue"><i class="fas fa-money-bill-wave"></i></div>
           <div class="kpi-body">
             <div class="kpi-label">Cash Sales</div>
-            <div class="kpi-value" id="cashSales">â‚¦0.00</div>
+            <div class="kpi-value" id="cashSales">₦0.00</div>
             <div class="kpi-sub">Physical currency</div>
           </div>
         </div>
@@ -195,7 +195,7 @@
           <div class="kpi-icon purple"><i class="fas fa-credit-card"></i></div>
           <div class="kpi-body">
             <div class="kpi-label">Digital / POS</div>
-            <div class="kpi-value" id="digitalSales">â‚¦0.00</div>
+            <div class="kpi-value" id="digitalSales">₦0.00</div>
             <div class="kpi-sub">Cards & transfers</div>
           </div>
         </div>
@@ -203,7 +203,7 @@
           <div class="kpi-icon orange"><i class="fas fa-wallet"></i></div>
           <div class="kpi-body">
             <div class="kpi-label">Store Account</div>
-            <div class="kpi-value" id="storeAccountSales">â‚¦0.00</div>
+            <div class="kpi-value" id="storeAccountSales">₦0.00</div>
             <div class="kpi-sub">Credit sales</div>
           </div>
         </div>
@@ -217,11 +217,11 @@
           <div class="cash-card-body">
             <div class="cash-grid">
               <div class="cash-field">
-                <label class="required">Opening Float (â‚¦)</label>
+                <label class="required">Opening Float (₦)</label>
                 <input type="number" id="openingFloat" placeholder="0.00" step="0.01" oninput="recalculate()">
               </div>
               <div class="cash-field">
-                <label class="required">Actual Cash Counted (â‚¦)</label>
+                <label class="required">Actual Cash Counted (₦)</label>
                 <input type="number" id="actualCash" placeholder="0.00" step="0.01" oninput="recalculate()">
               </div>
               <div class="cash-field">
@@ -235,7 +235,7 @@
             </div>
             <div id="varianceBar" class="variance-bar neutral">
               <span><i class="fas fa-balance-scale"></i> Cash Variance</span>
-              <span id="cashVariance">â‚¦0.00</span>
+              <span id="cashVariance">₦0.00</span>
             </div>
             <div class="cash-field" style="margin-top:12px;">
               <label>Notes / Exceptions</label>
@@ -251,13 +251,13 @@
           <div class="cash-card-body">
             <table class="breakdown-table">
               <tbody>
-                <tr><td>Cash</td><td id="summaryCash">â‚¦0.00</td></tr>
-                <tr><td>Card</td><td id="summaryCard">â‚¦0.00</td></tr>
-                <tr><td>Bank Transfer</td><td id="summaryTransfer">â‚¦0.00</td></tr>
-                <tr><td>POS</td><td id="summaryPos">â‚¦0.00</td></tr>
-                <tr><td>Gift Card</td><td id="summaryGift">â‚¦0.00</td></tr>
-                <tr><td>Store Account</td><td id="summaryStore">â‚¦0.00</td></tr>
-                <tr class="total-row"><td>Total</td><td id="summaryTotal">â‚¦0.00</td></tr>
+                <tr><td>Cash</td><td id="summaryCash">₦0.00</td></tr>
+                <tr><td>Card</td><td id="summaryCard">₦0.00</td></tr>
+                <tr><td>Bank Transfer</td><td id="summaryTransfer">₦0.00</td></tr>
+                <tr><td>POS</td><td id="summaryPos">₦0.00</td></tr>
+                <tr><td>Gift Card</td><td id="summaryGift">₦0.00</td></tr>
+                <tr><td>Store Account</td><td id="summaryStore">₦0.00</td></tr>
+                <tr class="total-row"><td>Total</td><td id="summaryTotal">₦0.00</td></tr>
               </tbody>
             </table>
             <div class="closeout-actions" style="margin-top:18px;">
@@ -297,7 +297,7 @@
 <script>
 var shiftSales = 0, cashSalesTotal = 0, digitalTotal = 0, storeAccountTotal = 0;
 
-function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return 'â‚¦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
+function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
 function methodClass(m){ m = (m||'cash').toLowerCase(); return m; }
 function methodBadge(method){

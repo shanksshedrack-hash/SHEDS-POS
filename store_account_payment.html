@@ -30,11 +30,11 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-label"><i class="fas fa-coins"></i> Total Outstanding</div>
-                <div class="kpi-value" id="kpiOutstanding">â‚¦0.00</div>
+                <div class="kpi-value" id="kpiOutstanding">₦0.00</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label"><i class="fas fa-chart-line"></i> Total Sales</div>
-                <div class="kpi-value" id="kpiSales">â‚¦0.00</div>
+                <div class="kpi-value" id="kpiSales">₦0.00</div>
             </div>
         </div>
         <div class="tabs">
@@ -86,12 +86,12 @@
             <div class="kpi-label">Current Balance</div>
             <input type="number" id="detailBalanceInput" class="form-control" step="0.01" style="margin-top:4px;font-size:14px;padding:6px;width:100px;">
         </div>
-        <div class="kpi-card"><div class="kpi-label">Total Sales</div><div class="kpi-value" id="detailTotalSales">â‚¦0.00</div></div>
-        <div class="kpi-card"><div class="kpi-label">Total Payments</div><div class="kpi-value" id="detailTotalPayments">â‚¦0.00</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Sales</div><div class="kpi-value" id="detailTotalSales">₦0.00</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Payments</div><div class="kpi-value" id="detailTotalPayments">₦0.00</div></div>
     </div>
                      <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
                          <table>
-                             <thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Debit (â‚¦)</th><th>Credit (â‚¦)</th></tr></thead>
+                             <thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Debit (₦)</th><th>Credit (₦)</th></tr></thead>
                              <tbody id="accountTransactionsBody"></tbody>
                          </table>
                      </div>
@@ -147,9 +147,9 @@
                                 <th>Customer</th>
                                 <th>Type</th>
                                 <th>Reference</th>
-                                <th>Debit (â‚¦)</th>
-                                <th>Credit (â‚¦)</th>
-                                <th>Balance (â‚¦)</th>
+                                <th>Debit (₦)</th>
+                                <th>Credit (₦)</th>
+                                <th>Balance (₦)</th>
                             </tr>
                         </thead>
                         <tbody id="statementsTableBody"><tr><td colspan="7" class="empty-state">Select a customer to view statement</td></tr></tbody>
@@ -166,7 +166,7 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Customer</th>
-                                <th>Amount (â‚¦)</th>
+                                <th>Amount (₦)</th>
                                 <th>Method</th>
                                 <th>Reference</th>
                                 <th>Notes</th>
@@ -198,7 +198,7 @@
                 <input type="number" id="currentBalance" class="form-control" step="0.01" placeholder="Enter balance" onchange="updateCustomerBalanceValue()">
             </div>
             <div class="form-group">
-                <label class="required">Amount (â‚¦)</label>
+                <label class="required">Amount (₦)</label>
                 <input type="number" id="collectAmount" class="form-control" min="0" step="0.01" placeholder="Enter amount">
             </div>
             <div class="form-group">

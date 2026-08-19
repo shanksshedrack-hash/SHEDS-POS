@@ -87,25 +87,25 @@ body{background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;display
     <div class="plans-grid">
       <div class="plan-card" onclick="handlePlanClick(this,'basic',5000,'Basic')" data-monthly="5000" data-yearly="42000">
         <h3>Basic</h3>
-        <div class="price" id="price-basic">â‚¦5,000</div>
+        <div class="price" id="price-basic">₦5,000</div>
         <div class="period" id="period-basic">per month</div>
         <ul><li><i class="fas fa-check"></i> 1 Terminal</li><li><i class="fas fa-check"></i> Basic Support</li><li><i class="fas fa-check"></i> 50 Products</li></ul>
       </div>
       <div class="plan-card" onclick="handlePlanClick(this,'standard',10000,'Standard')" data-monthly="10000" data-yearly="84000">
         <h3>Standard</h3>
-        <div class="price" id="price-standard">â‚¦10,000</div>
+        <div class="price" id="price-standard">₦10,000</div>
         <div class="period" id="period-standard">per month</div>
         <ul><li><i class="fas fa-check"></i> 3 Terminals</li><li><i class="fas fa-check"></i> Priority Support</li><li><i class="fas fa-check"></i> 500 Products</li></ul>
       </div>
       <div class="plan-card selected" onclick="handlePlanClick(this,'premium',20000,'Premium')" data-monthly="20000" data-yearly="168000">
         <h3>Premium</h3>
-        <div class="price" id="price-premium">â‚¦20,000</div>
+        <div class="price" id="price-premium">₦20,000</div>
         <div class="period" id="period-premium">per month</div>
         <ul><li><i class="fas fa-check"></i> 10 Terminals</li><li><i class="fas fa-check"></i> 24/7 Support</li><li><i class="fas fa-check"></i> Unlimited Products</li></ul>
       </div>
       <div class="plan-card" onclick="handlePlanClick(this,'enterprise',50000,'Enterprise')" data-monthly="50000" data-yearly="420000">
         <h3>Enterprise</h3>
-        <div class="price" id="price-enterprise">â‚¦50,000</div>
+        <div class="price" id="price-enterprise">₦50,000</div>
         <div class="period" id="period-enterprise">per month</div>
         <ul><li><i class="fas fa-check"></i> Unlimited</li><li><i class="fas fa-check"></i> Dedicated Manager</li><li><i class="fas fa-check"></i> Custom Integrations</li></ul>
       </div>
@@ -127,7 +127,7 @@ body{background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;display
     <div id="paymentContent">
       <div class="kpi-grid" style="margin-bottom:16px;">
         <div class="kpi-card"><div class="kpi-label">Plan</div><div class="kpi-value" id="payPlanName" style="font-size:16px;">Premium</div></div>
-        <div class="kpi-card"><div class="kpi-label">Amount</div><div class="kpi-value" id="payAmount" style="font-size:16px;">â‚¦20,000</div></div>
+        <div class="kpi-card"><div class="kpi-label">Amount</div><div class="kpi-value" id="payAmount" style="font-size:16px;">₦20,000</div></div>
       </div>
       <div class="form-group">
         <label>Payment Method</label>
@@ -172,11 +172,11 @@ function toggleCycle(checked){
     document.querySelectorAll('.plan-card').forEach(function(card){
         var monthly=card.getAttribute('data-monthly'),yearly=card.getAttribute('data-yearly');
         if(checked){
-            card.querySelector('.price').textContent='â‚¦'+parseFloat(yearly).toLocaleString();
+            card.querySelector('.price').textContent='₦'+parseFloat(yearly).toLocaleString();
             card.querySelector('.period').textContent='per year';
             selectedPlan.amount=parseFloat(yearly);
         }else{
-            card.querySelector('.price').textContent='â‚¦'+parseFloat(monthly).toLocaleString();
+            card.querySelector('.price').textContent='₦'+parseFloat(monthly).toLocaleString();
             card.querySelector('.period').textContent='per month';
             selectedPlan.amount=parseFloat(monthly);
         }
@@ -190,7 +190,7 @@ function toggleCycle(checked){
 }
 function showPaymentModal(){
     $('payPlanName').textContent=selectedPlan.displayName;
-    $('payAmount').textContent='â‚¦'+parseFloat(selectedPlan.amount).toLocaleString();
+    $('payAmount').textContent='₦'+parseFloat(selectedPlan.amount).toLocaleString();
     $('subPaymentMethod').value='card';
     $('subRef').value='';
     $('paymentSuccess').style.display='none';

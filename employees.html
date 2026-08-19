@@ -37,7 +37,7 @@
 </div>
 <div class="kpi-card">
 <div class="kpi-label"><i class="fas fa-money-bill"></i> Monthly Payroll</div>
-<div class="kpi-value" id="monthlyPayroll">â‚¦0.00</div>
+<div class="kpi-value" id="monthlyPayroll">₦0.00</div>
 <div class="kpi-sub">Total salaries</div>
 </div>
 </div>
@@ -110,7 +110,7 @@
 </select>
 </div>
 <div class="form-group">
-<label>Salary (â‚¦)</label>
+<label>Salary (₦)</label>
 <input type="number" id="salary" class="form-control" placeholder="Monthly salary" step="0.01">
 </div>
 <div class="form-group">
@@ -188,7 +188,7 @@
       $('activeEmployees').textContent = list.filter(function(e){return e.status==='active';}).length;
       $('inactiveEmployees').textContent = list.filter(function(e){return e.status==='inactive';}).length;
       var payroll = list.reduce(function(s,e){return s+(parseFloat(e.salary)||0);},0);
-      $('monthlyPayroll').textContent = 'â‚¦' + payroll.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+      $('monthlyPayroll').textContent = '₦' + payroll.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
 
   function showAddForm() {
