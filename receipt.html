@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Receipt - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="api.js"></script>
@@ -338,7 +339,7 @@
   </div>
 
   <script>
-  function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+  function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return 'â‚¦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
   function noop(label){window.alert(label+' is available from the main POS interface.');}
   function go(p){window.location.href=p;}
@@ -490,3 +491,5 @@
   </script>
 </body>
 </html>
+
+

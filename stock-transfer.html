@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Transfer - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="common.css">
     <script src="api.js"></script>
@@ -90,7 +91,7 @@
 <script>
 function $(id){return document.getElementById(id);}
 var transfers = [];
-function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
+function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return 'â‚¦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3000); }
 function submitTransfer(){
@@ -161,6 +162,8 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 </body>
 </html>
+
+
 
 
 

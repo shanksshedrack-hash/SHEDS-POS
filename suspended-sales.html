@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suspended Sales - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="common.css">
     <style>
@@ -112,7 +113,7 @@
                         <tr>
                             <th><input type="checkbox" id="selectAllHeld" onclick="toggleSelectAllHeld()"></th>
                             <th class="sortable" onclick="sortHeld('idx')"># <span class="sort-icon" id="sort-idx"></span></th>
-                            <th class="sortable" onclick="sortHeld('date')">Date <span class="sort-icon" id="sort-date">▼</span></th>
+                            <th class="sortable" onclick="sortHeld('date')">Date <span class="sort-icon" id="sort-date">â–¼</span></th>
                             <th>Customer</th>
                             <th>Reason <span class="sort-icon"></span></th>
                             <th class="sortable" onclick="sortHeld('items')">Items <span class="sort-icon" id="sort-items"></span></th>
@@ -443,7 +444,7 @@ function updateSortIcons() {
     ['idx','date','items','total'].forEach(function(f) {
         var el = $('sort-' + f);
         if (!el) return;
-        el.innerHTML = sortField === f ? (sortDir === 'asc' ? '▲' : '▼') : '';
+        el.innerHTML = sortField === f ? (sortDir === 'asc' ? 'â–²' : 'â–¼') : '';
     });
 }
 function recallHeld(idx) {
@@ -548,3 +549,5 @@ if (document.readyState === 'loading') {
 </script>
 </body>
 </html>
+
+

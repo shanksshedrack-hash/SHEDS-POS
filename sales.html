@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Point of Sale - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css">
@@ -168,7 +169,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
     <div class="cp-avatar"><i class="fas fa-user-circle"></i></div>
     <div class="cp-info">
       <div class="cp-name" id="cpName">ABUBAKAR SALIHU</div>
-      <div class="cp-balance">Balance: <span id="cpBalance">₦0.00</span></div>
+      <div class="cp-balance">Balance: <span id="cpBalance">â‚¦0.00</span></div>
     </div>
     <div class="cp-actions-top">
       <button class="cp-icon-btn" onclick="openSelectedCustomer()" title="Edit Customer"><i class="fas fa-external-link-alt"></i></button>
@@ -209,11 +210,11 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <span id="customerText">Select Customer (optional)</span>
 </div>
 <div class="totals-section" style="margin-top:auto;padding-top:16px;border-top:1px solid #e5e7eb;">
-<div class="totals-row"><span>Sub Total</span><span id="subTotal">₦0.00</span></div>
-<div class="totals-row"><span>Sales Tax</span><span id="taxAmount">₦0.00</span></div>
-<div class="totals-row total" style="color:#10b981;"><span>Total</span><span id="totalAmount">₦0.00</span></div>
-<div class="totals-row due" style="color:#f59e0b;"><span>Amount Due</span><span id="amountDue" style="color:#f59e0b;">₦0.00</span></div>
-<div class="totals-row" id="changeRow" style="display:none;"><span>Change</span><span id="changeAmount" style="color:#10b981;">₦0.00</span></div>
+<div class="totals-row"><span>Sub Total</span><span id="subTotal">â‚¦0.00</span></div>
+<div class="totals-row"><span>Sales Tax</span><span id="taxAmount">â‚¦0.00</span></div>
+<div class="totals-row total" style="color:#10b981;"><span>Total</span><span id="totalAmount">â‚¦0.00</span></div>
+<div class="totals-row due" style="color:#f59e0b;"><span>Amount Due</span><span id="amountDue" style="color:#f59e0b;">â‚¦0.00</span></div>
+<div class="totals-row" id="changeRow" style="display:none;"><span>Change</span><span id="changeAmount" style="color:#10b981;">â‚¦0.00</span></div>
 </div>
 <div class="add-payment-section" style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e7eb;">
 <h3 class="payment-heading"><i class="fas fa-credit-card"></i> Payment Details</h3>
@@ -229,8 +230,8 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <input type="hidden" id="paymentMethod" value="cash">
 <input type="number" id="amountTendered" placeholder="Amount Tendered" step="0.01" min="0" style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:12px;">
 <div class="quick-tender">
-<button onclick="quickTender(500)">₦500</button><button onclick="quickTender(1000)">₦1,000</button><button onclick="quickTender(2000)">₦2,000</button><button onclick="quickTender(5000)">₦5,000</button>
-<button onclick="quickTender(10000)">₦10,000</button><button onclick="quickTender(20000)">₦20,000</button><button onclick="quickTender(50000)">₦50,000</button><button onclick="quickTender(100000)">₦100,000</button>
+<button onclick="quickTender(500)">â‚¦500</button><button onclick="quickTender(1000)">â‚¦1,000</button><button onclick="quickTender(2000)">â‚¦2,000</button><button onclick="quickTender(5000)">â‚¦5,000</button>
+<button onclick="quickTender(10000)">â‚¦10,000</button><button onclick="quickTender(20000)">â‚¦20,000</button><button onclick="quickTender(50000)">â‚¦50,000</button><button onclick="quickTender(100000)">â‚¦100,000</button>
 </div>
 <textarea id="saleNotes" placeholder="Comments or sale notes..." style="width:100%;height:60px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;resize:vertical;"></textarea>
 <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#6b7280;cursor:pointer;margin-bottom:12px;"><input type="checkbox" id="showComments" style="width:16px;height:16px;"> Show comments on receipt</label>
@@ -246,7 +247,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <script>
 var allProducts=[],cart=loadCart(),selectedCustomer=loadCustomer(),searchTimer=null;
 function $(id){return document.getElementById(id);}
-function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return 'â‚¦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
 function jsAttr(v){return esc(JSON.stringify(v===undefined?null:v));}
 function productPrice(p){return parseFloat(p&&p.selling_price!==undefined?p.selling_price:p&&p.price)||0;}
@@ -284,7 +285,7 @@ function updateChange(){var tendered=parseFloat($('amountTendered').value)||0;va
 function quickTender(amount){$('amountTendered').value=amount;updateChange();}
 function setPaymentMethod(method,btn){$('paymentMethod').value=method;document.querySelectorAll('.payment-method').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');}
 function focusCustomer(){$('customerSearch')&&$('customerSearch').focus();}
-async function searchCustomers(q){var query=(q||'').trim();var dd=$('customerDropdown');if(query.length<2){dd.style.display='none';return;}var customers=await API.getCustomers()||[];if(!customers||!customers.length){dd.innerHTML='<div style="padding:12px;color:#6b7280;">No customers found - add some in Customers page</div>';dd.style.display='block';return;}var filtered=customers.filter(function(c){var name=(c.firstName||c.first_name||'')+' '+(c.lastName||c.last_name||'');return(name||'').toLowerCase().indexOf(query.toLowerCase())>-1||(c.phone||'').toLowerCase().indexOf(query.toLowerCase())>-1||(c.email||'').toLowerCase().indexOf(query.toLowerCase())>-1;});if(!filtered.length){dd.innerHTML='<div style="padding:12px;color:#6b7280;">No customers found</div>';dd.style.display='block';return;}dd.innerHTML=filtered.slice(0,20).map(function(c){var name=(c.firstName||c.first_name||'')+' '+(c.lastName||c.last_name||'');return '<div onclick="setCustomerFromObject('+jsAttr(c)+')" style="padding:12px;cursor:pointer;border-bottom:1px solid #f1f5f9;"><strong>'+esc(name)+'</strong><br><small>Balance: '+fmt(c.balance||c.credit_balance||0)+(c.phone?' • '+esc(c.phone):'')+'</small></div>';}).join('');dd.style.display='block';}
+async function searchCustomers(q){var query=(q||'').trim();var dd=$('customerDropdown');if(query.length<2){dd.style.display='none';return;}var customers=await API.getCustomers()||[];if(!customers||!customers.length){dd.innerHTML='<div style="padding:12px;color:#6b7280;">No customers found - add some in Customers page</div>';dd.style.display='block';return;}var filtered=customers.filter(function(c){var name=(c.firstName||c.first_name||'')+' '+(c.lastName||c.last_name||'');return(name||'').toLowerCase().indexOf(query.toLowerCase())>-1||(c.phone||'').toLowerCase().indexOf(query.toLowerCase())>-1||(c.email||'').toLowerCase().indexOf(query.toLowerCase())>-1;});if(!filtered.length){dd.innerHTML='<div style="padding:12px;color:#6b7280;">No customers found</div>';dd.style.display='block';return;}dd.innerHTML=filtered.slice(0,20).map(function(c){var name=(c.firstName||c.first_name||'')+' '+(c.lastName||c.last_name||'');return '<div onclick="setCustomerFromObject('+jsAttr(c)+')" style="padding:12px;cursor:pointer;border-bottom:1px solid #f1f5f9;"><strong>'+esc(name)+'</strong><br><small>Balance: '+fmt(c.balance||c.credit_balance||0)+(c.phone?' â€¢ '+esc(c.phone):'')+'</small></div>';}).join('');dd.style.display='block';}
 function setCustomerFromObject(c){if(!c)return;var name=(c.firstName||c.first_name||'')+' '+(c.lastName||c.last_name||c.name||'');setCustomer(c.id,name,c);}
 function setCustomer(id,name,data){selectedCustomer={id:id,name:name,balance:data&&(data.balance||data.credit_balance||data.creditBalance)?(data.balance||data.credit_balance||data.creditBalance):0,data:data||{}};saveCustomer();$('customerSearch').value=name;renderCustomerProfile();$('customerDropdown').style.display='none';}
 function renderCustomerProfile(){var box=$('cartCustomer');var panel=$('customerProfilePanel');if(!box)return;if(!selectedCustomer){box.className='cart-customer placeholder';box.innerHTML='<i class="fas fa-user-circle" style="font-size:22px;color:#94a3b8;"></i><span id="customerText">Select Customer (optional)</span>';if(panel)panel.style.display='none';$('customerSearch').value='';return;}var data=selectedCustomer.data||{},name=selectedCustomer.name||'Customer',initials=name.split(' ').map(function(x){return (x||'').charAt(0).toUpperCase();}).join('').slice(0,2)||'C',balance=selectedCustomer.balance||0;box.className='cart-customer selected';box.innerHTML='<i class="fas fa-user-circle" style="font-size:22px;color:#10b981;"></i><span id="customerText">'+esc(name)+'</span>';$('customerSearch').value=name;if(panel){panel.style.display='flex';$('cpName').textContent=name.toUpperCase();$('cpBalance').textContent=fmt(balance);}}
@@ -302,7 +303,7 @@ function updateFloatBar(){
 }
 function openShiftFromPOS(){
   var cashier=API.getUserName?API.getUserName():'Cashier';
-  var floatAmt=prompt('Enter opening float amount (₦):','2000');
+  var floatAmt=prompt('Enter opening float amount (â‚¦):','2000');
   if(floatAmt===null)return;
   floatAmt=parseFloat(floatAmt)||0;
   var shifts=[];try{shifts=JSON.parse(localStorage.getItem('danzona_shifts')||'[]');}catch(e){shifts=[];}
@@ -314,7 +315,7 @@ function closeShiftFromPOS(){
   var shifts=[];try{shifts=JSON.parse(localStorage.getItem('danzona_shifts')||'[]');}catch(e){shifts=[];}
   var open=shifts.find(function(s){return s.status==='open';});
   if(!open){showToast('No open shift to close',true);return;}
-  var cashInDrawer=prompt('Enter cash counted in drawer (₦):',(open.openingFloat+open.totalSales).toFixed(2));
+  var cashInDrawer=prompt('Enter cash counted in drawer (â‚¦):',(open.openingFloat+open.totalSales).toFixed(2));
   if(cashInDrawer===null)return;
   cashInDrawer=parseFloat(cashInDrawer)||0;
   open.endTime=new Date().toISOString();open.closingCash=cashInDrawer;open.variance=cashInDrawer-(open.openingFloat+open.totalSales);open.status='closed';
@@ -325,7 +326,7 @@ function cashIn(){
   var shifts=[];try{shifts=JSON.parse(localStorage.getItem('danzona_shifts')||'[]');}catch(e){shifts=[];}
   var open=shifts.find(function(s){return s.status==='open';});
   if(!open){showToast('Open a shift first',true);return;}
-  var amt=prompt('Cash IN amount (₦):','1000');if(amt===null)return;
+  var amt=prompt('Cash IN amount (â‚¦):','1000');if(amt===null)return;
   amt=parseFloat(amt)||0;if(amt<=0){showToast('Enter valid amount',true);return;}
   open.openingFloat=(open.openingFloat||0)+amt;
   localStorage.setItem('danzona_shifts',JSON.stringify(shifts));updateFloatBar();showToast('Cash in: '+fmt(amt));
@@ -335,7 +336,7 @@ function cashOut(){
   var open=shifts.find(function(s){return s.status==='open';});
   if(!open){showToast('Open a shift first',true);return;}
   var currentBalance=(open.openingFloat||0)+(open.totalSales||0);
-  var amt=prompt('Cash OUT amount (₦):',Math.min(1000,currentBalance).toFixed(2));if(amt===null)return;
+  var amt=prompt('Cash OUT amount (â‚¦):',Math.min(1000,currentBalance).toFixed(2));if(amt===null)return;
   amt=parseFloat(amt)||0;if(amt<=0||amt>currentBalance){showToast('Invalid amount',true);return;}
   open.openingFloat=(open.openingFloat||0)-amt;
   localStorage.setItem('danzona_shifts',JSON.stringify(shifts));updateFloatBar();showToast('Cash out: '+fmt(amt));
@@ -358,6 +359,8 @@ document.addEventListener('DOMContentLoaded',function(){if(!API.isLoggedIn()){va
 </script>
 </body>
 </html>
+
+
 
 
 

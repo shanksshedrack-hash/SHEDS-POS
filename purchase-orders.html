@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Orders - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="common.css">
     <script src="api.js"></script>
@@ -64,11 +65,11 @@
                     <input type="number" id="poQty" class="form-control" min="1" value="1">
                 </div>
                 <div class="form-group">
-                    <label>Unit Cost (₦)</label>
+                    <label>Unit Cost (â‚¦)</label>
                     <input type="number" id="poUnitCost" class="form-control" placeholder="0.00" step="0.01">
                 </div>
                 <div class="form-group">
-                    <label>Total Amount (₦)</label>
+                    <label>Total Amount (â‚¦)</label>
                     <input type="text" id="poTotal" class="form-control" readonly>
                 </div>
             </div>
@@ -103,7 +104,7 @@
 <script>
 function $(id){return document.getElementById(id);}
 var orders = [];
-function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
+function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return 'â‚¦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3000); }
 function calcPO(){
@@ -175,7 +176,7 @@ function resetPO(){
     $('poProduct').value = '';
     $('poQty').value = 1;
     $('poUnitCost').value = '';
-    $('poTotal').value = '₦0.00';
+    $('poTotal').value = 'â‚¦0.00';
     $('poNotes').value = '';
 }
 function badgeFor(s){
@@ -243,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 </body>
 </html>
+
+
 
 
 

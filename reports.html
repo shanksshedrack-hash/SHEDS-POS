@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="common.css">
     <script src="api.js"></script>
@@ -52,7 +53,7 @@ function toLocalDateStr(d) {
     return d.getFullYear() + '-' + mm + '-' + dd;
 }
 function $id(id) { return document.getElementById(id); }
-function fmt(n) { try { return POS.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2}); } }
+function fmt(n) { try { return POS.formatCurrency(n); } catch(e) { return 'â‚¦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2}); } }
 function fmtNum(n) { try { return POS.formatNumber(n || 0); } catch(e) { return (parseFloat(n) || 0).toLocaleString(); } }
 function esc(s) { return String(s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
 function safeGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
@@ -321,4 +322,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 </script>
 </body>
 </html>
+
+
 

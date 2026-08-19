@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Employees - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="common.css">
 <script src="api.js"></script>
@@ -36,7 +37,7 @@
 </div>
 <div class="kpi-card">
 <div class="kpi-label"><i class="fas fa-money-bill"></i> Monthly Payroll</div>
-<div class="kpi-value" id="monthlyPayroll">₦0.00</div>
+<div class="kpi-value" id="monthlyPayroll">â‚¦0.00</div>
 <div class="kpi-sub">Total salaries</div>
 </div>
 </div>
@@ -109,7 +110,7 @@
 </select>
 </div>
 <div class="form-group">
-<label>Salary (₦)</label>
+<label>Salary (â‚¦)</label>
 <input type="number" id="salary" class="form-control" placeholder="Monthly salary" step="0.01">
 </div>
 <div class="form-group">
@@ -187,7 +188,7 @@
       $('activeEmployees').textContent = list.filter(function(e){return e.status==='active';}).length;
       $('inactiveEmployees').textContent = list.filter(function(e){return e.status==='inactive';}).length;
       var payroll = list.reduce(function(s,e){return s+(parseFloat(e.salary)||0);},0);
-      $('monthlyPayroll').textContent = '₦' + payroll.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+      $('monthlyPayroll').textContent = 'â‚¦' + payroll.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
 
   function showAddForm() {
@@ -406,3 +407,5 @@
 </script>
 </body>
 </html>
+
+
