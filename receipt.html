@@ -670,8 +670,10 @@
             body {
                 background: #fff;
                 padding: 0;
+                margin: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                color-adjust: exact;
             }
 
             .topbar {
@@ -683,22 +685,256 @@
                 border-radius: 0;
                 border: none;
                 max-width: 100%;
+                margin: 0;
             }
 
             .receipt-header {
-                padding: 20px;
+                padding: 16mm 8mm;
             }
 
             .receipt-body {
-                padding: 20px;
+                padding: 8mm;
             }
 
             .receipt-footer {
-                padding: 16px;
+                padding: 8mm;
             }
 
             .quick-actions {
                 display: none !important;
+            }
+
+            .pharmacist-verification {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .stamp {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* 58mm Thermal Printer */
+        @media print and (max-width: 58mm) {
+            .receipt-header {
+                padding: 6mm 4mm;
+            }
+
+            .brand-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
+
+            .brand-text h1 {
+                font-size: 14px;
+            }
+
+            .brand-text p {
+                font-size: 9px;
+            }
+
+            .business-meta {
+                font-size: 8px;
+                gap: 4px;
+                margin-top: 6px;
+            }
+
+            .receipt-body {
+                padding: 4mm;
+            }
+
+            .section {
+                margin-bottom: 8mm;
+            }
+
+            .section-title {
+                font-size: 8px;
+                padding-bottom: 3px;
+                margin-bottom: 4px;
+            }
+
+            .detail-card {
+                padding: 4mm 3mm;
+            }
+
+            .detail-card .label {
+                font-size: 7px;
+            }
+
+            .detail-card .value {
+                font-size: 9px;
+            }
+
+            .items-table th,
+            .items-table td {
+                padding: 2mm 2mm;
+                font-size: 9px;
+            }
+
+            .items-table th {
+                font-size: 7px;
+            }
+
+            .summary-table td {
+                font-size: 9px;
+                padding: 2mm 0;
+            }
+
+            .summary-table .grand-total td {
+                font-size: 11px;
+                padding: 4mm 0;
+            }
+
+            .payment-card {
+                padding: 4mm;
+            }
+
+            .payment-card .method {
+                font-size: 10px;
+            }
+
+            .payment-card .amount {
+                font-size: 12px;
+            }
+
+            .qr-box {
+                width: 24mm;
+                height: 24mm;
+                font-size: 18px;
+            }
+
+            .receipt-footer {
+                padding: 4mm;
+            }
+
+            .receipt-footer .thank {
+                font-size: 12px;
+            }
+
+            .receipt-footer .note {
+                font-size: 8px;
+            }
+        }
+
+        /* 80mm Thermal Printer */
+        @media print and (min-width: 58mm) and (max-width: 80mm) {
+            .receipt-header {
+                padding: 8mm 6mm;
+            }
+
+            .brand-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                border-radius: 10px;
+            }
+
+            .brand-text h1 {
+                font-size: 18px;
+            }
+
+            .brand-text p {
+                font-size: 10px;
+            }
+
+            .business-meta {
+                font-size: 9px;
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .receipt-body {
+                padding: 6mm;
+            }
+
+            .section {
+                margin-bottom: 10mm;
+            }
+
+            .section-title {
+                font-size: 9px;
+                padding-bottom: 4px;
+                margin-bottom: 5px;
+            }
+
+            .detail-card {
+                padding: 5mm 4mm;
+            }
+
+            .detail-card .label {
+                font-size: 8px;
+            }
+
+            .detail-card .value {
+                font-size: 11px;
+            }
+
+            .items-table th,
+            .items-table td {
+                padding: 3mm 3mm;
+                font-size: 11px;
+            }
+
+            .items-table th {
+                font-size: 9px;
+            }
+
+            .summary-table td {
+                font-size: 11px;
+                padding: 3mm 0;
+            }
+
+            .summary-table .grand-total td {
+                font-size: 13px;
+                padding: 5mm 0;
+            }
+
+            .payment-card {
+                padding: 5mm;
+            }
+
+            .payment-card .method {
+                font-size: 12px;
+            }
+
+            .payment-card .amount {
+                font-size: 14px;
+            }
+
+            .qr-box {
+                width: 28mm;
+                height: 28mm;
+                font-size: 22px;
+            }
+
+            .receipt-footer {
+                padding: 6mm;
+            }
+
+            .receipt-footer .thank {
+                font-size: 14px;
+            }
+
+            .receipt-footer .note {
+                font-size: 9px;
+            }
+        }
+
+        /* A4 / Letter */
+        @media print and (min-width: 80mm) {
+            .receipt-header {
+                padding: 28px;
+            }
+
+            .receipt-body {
+                padding: 24px;
+            }
+
+            .receipt-footer {
+                padding: 20px;
             }
         }
 
@@ -780,7 +1016,7 @@
             </div>
             <div class="topbar-actions">
                 <button class="btn" onclick="editCheckout()"><i class="fas fa-edit"></i> Edit</button>
-                <button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                <button class="btn" onclick="printReceipt()"><i class="fas fa-print"></i> Print</button>
                 <button class="btn btn-success" onclick="goNewSale()"><i class="fas fa-plus"></i> New Sale</button>
             </div>
         </div>
@@ -825,6 +1061,17 @@
         function paymentIcon(method){var icons={cash:'fa-money-bill-wave',store_account:'fa-wallet',bank_transfer:'fa-university',suspended:'fa-pause-circle',card:'fa-credit-card',pos:'fa-cash-register',giftcard:'fa-gift'};return icons[method]||'fa-money-bill-wave';}
         function fmtDate(value){var d=value?new Date(value):new Date();if(isNaN(d.getTime()))d=new Date();return d.toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});}
         function qty(n){return parseInt(n||0,10)||0;}
+        function showToast(message) {
+            var toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:fadeInUp 0.3s ease-out;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 2000);
+        }
 
         function editCheckout(){
             var raw=localStorage.getItem('last_receipt');
@@ -950,9 +1197,10 @@
             html+='<div class="stamp">PAID</div>';
             html+='</div>';
 
-            html+='<div class="quick-actions">';
+            <html+='<div class="quick-actions">';
             html+='<button class="btn" onclick="editCheckout()"><i class="fas fa-edit"></i> Edit</button>';
-            html+='<button class="btn" onclick="window.print()"><i class="fas fa-print"></i> Print</button>';
+            html+='<button class="btn" onclick="printReceipt()"><i class="fas fa-print"></i> Print</button>';
+            html+='<button class="btn" onclick="togglePrinterSize()"><i class="fas fa-expand-arrows-alt"></i> Toggle Printer</button>';
             html+='<button class="btn" onclick="goNewSale()"><i class="fas fa-plus"></i> New Sale</button>';
             html+='</div>';
 
@@ -963,6 +1211,120 @@
         }
 
         function saveAsPDF(){window.print();}
+
+        /* Printer Auto-Detection & Professional Printing */
+        var PrinterManager = {
+            defaultSize: '80mm',
+            detectedSize: null,
+            savedSize: null,
+
+            init: function() {
+                this.savedSize = localStorage.getItem('receipt_printer_size');
+                if (this.savedSize) {
+                    this.detectedSize = this.savedSize;
+                } else {
+                    this.detectedSize = this.detectPrinterSize();
+                    if (this.detectedSize) {
+                        localStorage.setItem('receipt_printer_size', this.detectedSize);
+                    }
+                }
+                this.applyPrinterSize();
+            },
+
+            detectPrinterSize: function() {
+                var width = window.screen.availWidth;
+                if (width <= 600) return '58mm';
+                if (width <= 900) return '80mm';
+                return '80mm';
+            },
+
+            applyPrinterSize: function() {
+                var size = this.detectedSize || this.defaultSize;
+                StoreConfig.set('receiptPageSize', size);
+                applyReceiptStyles();
+            },
+
+            getSize: function() {
+                return this.detectedSize || this.defaultSize;
+            },
+
+            setSize: function(size) {
+                this.detectedSize = size;
+                localStorage.setItem('receipt_printer_size', size);
+                this.applyPrinterSize();
+            },
+
+            print: function() {
+                var size = this.getSize();
+                var scale = size === '58mm' ? 0.7 : size === '80mm' ? 0.85 : 1;
+
+                var printWindow = window.open('', '_blank', 'width=' + Math.min(900, screen.availWidth) + ',height=' + Math.min(700, screen.availHeight));
+                if (!printWindow) {
+                    alert('Please allow popups to print receipts');
+                    return;
+                }
+
+                var receiptContent = document.getElementById('receiptPaper').cloneNode(true);
+                receiptContent.style.maxWidth = size;
+                receiptContent.style.margin = '0 auto';
+                receiptContent.style.transform = 'scale(' + scale + ')';
+                receiptContent.style.transformOrigin = 'top center';
+
+                var style = printWindow.document.createElement('style');
+                style.textContent = '@media print { body { margin: 0; padding: 0; } .no-print { display: none !important; } }';
+
+                printWindow.document.head.appendChild(style);
+                printWindow.document.body.style.margin = '0';
+                printWindow.document.body.style.padding = '0';
+                printWindow.document.body.appendChild(receiptContent);
+
+                printWindow.document.close();
+                setTimeout(function() {
+                    printWindow.focus();
+                    printWindow.print();
+                    setTimeout(function() {
+                        printWindow.close();
+                    }, 1000);
+                }, 300);
+            },
+
+            getEscPosCommands: function(data) {
+                var commands = [];
+                commands.push({ cmd: 'INIT', desc: 'Initialize printer' });
+                commands.push({ cmd: 'TEXT', data: data.businessName, desc: 'Store name' });
+                commands.push({ cmd: 'TEXT', data: data.address, desc: 'Address' });
+                commands.push({ cmd: 'LINE', desc: 'Separator' });
+                commands.push({ cmd: 'TEXT', data: 'Receipt #' + data.id, desc: 'Receipt ID' });
+                commands.push({ cmd: 'TEXT', data: data.date, desc: 'Date' });
+                commands.push({ cmd: 'LINE', desc: 'Separator' });
+                (data.items || []).forEach(function(item) {
+                    commands.push({ cmd: 'ITEM', data: item.name + ' x' + item.qty, desc: item.price });
+                });
+                commands.push({ cmd: 'LINE', desc: 'Separator' });
+                commands.push({ cmd: 'TEXT', data: 'Total: ' + data.total, desc: 'Total amount', bold: true });
+                commands.push({ cmd: 'CUT', desc: 'Cut paper' });
+                return commands;
+            }
+        };
+
+        function printReceipt() {
+            PrinterManager.print();
+        }
+
+        function togglePrinterSize() {
+            var current = PrinterManager.getSize();
+            var next = current === '58mm' ? '80mm' : '58mm';
+            PrinterManager.setSize(next);
+            var label = document.getElementById('printerSizeLabel');
+            if (label) label.textContent = next;
+            showToast('Printer size changed to ' + next);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            PrinterManager.init();
+            var label = document.getElementById('printerSizeLabel');
+            if (label) label.textContent = PrinterManager.getSize();
+        });
 
         document.addEventListener('DOMContentLoaded',load);
     </script>
