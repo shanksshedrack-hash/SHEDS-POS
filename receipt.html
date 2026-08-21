@@ -1,118 +1,107 @@
-﻿        /* Printer Auto-Detection & Professional Printing */
-        var PrinterManager = {
-            defaultSize: '80mm',
-            detectedSize: null,
-            savedSize: null,
-
-            init: function() {
-                this.savedSize = localStorage.getItem('receipt_printer_size');
-                if (this.savedSize) {
-                    this.detectedSize = this.savedSize;
-                } else {
-                    this.detectedSize = this.detectPrinterSize();
-                    if (this.detectedSize) {
-                        localStorage.setItem('receipt_printer_size', this.detectedSize);
-                    }
+﻿                this.detectedSize = this.detectPrinterSize();
+                if (this.detectedSize) {
+                    localStorage.setItem('receipt_printer_size', this.detectedSize);
                 }
-                this.applyPrinterSize();
-            },
-
-            detectPrinterSize: function() {
-                var width = window.screen.availWidth;
-                if (width <= 600) return '58mm';
-                if (width <= 900) return '80mm';
-                return '80mm';
-            },
-
-            applyPrinterSize: function() {
-                var size = this.detectedSize || this.defaultSize;
-                try { StoreConfig.set('receiptPageSize', size); } catch(e) {}
-                applyReceiptStyles();
-            },
-
-            getSize: function() {
-                return this.detectedSize || this.defaultSize;
-            },
-
-            setSize: function(size) {
-                this.detectedSize = size;
-                localStorage.setItem('receipt_printer_size', size);
-                this.applyPrinterSize();
-            },
-
-            print: function() {
-                var size = this.getSize();
-                var scale = size === '58mm' ? 0.7 : size === '80mm' ? 0.85 : 1;
-
-                var printWindow = window.open('', '_blank', 'width=' + Math.min(900, screen.availWidth) + ',height=' + Math.min(700, screen.availHeight));
-                if (!printWindow) {
-                    alert('Please allow popups to print receipts');
-                    return;
-                }
-
-                var receiptContent = document.getElementById('receiptPaper').cloneNode(true);
-                receiptContent.style.maxWidth = size;
-                receiptContent.style.margin = '0 auto';
-                receiptContent.style.transform = 'scale(' + scale + ')';
-                receiptContent.style.transformOrigin = 'top center';
-
-                var style = printWindow.document.createElement('style');
-                style.textContent = '@media print { body { margin: 0; padding: 0; } .no-print { display: none !important; } }';
-
-                printWindow.document.head.appendChild(style);
-                printWindow.document.body.style.margin = '0';
-                printWindow.document.body.style.padding = '0';
-                printWindow.document.body.appendChild(receiptContent);
-
-                printWindow.document.close();
-                setTimeout(function() {
-                    printWindow.focus();
-                    printWindow.print();
-                    setTimeout(function() {
-                        printWindow.close();
-                    }, 1000);
-                }, 300);
-            },
-
-            getEscPosCommands: function(data) {
-                var commands = [];
-                commands.push({ cmd: 'INIT', desc: 'Initialize printer' });
-                commands.push({ cmd: 'TEXT', data: data.businessName, desc: 'Store name' });
-                commands.push({ cmd: 'TEXT', data: data.address, desc: 'Address' });
-                commands.push({ cmd: 'LINE', desc: 'Separator' });
-                commands.push({ cmd: 'TEXT', data: 'Receipt #' + data.id, desc: 'Receipt ID' });
-                commands.push({ cmd: 'TEXT', data: data.date, desc: 'Date' });
-                commands.push({ cmd: 'LINE', desc: 'Separator' });
-                (data.items || []).forEach(function(item) {
-                    commands.push({ cmd: 'ITEM', data: item.name + ' x' + item.qty, desc: item.price });
-                });
-                commands.push({ cmd: 'LINE', desc: 'Separator' });
-                commands.push({ cmd: 'TEXT', data: 'Total: ' + data.total, desc: 'Total amount', bold: true });
-                commands.push({ cmd: 'CUT', desc: 'Cut paper' });
-                return commands;
             }
-        };
+            this.applyPrinterSize();
+        },
 
-        function printReceipt() {
-            PrinterManager.print();
+        detectPrinterSize: function() {
+            var width = window.screen.availWidth;
+            if (width <= 600) return '58mm';
+            if (width <= 900) return '80mm';
+            return '80mm';
+        },
+
+        applyPrinterSize: function() {
+            var size = this.detectedSize || this.defaultSize;
+            try { StoreConfig.set('receiptPageSize', size); } catch(e) {}
+            applyReceiptStyles();
+        },
+
+        getSize: function() {
+            return this.detectedSize || this.defaultSize;
+        },
+
+        setSize: function(size) {
+            this.detectedSize = size;
+            localStorage.setItem('receipt_printer_size', size);
+            this.applyPrinterSize();
+        },
+
+        print: function() {
+            var size = this.getSize();
+            var scale = size === '58mm' ? 0.7 : size === '80mm' ? 0.85 : 1;
+
+            var printWindow = window.open('', '_blank', 'width=' + Math.min(900, screen.availWidth) + ',height=' + Math.min(700, screen.availHeight));
+            if (!printWindow) {
+                alert('Please allow popups to print receipts');
+                return;
+            }
+
+            var receiptContent = document.getElementById('receiptPaper').cloneNode(true);
+            receiptContent.style.maxWidth = size;
+            receiptContent.style.margin = '0 auto';
+            receiptContent.style.transform = 'scale(' + scale + ')';
+            receiptContent.style.transformOrigin = 'top center';
+
+            var style = printWindow.document.createElement('style');
+            style.textContent = '@media print { body { margin: 0; padding: 0; } .no-print { display: none !important; } }';
+
+            printWindow.document.head.appendChild(style);
+            printWindow.document.body.style.margin = '0';
+            printWindow.document.body.style.padding = '0';
+            printWindow.document.body.appendChild(receiptContent);
+
+            printWindow.document.close();
+            setTimeout(function() {
+                printWindow.focus();
+                printWindow.print();
+                setTimeout(function() {
+                    printWindow.close();
+                }, 1000);
+            }, 300);
+        },
+
+        getEscPosCommands: function(data) {
+            var commands = [];
+            commands.push({ cmd: 'INIT', desc: 'Initialize printer' });
+            commands.push({ cmd: 'TEXT', data: data.businessName, desc: 'Store name' });
+            commands.push({ cmd: 'TEXT', data: data.address, desc: 'Address' });
+            commands.push({ cmd: 'LINE', desc: 'Separator' });
+            commands.push({ cmd: 'TEXT', data: 'Receipt #' + data.id, desc: 'Receipt ID' });
+            commands.push({ cmd: 'TEXT', data: data.date, desc: 'Date' });
+            commands.push({ cmd: 'LINE', desc: 'Separator' });
+            (data.items || []).forEach(function(item) {
+                commands.push({ cmd: 'ITEM', data: item.name + ' x' + item.qty, desc: item.price });
+            });
+            commands.push({ cmd: 'LINE', desc: 'Separator' });
+            commands.push({ cmd: 'TEXT', data: 'Total: ' + data.total, desc: 'Total amount', bold: true });
+            commands.push({ cmd: 'CUT', desc: 'Cut paper' });
+            return commands;
         }
+    };
 
-        function togglePrinterSize() {
-            var current = PrinterManager.getSize();
-            var next = current === '58mm' ? '80mm' : '58mm';
-            PrinterManager.setSize(next);
-            var label = document.getElementById('printerSizeLabel');
-            if (label) label.textContent = next;
-            showToast('Printer size changed to ' + next);
-        }
+    function printReceipt() {
+        PrinterManager.print();
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            PrinterManager.init();
-            var label = document.getElementById('printerSizeLabel');
-            if (label) label.textContent = PrinterManager.getSize();
-        });
+    function togglePrinterSize() {
+        var current = PrinterManager.getSize();
+        var next = current === '58mm' ? '80mm' : '58mm';
+        PrinterManager.setSize(next);
+        var label = document.getElementById('printerSizeLabel');
+        if (label) label.textContent = next;
+        showToast('Printer size changed to ' + next);
+    }
 
-        document.addEventListener('DOMContentLoaded',load);
+    document.addEventListener('DOMContentLoaded', function() {
+        PrinterManager.init();
+        var label = document.getElementById('printerSizeLabel');
+        if (label) label.textContent = PrinterManager.getSize();
+    });
+
+    document.addEventListener('DOMContentLoaded',load);
     </script>
 </body>
 </html>
