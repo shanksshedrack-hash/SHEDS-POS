@@ -255,6 +255,56 @@ var API = (function() {
 
         // Audit Log
         getAuditLog: function() { return this.get('/audit-log'); },
-        saveAuditLog: function(data) { return this.post('/audit-log', data); }
+        saveAuditLog: function(data) { return this.post('/audit-log', data); },
+
+        // Subscription
+        getSubscriptionPlans: function() { return this.get('/subscription/plans'); },
+        getCurrentSubscription: function() { return this.get('/subscription/current'); },
+        upgradeSubscription: function(planId) { return this.post('/subscription/upgrade', { plan_id: planId }); },
+        cancelSubscription: function() { return this.post('/subscription/cancel'); },
+        getSubscriptionUsage: function() { return this.get('/subscription/usage'); },
+
+        // Branches
+        getBranches: function() { return this.get('/branches'); },
+        saveBranch: function(data) { return this.post('/branches', data); },
+        updateBranch: function(id, data) { return this.put('/branches/' + id, data); },
+        deleteBranch: function(id) { return this.delete('/branches/' + id); },
+
+        // Super Admin
+        getAdminTenants: function(superAdminKey) {
+            return fetch('/api/admin/tenants?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function(res) { return res.json(); });
+        },
+        updateAdminTenant: function(id, data, superAdminKey) {
+            return fetch('/api/admin/tenants/' + id + '?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+            }).then(function(res) { return res.json(); });
+        },
+        deleteAdminTenant: function(id, superAdminKey) {
+            return fetch('/api/admin/tenants/' + id + '?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                method: 'DELETE'
+            }).then(function(res) { return res.json(); });
+        },
+        getAdminPlans: function(superAdminKey) {
+            return fetch('/api/admin/plans?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function(res) { return res.json(); });
+        },
+        saveAdminPlan: function(data, superAdminKey) {
+            return fetch('/api/admin/plans?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+            }).then(function(res) { return res.json(); });
+        },
+        updateAdminPlan: function(id, data, superAdminKey) {
+            return fetch('/api/admin/plans/' + id + '?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+            }).then(function(res) { return res.json(); });
+        },
+        deleteAdminPlan: function(id, superAdminKey) {
+            return fetch('/api/admin/plans/' + id + '?super_admin_key=' + encodeURIComponent(superAdminKey), {
+                method: 'DELETE'
+            }).then(function(res) { return res.json(); });
+        }
     };
 })();

@@ -491,7 +491,77 @@ def init_db():
         )
     ''')
 
+    # Subscription plans (global SaaS plans)
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS subscription_plans (
+            id {id_col()},
+            name TEXT NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
+            description TEXT,
+            price_monthly REAL DEFAULT 0,
+            price_yearly REAL DEFAULT 0,
+            max_users INTEGER DEFAULT 5,
+            max_products INTEGER DEFAULT 100,
+            max_branches INTEGER DEFAULT 1,
+            max_storage_mb INTEGER DEFAULT 100,
+            features TEXT NOT NULL DEFAULT '[]',
+            is_active INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Pharmacy subscriptions
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL UNIQUE,
+            plan_id INTEGER NOT NULL,
+            status TEXT DEFAULT 'trial',
+            trial_ends_at TEXT,
+            current_period_start TEXT,
+            current_period_end TEXT,
+            cancelled_at TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Branches (enhanced locations with isolation)
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS branches (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            address TEXT,
+            phone TEXT,
+            manager TEXT,
+            timezone TEXT DEFAULT 'Africa/Lagos',
+            currency TEXT DEFAULT 'NGN',
+            status TEXT DEFAULT 'active',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     db.commit()
+
+    # Seed default subscription plans if none exist
+    try:
+        cursor = db.execute('SELECT COUNT(*) as cnt FROM subscription_plans')
+        row = cursor.fetchone()
+        if row and row['cnt'] == 0:
+            plans = [
+                ('Starter', 'starter', 'Perfect for small pharmacies getting started', 19, 190, 3, 200, 1, 500, '["basic_pos","inventory","sales_reports"]'),
+                ('Growth', 'growth', 'For growing pharmacies with multiple locations', 49, 490, 10, 1000, 5, 2000, '["advanced_pos","multi_branch","crm","prescriptions","expiry_alerts","advanced_reports"]'),
+                ('Enterprise', 'enterprise', 'Full-featured for large pharmacy chains', 99, 990, 999, 99999, 999, 10000, '["unlimited","api_access","white_label","dedicated_support","audit_log","bank_reconciliation","custom_integrations"]')
+            ]
+            for p in plans:
+                db.execute(
+                    'INSERT INTO subscription_plans (name, slug, description, price_monthly, price_yearly, max_users, max_products, max_branches, max_storage_mb, features) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    p
+                )
+            db.commit()
+    except Exception:
+        pass
 
 # ---------- Auth Middleware ----------
 
@@ -529,7 +599,79 @@ def require_role(*roles):
         return decorated
     return decorator
 
-# ---------- Auth Routes ----------
+# ---------- Subscription & Plan Middleware ----------
+
+def get_subscription(pharmacy_id):
+    db = get_db()
+    sub = db.execute('''
+        SELECT s.*, p.name as plan_name, p.max_users, p.max_products, p.max_branches, p.max_storage_mb, p.features
+        FROM subscriptions s
+        JOIN subscription_plans p ON s.plan_id = p.id
+        WHERE s.pharmacy_id = ?
+    ''', (pharmacy_id,)).fetchone()
+    return dict(sub) if sub else None
+
+def check_usage_limit(pharmacy_id, resource_type):
+    sub = get_subscription(pharmacy_id)
+    if not sub:
+        return False, 'No active subscription'
+    if sub['status'] not in ('trial', 'active'):
+        return False, 'Subscription expired or cancelled'
+    limits = {
+        'users': sub.get('max_users', 5),
+        'products': sub.get('max_products', 100),
+        'branches': sub.get('max_branches', 1)
+    }
+    limit = limits.get(resource_type)
+    if limit is None:
+        return True, None
+    db = get_db()
+    count_row = None
+    if resource_type == 'users':
+        count_row = db.execute('SELECT COUNT(*) as cnt FROM users WHERE pharmacy_id = ?', (pharmacy_id,)).fetchone()
+    elif resource_type == 'products':
+        count_row = db.execute('SELECT COUNT(*) as cnt FROM products WHERE pharmacy_id = ?', (pharmacy_id,)).fetchone()
+    elif resource_type == 'branches':
+        count_row = db.execute('SELECT COUNT(*) as cnt FROM branches WHERE pharmacy_id = ?', (pharmacy_id,)).fetchone()
+    if count_row and count_row['cnt'] >= limit:
+        return False, f'{resource_type.capitalize()} limit reached ({limit}). Upgrade your plan.'
+    return True, None
+
+def require_active_subscription(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        sub = get_subscription(g.pharmacy_id)
+        if not sub:
+            return jsonify({'error': 'No subscription found', 'code': 'NO_SUBSCRIPTION'}), 403
+        if sub['status'] not in ('trial', 'active'):
+            return jsonify({'error': 'Subscription expired. Please upgrade.', 'code': 'SUBSCRIPTION_EXPIRED'}), 403
+        g.subscription = sub
+        return f(*args, **kwargs)
+    return decorated
+
+def enforce_limit(resource_type):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            ok, msg = check_usage_limit(g.pharmacy_id, resource_type)
+            if not ok:
+                return jsonify({'error': msg, 'code': 'LIMIT_EXCEEDED'}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+SUPER_ADMIN_KEY = os.environ.get('SUPER_ADMIN_API_KEY', '')
+
+def require_super_admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        key = request.headers.get('X-Super-Admin-Key') or request.args.get('super_admin_key', '')
+        if not SUPER_ADMIN_KEY or key != SUPER_ADMIN_KEY:
+            return jsonify({'error': 'Super admin access required'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+# ---------- Subscription Routes ----------
 
 @app.route('/api/auth/register', methods=['POST'])
 def register_pharmacy():
@@ -556,6 +698,14 @@ def register_pharmacy():
         db.execute(
             'INSERT INTO users (pharmacy_id, username, password, name, role) VALUES (?, ?, ?, ?, ?)',
             (pharmacy_id, admin_username, admin_password, admin_name, 'admin')
+        )
+        # Create trial subscription (14 days)
+        trial_ends = (datetime.utcnow().timestamp() + 14 * 24 * 60 * 60)
+        plan = db.execute('SELECT * FROM subscription_plans WHERE slug = ?', ('starter',)).fetchone()
+        plan_id = plan['id'] if plan else 1
+        db.execute(
+            'INSERT INTO subscriptions (pharmacy_id, plan_id, status, trial_ends_at) VALUES (?, ?, ?, ?)',
+            (pharmacy_id, plan_id, 'trial', datetime.utcfromtimestamp(trial_ends).isoformat())
         )
         db.commit()
         return jsonify({
@@ -605,7 +755,8 @@ def login():
                 'api_key': pharmacy['api_key'],
                 'address': pharmacy['address'],
                 'phone': pharmacy['phone']
-            }
+            },
+            'subscription': None
         }), 200
     else:
         users = db.execute(
@@ -615,6 +766,15 @@ def login():
         if not users:
             return jsonify({'error': 'Invalid username or password'}), 401
         user = users[0]
+        sub = get_subscription(user['pharmacy_id'])
+        sub_info = None
+        if sub:
+            sub_info = {
+                'status': sub['status'],
+                'plan_name': sub['plan_name'],
+                'trial_ends_at': sub.get('trial_ends_at'),
+                'current_period_end': sub.get('current_period_end')
+            }
         return jsonify({
             'user': {
                 'id': user['id'],
@@ -629,7 +789,8 @@ def login():
                 'api_key': user['api_key'],
                 'address': user['address'],
                 'phone': user['phone']
-            }
+            },
+            'subscription': sub_info
         }), 200
 
 @app.route('/api/auth/staff-login', methods=['POST'])
@@ -651,6 +812,15 @@ def staff_login():
 
     if len(users) > 1:
         user = users[0]
+    sub = get_subscription(user['pharmacy_id'])
+    sub_info = None
+    if sub:
+        sub_info = {
+            'status': sub['status'],
+            'plan_name': sub['plan_name'],
+            'trial_ends_at': sub.get('trial_ends_at'),
+            'current_period_end': sub.get('current_period_end')
+        }
     return jsonify({
         'user': {
             'id': user['id'],
@@ -665,7 +835,8 @@ def staff_login():
             'api_key': user['api_key'],
             'address': user['address'],
             'phone': user['phone']
-        }
+        },
+        'subscription': sub_info
     }), 200
 
 @app.route('/api/auth/admin-setup-login', methods=['POST'])
@@ -693,6 +864,16 @@ def admin_setup_login():
     if not user:
         return jsonify({'error': 'Admin user not found for this pharmacy'}), 404
 
+    sub = get_subscription(pharmacy['id'])
+    sub_info = None
+    if sub:
+        sub_info = {
+            'status': sub['status'],
+            'plan_name': sub['plan_name'],
+            'trial_ends_at': sub.get('trial_ends_at'),
+            'current_period_end': sub.get('current_period_end')
+        }
+
     return jsonify({
         'user': {
             'id': user['id'],
@@ -707,16 +888,27 @@ def admin_setup_login():
             'api_key': pharmacy['api_key'],
             'address': pharmacy['address'],
             'phone': pharmacy['phone']
-        }
+        },
+        'subscription': sub_info
     }), 200
 
 @app.route('/api/auth/check', methods=['GET'])
 @require_auth
 def check_auth():
-    # Just verify the API key is valid
+    db = get_db()
+    sub = get_subscription(g.pharmacy_id)
+    sub_info = None
+    if sub:
+        sub_info = {
+            'status': sub['status'],
+            'plan_name': sub['plan_name'],
+            'trial_ends_at': sub.get('trial_ends_at'),
+            'current_period_end': sub.get('current_period_end')
+        }
     return jsonify({
         'pharmacy_id': g.pharmacy_id,
-        'name': g.pharmacy['name']
+        'name': g.pharmacy['name'],
+        'subscription': sub_info
     }), 200
 
 @app.route('/api/health', methods=['GET'])
@@ -732,6 +924,239 @@ def health_check():
         'database': db_status,
         'db_path': app.config['DB_PATH']
     }), 200
+
+# ---------- Subscription & Plan Routes ----------
+
+@app.route('/api/subscription/plans', methods=['GET'])
+def list_plans():
+    db = get_db()
+    rows = db.execute('SELECT id, name, slug, description, price_monthly, price_yearly, max_users, max_products, max_branches, max_storage_mb, features, is_active FROM subscription_plans WHERE is_active = 1').fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get('features') and isinstance(d['features'], str):
+            try:
+                d['features'] = json.loads(d['features'])
+            except Exception:
+                d['features'] = []
+        result.append(d)
+    return jsonify(result)
+
+@app.route('/api/subscription/current', methods=['GET'])
+@require_auth
+def get_current_subscription():
+    sub = get_subscription(g.pharmacy_id)
+    if not sub:
+        return jsonify({'error': 'No subscription found'}), 404
+    return jsonify(sub)
+
+@app.route('/api/subscription/upgrade', methods=['POST'])
+@require_auth
+def upgrade_subscription():
+    data = request.get_json()
+    plan_id = data.get('plan_id')
+    if not plan_id:
+        return jsonify({'error': 'plan_id is required'}), 400
+    db = get_db()
+    plan = db.execute('SELECT * FROM subscription_plans WHERE id = ? AND is_active = 1', (plan_id,)).fetchone()
+    if not plan:
+        return jsonify({'error': 'Invalid plan'}), 404
+    sub = get_subscription(g.pharmacy_id)
+    now = datetime.utcnow().isoformat()
+    if sub:
+        db.execute(
+            'UPDATE subscriptions SET plan_id = ?, status = ?, current_period_start = ?, current_period_end = ?, updated_at = ? WHERE pharmacy_id = ?',
+            (plan_id, 'active', now, now, now, g.pharmacy_id)
+        )
+    else:
+        db.execute(
+            'INSERT INTO subscriptions (pharmacy_id, plan_id, status, current_period_start, current_period_end) VALUES (?, ?, ?, ?, ?)',
+            (g.pharmacy_id, plan_id, 'active', now, now)
+        )
+    db.commit()
+    return jsonify({'message': 'Subscription updated', 'plan': dict(plan)})
+
+@app.route('/api/subscription/cancel', methods=['POST'])
+@require_auth
+def cancel_subscription():
+    db = get_db()
+    now = datetime.utcnow().isoformat()
+    db.execute(
+        'UPDATE subscriptions SET status = ?, cancelled_at = ?, updated_at = ? WHERE pharmacy_id = ?',
+        ('cancelled', now, now, g.pharmacy_id)
+    )
+    db.commit()
+    return jsonify({'message': 'Subscription cancelled'})
+
+@app.route('/api/subscription/usage', methods=['GET'])
+@require_auth
+def get_usage():
+    sub = get_subscription(g.pharmacy_id)
+    if not sub:
+        return jsonify({'error': 'No subscription found'}), 404
+    db = get_db()
+    users_count = db.execute('SELECT COUNT(*) as cnt FROM users WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchone()['cnt']
+    products_count = db.execute('SELECT COUNT(*) as cnt FROM products WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchone()['cnt']
+    branches_count = db.execute('SELECT COUNT(*) as cnt FROM branches WHERE pharmacy_id = ?', (g.pharmacy_id,)).fetchone()['cnt']
+    return jsonify({
+        'plan': {
+            'name': sub['plan_name'],
+            'max_users': sub['max_users'],
+            'max_products': sub['max_products'],
+            'max_branches': sub['max_branches']
+        },
+        'usage': {
+            'users': users_count,
+            'products': products_count,
+            'branches': branches_count
+        }
+    })
+
+# ---------- Branch Routes ----------
+
+@app.route('/api/branches', methods=['GET'])
+@require_auth
+def get_branches():
+    db = get_db()
+    rows = db.execute('SELECT * FROM branches WHERE pharmacy_id = ? ORDER BY name ASC', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/branches', methods=['POST'])
+@require_auth
+@require_active_subscription
+@enforce_limit('branches')
+def create_branch():
+    data = request.get_json()
+    data['pharmacy_id'] = g.pharmacy_id
+    return table_create('branches', data)
+
+@app.route('/api/branches/<int:bid>', methods=['PUT'])
+@require_auth
+@require_active_subscription
+def update_branch(bid):
+    data = request.get_json()
+    return table_update('branches', bid, data)
+
+@app.route('/api/branches/<int:bid>', methods=['DELETE'])
+@require_auth
+@require_active_subscription
+def delete_branch(bid):
+    return table_delete('branches', bid)
+
+# ---------- Super Admin Routes ----------
+
+@app.route('/api/admin/tenants', methods=['GET'])
+@require_super_admin
+def list_tenants():
+    db = get_db()
+    rows = db.execute('''
+        SELECT p.*, s.status as sub_status, s.trial_ends_at, s.current_period_end, pl.name as plan_name, pl.slug as plan_slug
+        FROM pharmacies p
+        LEFT JOIN subscriptions s ON p.id = s.pharmacy_id
+        LEFT JOIN subscription_plans pl ON s.plan_id = pl.id
+        ORDER BY p.created_at DESC
+    ''').fetchall()
+    return jsonify([dict(r) for r in rows])
+
+@app.route('/api/admin/tenants/<int:tid>', methods=['PUT'])
+@require_super_admin
+def update_tenant(tid):
+    data = request.get_json()
+    db = get_db()
+    sets = []
+    values = []
+    allowed = ['name', 'address', 'phone', 'email', 'status']
+    for k, v in data.items():
+        if k in allowed:
+            sets.append(f'{k} = ?')
+            values.append(v)
+    if not sets:
+        return jsonify({'error': 'No valid fields to update'}), 400
+    values.append(tid)
+    db.execute(f"UPDATE pharmacies SET {', '.join(sets)} WHERE id = ?", values)
+    db.commit()
+    return jsonify({'updated': True})
+
+@app.route('/api/admin/tenants/<int:tid>', methods=['DELETE'])
+@require_super_admin
+def delete_tenant(tid):
+    db = get_db()
+    db.execute('DELETE FROM pharmacies WHERE id = ?', (tid,))
+    db.commit()
+    return jsonify({'deleted': True})
+
+@app.route('/api/admin/plans', methods=['GET'])
+@require_super_admin
+def admin_list_plans():
+    db = get_db()
+    rows = db.execute('SELECT * FROM subscription_plans ORDER BY id ASC').fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get('features') and isinstance(d['features'], str):
+            try:
+                d['features'] = json.loads(d['features'])
+            except Exception:
+                d['features'] = []
+        result.append(d)
+    return jsonify(result)
+
+@app.route('/api/admin/plans', methods=['POST'])
+@require_super_admin
+def admin_create_plan():
+    data = request.get_json()
+    required = ['name', 'slug']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+    features = data.get('features', [])
+    if not isinstance(features, list):
+        features = []
+    db = get_db()
+    cursor = db.execute(
+        'INSERT INTO subscription_plans (name, slug, description, price_monthly, price_yearly, max_users, max_products, max_branches, max_storage_mb, features, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        (
+            data['name'], data['slug'], data.get('description', ''),
+            data.get('price_monthly', 0), data.get('price_yearly', 0),
+            data.get('max_users', 5), data.get('max_products', 100),
+            data.get('max_branches', 1), data.get('max_storage_mb', 100),
+            json.dumps(features), 1 if data.get('is_active', True) else 0
+        )
+    )
+    db.commit()
+    data['id'] = cursor.lastrowid
+    return jsonify(data), 201
+
+@app.route('/api/admin/plans/<int:pid>', methods=['PUT'])
+@require_super_admin
+def admin_update_plan(pid):
+    data = request.get_json()
+    db = get_db()
+    sets = []
+    values = []
+    allowed = ['name', 'slug', 'description', 'price_monthly', 'price_yearly', 'max_users', 'max_products', 'max_branches', 'max_storage_mb', 'is_active']
+    for k, v in data.items():
+        if k in allowed:
+            if k == 'features':
+                sets.append('features = ?')
+                values.append(json.dumps(v if isinstance(v, list) else []))
+            else:
+                sets.append(f'{k} = ?')
+                values.append(v)
+    if not sets:
+        return jsonify({'error': 'No valid fields to update'}), 400
+    values.append(pid)
+    db.execute(f"UPDATE subscription_plans SET {', '.join(sets)} WHERE id = ?", values)
+    db.commit()
+    return jsonify({'updated': True})
+
+@app.route('/api/admin/plans/<int:pid>', methods=['DELETE'])
+@require_super_admin
+def admin_delete_plan(pid):
+    db = get_db()
+    db.execute('DELETE FROM subscription_plans WHERE id = ?', (pid,))
+    db.commit()
+    return jsonify({'deleted': True})
 
 # ---------- Generic CRUD helper ----------
 
@@ -817,6 +1242,8 @@ def get_products():
 
 @app.route('/api/products', methods=['POST'])
 @require_auth
+@require_active_subscription
+@enforce_limit('products')
 def create_product():
     data = request.get_json()
     data['pharmacy_id'] = g.pharmacy_id
@@ -894,7 +1321,7 @@ def create_sale():
                 'UPDATE customers SET balance = balance + ? WHERE pharmacy_id = ? AND id = ?',
                 (data.get('total', 0), g.pharmacy_id, data['customer_id'])
             )
-            db.commit()
+    db.commit()
     return result
 
 @app.route('/api/sales/<int:sid>', methods=['GET'])
@@ -1251,6 +1678,8 @@ def sales_trend():
 # --- Register endpoint for staff (users within pharmacy) ---
 @app.route('/api/users/register', methods=['POST'])
 @require_auth
+@require_active_subscription
+@enforce_limit('users')
 def register_staff():
     data = request.get_json()
     username = data.get('username', '').strip()

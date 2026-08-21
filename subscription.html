@@ -1,259 +1,370 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subscription - SHEDS POS</title>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css">
-<style>
-:root{--primary:#10b981;--dark:#0f172a;--light:#f8fafc;--border:#e5e7eb;--warning:#f59e0b;--danger:#ef4444}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',Arial,sans-serif}
-body{background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.sub-container{max-width:800px;width:100%;background:#fff;border-radius:20px;box-shadow:0 25px 60px rgba(0,0,0,0.3);overflow:hidden}
-.sub-header{background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:30px;text-align:center}
-.sub-header h1{font-size:28px;font-weight:800;margin-bottom:6px}
-.sub-header p{opacity:.9;font-size:14px}
-.sub-body{padding:30px}
-.status-box{border-radius:12px;padding:16px;margin-bottom:24px;display:flex;align-items:center;gap:12px}
-.status-box.trial{background:#fffbeb;border:2px solid #f59e0b}
-.status-box.trial i{color:#f59e0b;font-size:28px}
-.status-box.active{background:#f0fdf4;border:2px solid #10b981}
-.status-box.active i{color:#10b981;font-size:28px}
-.status-box.expired{background:#fef2f2;border:2px solid #ef4444}
-.status-box.expired i{color:#ef4444;font-size:28px}
-.status-box strong{font-size:15px;color:#111827;display:block}
-.status-box span{font-size:13px;color:#6b7280}
-.trial-banner{background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:20px;margin-bottom:24px;text-align:center}
-.trial-banner .days{font-size:48px;font-weight:900;color:#92400e}
-.trial-banner .label{font-size:14px;color:#92400e;font-weight:600}
-.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
-.plan-card{border:2px solid #e5e7eb;border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
-.plan-card:hover{border-color:#10b981;transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,0.12)}
-.plan-card.selected{border-color:#10b981;background:#ecfdf5;box-shadow:0 0 0 3px rgba(16,185,129,0.15)}
-.plan-card h3{font-size:16px;font-weight:800;color:#111827;margin-bottom:6px}
-.plan-card .price{font-size:22px;font-weight:900;color:#10b981;margin-bottom:4px}
-.plan-card .period{font-size:12px;color:#6b7280;margin-bottom:12px}
-.plan-card ul{list-style:none;text-align:left;font-size:12px;color:#374151}
-.plan-card ul li{padding:3px 0;display:flex;align-items:center;gap:6px}
-.plan-card ul li i{color:#10b981;font-size:10px}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:5px}
-.form-control{width:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;outline:none;transition:border-color .2s}
-.form-control:focus{border-color:#10b981}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.btn-primary{background:#10b981;color:#fff}
-.btn-primary:hover{background:#059669;transform:translateY(-1px)}
-.back-link{text-align:center;margin-top:16px}
-.back-link a{color:#10b981;font-size:13px;font-weight:600;text-decoration:none}
-.back-link a:hover{text-decoration:underline}
-.cycle-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px}
-.cycle-toggle span{font-size:14px;font-weight:700;color:#6b7280}
-.cycle-toggle span.active{color:#10b981}
-.toggle-switch{position:relative;width:56px;height:28px}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:28px;cursor:pointer;transition:.2s}
-.toggle-slider:before{content:'';position:absolute;width:22px;height:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
-.toggle-switch input:checked+.toggle-slider{background:#10b981}
-.toggle-switch input:checked+.toggle-slider:before{transform:translateX(28px)}
-.yearly-badge{background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;margin-left:4px;vertical-align:middle}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription & Billing - SHEDS POS</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="common.css">
+    <script src="api.js"></script>
+    <script src="common.js"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+        .btn-danger { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+        .btn-danger:hover { background: #fef2f2; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .badge-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .badge-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .badge-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .badge-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .plan-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            transition: .2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--primary); }
+        .plan-card.active-plan { border-color: var(--primary); background: #ecfdf5; }
+        .plan-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+        .plan-price { font-size: 28px; font-weight: 900; color: var(--primary); margin-bottom: 8px; }
+        .plan-price span { font-size: 14px; font-weight: 600; color: var(--muted); }
+        .plan-features { list-style: none; padding: 0; margin: 16px 0; text-align: left; }
+        .plan-features li { padding: 6px 0; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .plan-features li i { color: var(--primary); font-size: 12px; }
+        .usage-bar { height: 8px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+        .usage-fill { height: 100%; background: linear-gradient(135deg, var(--primary), #2563eb); border-radius: 999px; transition: width .6s ease; }
+        .usage-fill.warning { background: linear-gradient(135deg, var(--warning), #d97706); }
+        .usage-fill.danger { background: linear-gradient(135deg, var(--danger), #dc2626); }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .stat-row:last-child { border-bottom: none; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #3b82f6; }
+        @media(max-width:768px) {
+            .plan-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-<div class="sub-container">
-  <div class="sub-header">
-    <h1><i class="fas fa-calendar-check"></i> SHEDS POS Subscription</h1>
-    <p>Start your 30-day free trial, then choose a plan</p>
-  </div>
-  <div class="sub-body">
-    <div id="statusBox" class="status-box trial">
-      <i class="fas fa-gift"></i>
-      <div><strong>Free Trial Active</strong><span id="trialStatus">Initializing trial...</span></div>
+    <div class="toast" id="toast"></div>
+    <div class="container" style="max-width:1100px;margin:0 auto;padding:20px;">
+        <div class="panel-header" style="margin-bottom:24px;">
+            <h1 style="font-size:24px;font-weight:900;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-crown" style="color:var(--primary);"></i> Subscription & Billing
+            </h1>
+            <span class="badge badge-info" id="subStatusBadge">Loading...</span>
+        </div>
+
+        <div class="panel" id="currentPlanPanel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-id-badge"></i> Current Plan</div>
+            </div>
+            <div id="currentPlanContent">Loading...</div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-chart-bar"></i> Usage This Period</div>
+            </div>
+            <div id="usageContent">Loading...</div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-tags"></i> Available Plans</div>
+            </div>
+            <div class="plan-grid" id="plansGrid">Loading...</div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-code-branch"></i> Branches</div>
+                <button class="btn btn-primary btn-sm" onclick="showAddBranch()"><i class="fas fa-plus"></i> Add Branch</button>
+            </div>
+            <div id="branchesContent">Loading...</div>
+            <div id="addBranchForm" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Branch Name</label>
+                        <input type="text" id="branchName" class="form-control" placeholder="e.g. Lekki Branch">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="branchAddress" class="form-control" placeholder="Branch address">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" id="branchPhone" class="form-control" placeholder="+234...">
+                    </div>
+                    <div class="form-group">
+                        <label>Manager</label>
+                        <input type="text" id="branchManager" class="form-control" placeholder="Manager name">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveBranch()"><i class="fas fa-save"></i> Save Branch</button>
+                <button class="btn btn-outline" onclick="hideAddBranch()">Cancel</button>
+            </div>
+        </div>
     </div>
-    <div id="trialBanner" class="trial-banner">
-      <div class="days" id="trialDays">30</div>
-      <div class="label">days remaining in free trial</div>
-    </div>
-    <div class="cycle-toggle">
-      <span id="monthlyLabel" class="active">Monthly</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="cycleToggle" onchange="toggleCycle(this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
-      <span id="yearlyLabel">Yearly <span class="yearly-badge">SAVE 17%</span></span>
-    </div>
-    <div class="plans-grid">
-      <div class="plan-card" onclick="handlePlanClick(this,'basic',5000,'Basic')" data-monthly="5000" data-yearly="42000">
-        <h3>Basic</h3>
-        <div class="price" id="price-basic">₦5,000</div>
-        <div class="period" id="period-basic">per month</div>
-        <ul><li><i class="fas fa-check"></i> 1 Terminal</li><li><i class="fas fa-check"></i> Basic Support</li><li><i class="fas fa-check"></i> 50 Products</li></ul>
-      </div>
-      <div class="plan-card" onclick="handlePlanClick(this,'standard',10000,'Standard')" data-monthly="10000" data-yearly="84000">
-        <h3>Standard</h3>
-        <div class="price" id="price-standard">₦10,000</div>
-        <div class="period" id="period-standard">per month</div>
-        <ul><li><i class="fas fa-check"></i> 3 Terminals</li><li><i class="fas fa-check"></i> Priority Support</li><li><i class="fas fa-check"></i> 500 Products</li></ul>
-      </div>
-      <div class="plan-card selected" onclick="handlePlanClick(this,'premium',20000,'Premium')" data-monthly="20000" data-yearly="168000">
-        <h3>Premium</h3>
-        <div class="price" id="price-premium">₦20,000</div>
-        <div class="period" id="period-premium">per month</div>
-        <ul><li><i class="fas fa-check"></i> 10 Terminals</li><li><i class="fas fa-check"></i> 24/7 Support</li><li><i class="fas fa-check"></i> Unlimited Products</li></ul>
-      </div>
-      <div class="plan-card" onclick="handlePlanClick(this,'enterprise',50000,'Enterprise')" data-monthly="50000" data-yearly="420000">
-        <h3>Enterprise</h3>
-        <div class="price" id="price-enterprise">₦50,000</div>
-        <div class="period" id="period-enterprise">per month</div>
-        <ul><li><i class="fas fa-check"></i> Unlimited</li><li><i class="fas fa-check"></i> Dedicated Manager</li><li><i class="fas fa-check"></i> Custom Integrations</li></ul>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Business Name</label>
-      <input type="text" id="bizName" class="form-control" placeholder="Enter your business name" value="SHEDS Pharmacy">
-    </div>
-    <button class="btn btn-primary" onclick="showPaymentModal()"><i class="fas fa-credit-card"></i> Make Payment</button>
-    <div class="back-link"><a href="#" onclick="event.preventDefault();window.location.href='sales.html';"><i class="fas fa-arrow-left"></i> Back to POS</a></div>
-  </div>
-</div>
-<div class="modal-overlay" id="paymentModal">
-  <div class="modal" style="max-width:450px;">
-    <div class="modal-header">
-      <h3>Confirm Subscription Payment</h3>
-      <button class="modal-close" onclick="document.getElementById('paymentModal').classList.remove('open')">&times;</button>
-    </div>
-    <div id="paymentContent">
-      <div class="kpi-grid" style="margin-bottom:16px;">
-        <div class="kpi-card"><div class="kpi-label">Plan</div><div class="kpi-value" id="payPlanName" style="font-size:16px;">Premium</div></div>
-        <div class="kpi-card"><div class="kpi-label">Amount</div><div class="kpi-value" id="payAmount" style="font-size:16px;">₦20,000</div></div>
-      </div>
-      <div class="form-group">
-        <label>Payment Method</label>
-        <select id="subPaymentMethod" class="form-control">
-          <option value="card">Card Payment</option>
-          <option value="bank_transfer">Bank Transfer</option>
-          <option value="cash">Cash</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Transaction Reference</label>
-        <input type="text" id="subRef" class="form-control" placeholder="Enter reference if paid via bank transfer">
-      </div>
-      <div id="paymentSuccess" style="display:none;text-align:center;margin:20px 0;">
-        <i class="fas fa-check-circle" style="font-size:48px;color:#10b981;"></i>
-        <p style="margin-top:10px;color:#111827;font-weight:600;">Payment Confirmed!</p>
-        <p style="color:#6b7280;font-size:13px;">Your subscription is now active.</p>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="document.getElementById('paymentModal').classList.remove('open')"><i class="fas fa-times"></i> Cancel</button>
-        <button class="btn btn-success" onclick="processSubscriptionPayment()"><i class="fas fa-credit-card"></i> Pay Now</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-var selectedPlan={name:'premium',amount:20000,displayName:'Premium'};
-var TRIAL_KEY='danzona_trial';
-var SUB_KEY='danzona_subscription';
-function $(id){return document.getElementById(id);}
-function selectPlan(el,name,amount,displayName){
-    document.querySelectorAll('.plan-card').forEach(function(c){c.classList.remove('selected');});
-    el.classList.add('selected');
-    selectedPlan={name:name,amount:amount,displayName:displayName};
-}
-function handlePlanClick(el,name,amount,displayName){
-    selectPlan(el,name,amount,displayName);
-    showPaymentModal();
-}
-function toggleCycle(checked){
-    document.querySelectorAll('.plan-card').forEach(function(card){
-        var monthly=card.getAttribute('data-monthly'),yearly=card.getAttribute('data-yearly');
-        if(checked){
-            card.querySelector('.price').textContent='₦'+parseFloat(yearly).toLocaleString();
-            card.querySelector('.period').textContent='per year';
-            selectedPlan.amount=parseFloat(yearly);
-        }else{
-            card.querySelector('.price').textContent='₦'+parseFloat(monthly).toLocaleString();
-            card.querySelector('.period').textContent='per month';
-            selectedPlan.amount=parseFloat(monthly);
+
+    <script>
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + (type || 'info');
+            t.style.display = 'block';
+            setTimeout(function() { t.style.display = 'none'; }, 3000);
         }
-        if(card.classList.contains('selected')){
-            selectedPlan.name=card.querySelector('h3').textContent.toLowerCase();
-            selectedPlan.displayName=card.querySelector('h3').textContent;
+
+        function renderUsage(usage) {
+            var html = '';
+            var resources = [
+                { key: 'users', label: 'Users', used: usage.usage.users, max: usage.plan.max_users },
+                { key: 'products', label: 'Products', used: usage.usage.products, max: usage.plan.max_products },
+                { key: 'branches', label: 'Branches', used: usage.usage.branches, max: usage.plan.max_branches }
+            ];
+            resources.forEach(function(r) {
+                var pct = r.max > 0 ? Math.min(100, Math.round((r.used / r.max) * 100)) : 0;
+                var cls = pct > 90 ? 'danger' : pct > 70 ? 'warning' : '';
+                html += '<div style="margin-bottom:14px;">' +
+                    '<div class="stat-row"><span style="font-weight:700;">' + r.label + '</span><span style="font-weight:900;">' + r.used + ' / ' + r.max + '</span></div>' +
+                    '<div class="usage-bar"><div class="usage-fill ' + cls + '" style="width:' + pct + '%;"></div></div>' +
+                    '</div>';
+            });
+            document.getElementById('usageContent').innerHTML = html;
         }
-    });
-    document.getElementById('monthlyLabel').classList.toggle('active',!checked);
-    document.getElementById('yearlyLabel').classList.toggle('active',checked);
-}
-function showPaymentModal(){
-    $('payPlanName').textContent=selectedPlan.displayName;
-    $('payAmount').textContent='₦'+parseFloat(selectedPlan.amount).toLocaleString();
-    $('subPaymentMethod').value='card';
-    $('subRef').value='';
-    $('paymentSuccess').style.display='none';
-    $('paymentContent').style.display='block';
-    document.querySelector('#paymentModal .modal-actions').style.display='flex';
-    var el=document.getElementById('paymentModal');
-    if(el)el.classList.add('open');
-}
-function processSubscriptionPayment(){
-    var method=$('subPaymentMethod').value;
-    var ref=$('subRef').value||'TX-'+Date.now();
-    activateSubscription();
-    $('paymentContent').style.display='none';
-    document.querySelector('#paymentModal .modal-actions').style.display='none';
-    $('paymentSuccess').style.display='block';
-    setTimeout(function(){
-        var el=document.getElementById('paymentModal');
-        if(el)el.classList.remove('open');
-    },2000);
-}
-function initTrial(){
-    var trial;
-    try{trial=JSON.parse(localStorage.getItem(TRIAL_KEY));}catch(e){trial=null;}
-    if(!trial){
-        var now=new Date();
-        trial={status:'active',startDate:now.toISOString(),endDate:new Date(now.getTime()+30*24*60*60*1000).toISOString()};
-        localStorage.setItem(TRIAL_KEY,JSON.stringify(trial));
-    }
-    updateTrialDisplay(trial);
-}
-function updateTrialDisplay(trial){
-    if(!trial)return;
-    var now=new Date();
-    var end=new Date(trial.endDate);
-    var remaining=Math.ceil((end-now)/(1000*60*60*24));
-    remaining=Math.max(0,remaining);
-    $('trialDays').textContent=remaining;
-    if(remaining<=0){
-        $('statusBox').className='status-box expired';
-        $('statusBox').innerHTML='<i class="fas fa-clock"></i><div><strong>Trial Expired</strong><span>Subscribe now to continue using SHEDS POS.</span></div>';
-        $('trialBanner').style.display='none';
-    }else{
-        $('statusBox').className='status-box trial';
-        $('statusBox').innerHTML='<i class="fas fa-gift"></i><div><strong>Free Trial Active</strong><span>Ends on '+end.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'</span></div>';
-        $('trialBanner').style.display='block';
-    }
-}
-function activateSubscription(){
-    var bizName=$('bizName').value.trim()||'SHEDS Pharmacy';
-    var sub={id:'SUB-'+Date.now(),businessName:bizName,plan:selectedPlan.name,amount:selectedPlan.amount,status:'active',activatedAt:new Date().toISOString(),nextBilling:new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0]};
-    try{
-        localStorage.setItem(SUB_KEY,JSON.stringify(sub));
-        localStorage.setItem(TRIAL_KEY,JSON.stringify({status:'ended',startDate:new Date().toISOString(),endDate:new Date().toISOString()}));
-    }catch(e){}
-    var box=$('statusBox');
-    box.className='status-box active';
-    box.innerHTML='<i class="fas fa-check-circle"></i><div><strong>Subscription Active</strong><span>Plan: '+sub.plan.charAt(0).toUpperCase()+sub.plan.slice(1)+' | Next billing: '+sub.nextBilling+'</span></div>';
-    $('trialBanner').style.display='none';
-    setTimeout(function(){window.location.href='sales.html';},1500);
-}
-document.addEventListener('DOMContentLoaded',initTrial);
-</script>
+
+        async function loadCurrentPlan() {
+            try {
+                var sub = await API.getCurrentSubscription();
+                var badge = document.getElementById('subStatusBadge');
+                if (sub.status === 'active') {
+                    badge.className = 'badge badge-success';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> Active';
+                } else if (sub.status === 'trial') {
+                    badge.className = 'badge badge-warning';
+                    badge.innerHTML = '<i class="fas fa-clock"></i> Trial';
+                } else if (sub.status === 'cancelled' || sub.status === 'expired') {
+                    badge.className = 'badge badge-danger';
+                    badge.innerHTML = '<i class="fas fa-times-circle"></i> ' + sub.status.charAt(0).toUpperCase() + sub.status.slice(1);
+                } else {
+                    badge.className = 'badge badge-info';
+                    badge.innerHTML = sub.status;
+                }
+
+                var trialEnds = sub.trial_ends_at ? new Date(sub.trial_ends_at).toLocaleDateString() : '-';
+                var periodEnd = sub.current_period_end ? new Date(sub.current_period_end).toLocaleDateString() : '-';
+
+                document.getElementById('currentPlanContent').innerHTML =
+                    '<div class="stat-row"><span style="font-weight:700;">Plan</span><span style="font-weight:900;color:var(--primary);">' + (sub.plan_name || 'Unknown') + '</span></div>' +
+                    '<div class="stat-row"><span style="font-weight:700;">Status</span><span>' + sub.status + '</span></div>' +
+                    '<div class="stat-row"><span style="font-weight:700;">Trial Ends</span><span>' + trialEnds + '</span></div>' +
+                    '<div class="stat-row"><span style="font-weight:700;">Period End</span><span>' + periodEnd + '</span></div>' +
+                    (sub.status === 'active' ? '<button class="btn btn-danger btn-sm" onclick="cancelSub()" style="margin-top:10px;"><i class="fas fa-times"></i> Cancel Subscription</button>' : '');
+            } catch (e) {
+                document.getElementById('currentPlanContent').innerHTML = '<p style="color:var(--danger);">Failed to load subscription.</p>';
+            }
+        }
+
+        async function loadPlans() {
+            try {
+                var plans = await API.getSubscriptionPlans();
+                var grid = document.getElementById('plansGrid');
+                grid.innerHTML = plans.map(function(p) {
+                    var features = (p.features || []).map(function(f) { return '<li><i class="fas fa-check"></i> ' + f.replace(/_/g, ' ').replace(/\b\w/g, function(l){return l.toUpperCase();}) + '</li>'; }).join('');
+                    return '<div class="plan-card" onclick="upgradeTo(' + p.id + ')">' +
+                        '<div class="plan-name">' + p.name + '</div>' +
+                        '<div class="plan-price">' + (p.price_monthly ? '₦' + p.price_monthly.toLocaleString() : 'Free') + ' <span>/mo</span></div>' +
+                        '<p style="font-size:12px;color:var(--muted);">' + (p.description || '') + '</p>' +
+                        '<ul class="plan-features">' + features + '</ul>' +
+                        '<button class="btn btn-primary btn-sm" style="width:100%;">Upgrade</button>' +
+                        '</div>';
+                }).join('');
+            } catch (e) {
+                document.getElementById('plansGrid').innerHTML = '<p style="color:var(--danger);">Failed to load plans.</p>';
+            }
+        }
+
+        async function loadUsage() {
+            try {
+                var usage = await API.getSubscriptionUsage();
+                renderUsage(usage);
+            } catch (e) {
+                document.getElementById('usageContent').innerHTML = '<p style="color:var(--danger);">Failed to load usage.</p>';
+            }
+        }
+
+        async function loadBranches() {
+            try {
+                var branches = await API.getBranches();
+                var container = document.getElementById('branchesContent');
+                if (!branches.length) {
+                    container.innerHTML = '<p style="color:var(--muted);font-size:13px;">No branches yet. Add your first branch above.</p>';
+                    return;
+                }
+                container.innerHTML = branches.map(function(b) {
+                    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">' +
+                        '<div><strong style="font-size:14px;">' + (b.name || '') + '</strong><br><span style="font-size:12px;color:var(--muted);">' + (b.address || '') + ' | ' + (b.phone || '') + '</span></div>' +
+                        '<div><span class="badge ' + (b.status === 'active' ? 'badge-success' : 'badge-danger') + '">' + (b.status || '') + '</span>' +
+                        '<button class="btn btn-outline btn-sm" onclick="deleteBranch(' + b.id + ')" style="margin-left:8px;"><i class="fas fa-trash"></i></button></div>' +
+                        '</div>';
+                }).join('');
+            } catch (e) {
+                document.getElementById('branchesContent').innerHTML = '<p style="color:var(--danger);">Failed to load branches.</p>';
+            }
+        }
+
+        async function upgradeTo(planId) {
+            try {
+                var res = await API.upgradeSubscription(planId);
+                showToast('Subscription upgraded!', 'success');
+                loadCurrentPlan();
+                loadUsage();
+            } catch (e) {
+                showToast(e.message || 'Upgrade failed', 'error');
+            }
+        }
+
+        async function cancelSub() {
+            if (!confirm('Are you sure you want to cancel your subscription?')) return;
+            try {
+                await API.cancelSubscription();
+                showToast('Subscription cancelled', 'info');
+                loadCurrentPlan();
+            } catch (e) {
+                showToast(e.message || 'Cancel failed', 'error');
+            }
+        }
+
+        function showAddBranch() {
+            document.getElementById('addBranchForm').style.display = 'block';
+        }
+        function hideAddBranch() {
+            document.getElementById('addBranchForm').style.display = 'none';
+        }
+
+        async function saveBranch() {
+            var name = document.getElementById('branchName').value.trim();
+            if (!name) return showToast('Branch name is required', 'error');
+            try {
+                await API.saveBranch({
+                    name: name,
+                    address: document.getElementById('branchAddress').value.trim(),
+                    phone: document.getElementById('branchPhone').value.trim(),
+                    manager: document.getElementById('branchManager').value.trim()
+                });
+                showToast('Branch saved', 'success');
+                hideAddBranch();
+                document.getElementById('branchName').value = '';
+                document.getElementById('branchAddress').value = '';
+                document.getElementById('branchPhone').value = '';
+                document.getElementById('branchManager').value = '';
+                loadBranches();
+            } catch (e) {
+                showToast(e.message || 'Failed to save branch', 'error');
+            }
+        }
+
+        async function deleteBranch(id) {
+            if (!confirm('Delete this branch?')) return;
+            try {
+                await API.deleteBranch(id);
+                showToast('Branch deleted', 'success');
+                loadBranches();
+            } catch (e) {
+                showToast(e.message || 'Failed to delete branch', 'error');
+            }
+        }
+
+        (function init() {
+            loadCurrentPlan();
+            loadPlans();
+            loadUsage();
+            loadBranches();
+        })();
+    </script>
 </body>
 </html>
-
-

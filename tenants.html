@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant Management - SHEDS POS Admin</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="common.css">
+    <script src="api.js"></script>
+    <script src="common.js"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+        .btn-danger { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+        .btn-danger:hover { background: #fef2f2; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .badge-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .badge-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .badge-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .badge-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 10px; background: #f8fafc; color: var(--muted); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: var(--text); }
+        tr:hover td { background: #f8fafc; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+        }
+        .toast.success { background: #10b981; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #3b82f6; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+        .form-control {
+            width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+            font-size: 14px; background: #fff;
+        }
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none;
+            align-items: center; justify-content: center; z-index: 500;
+        }
+        .modal {
+            background: #fff; border-radius: var(--radius); padding: 24px; width: 100%;
+            max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-title { font-size: 18px; font-weight: 800; }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+    <div class="container" style="max-width:1100px;margin:0 auto;padding:20px;">
+        <div class="panel-header" style="margin-bottom:24px;">
+            <h1 style="font-size:24px;font-weight:900;display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-building" style="color:var(--primary);"></i> Super Admin - Tenant Management
+            </h1>
+            <div style="display:flex;gap:10px;">
+                <input type="password" id="superAdminKey" placeholder="Super Admin Key" class="form-control" style="width:200px;">
+                <button class="btn btn-primary" onclick="loadTenants()"><i class="fas fa-sync"></i> Load</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-clinic-medical"></i> Pharmacies / Tenants</div>
+                <button class="btn btn-primary btn-sm" onclick="showAddTenant()"><i class="fas fa-plus"></i> Add Tenant</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenantsTable">Loading...</tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-tags"></i> Subscription Plans</div>
+                <button class="btn btn-primary btn-sm" onclick="showAddPlan()"><i class="fas fa-plus"></i> Add Plan</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Slug</th>
+                            <th>Monthly</th>
+                            <th>Yearly</th>
+                            <th>Max Users</th>
+                            <th>Max Products</th>
+                            <th>Max Branches</th>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plansTable">Loading...</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tenantModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="tenantModalTitle">Add Tenant</div>
+                <button class="btn btn-outline btn-sm" onclick="closeModal('tenantModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group"><label>Pharmacy Name</label><input type="text" id="tenantName" class="form-control"></div>
+            <div class="form-group"><label>Address</label><input type="text" id="tenantAddress" class="form-control"></div>
+            <div class="form-group"><label>Phone</label><input type="text" id="tenantPhone" class="form-control"></div>
+            <div class="form-group"><label>Email</label><input type="text" id="tenantEmail" class="form-control"></div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="tenantStatus" class="form-control">
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="tenantSaveBtn" onclick="saveTenant()">Save</button>
+            <button class="btn btn-outline" onclick="closeModal('tenantModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="planModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="planModalTitle">Add Plan</div>
+                <button class="btn btn-outline btn-sm" onclick="closeModal('planModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group"><label>Plan Name</label><input type="text" id="planName" class="form-control"></div>
+            <div class="form-group"><label>Slug</label><input type="text" id="planSlug" class="form-control" placeholder="e.g. pro"></div>
+            <div class="form-group"><label>Description</label><input type="text" id="planDesc" class="form-control"></div>
+            <div class="form-group"><label>Price Monthly</label><input type="number" id="planPriceMonthly" class="form-control" value="0"></div>
+            <div class="form-group"><label>Price Yearly</label><input type="number" id="planPriceYearly" class="form-control" value="0"></div>
+            <div class="form-group"><label>Max Users</label><input type="number" id="planMaxUsers" class="form-control" value="5"></div>
+            <div class="form-group"><label>Max Products</label><input type="number" id="planMaxProducts" class="form-control" value="100"></div>
+            <div class="form-group"><label>Max Branches</label><input type="number" id="planMaxBranches" class="form-control" value="1"></div>
+            <div class="form-group">
+                <label>Active</label>
+                <select id="planActive" class="form-control">
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="planSaveBtn" onclick="savePlan()">Save</button>
+            <button class="btn btn-outline" onclick="closeModal('planModal')">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + (type || 'info');
+            t.style.display = 'block';
+            setTimeout(function() { t.style.display = 'none'; }, 3000);
+        }
+
+        function getKey() {
+            var k = document.getElementById('superAdminKey').value.trim();
+            if (!k) { showToast('Enter super admin key', 'error'); return null; }
+            return k;
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        async function loadTenants() {
+            var key = getKey(); if (!key) return;
+            try {
+                var tenants = await API.getAdminTenants(key);
+                var tbody = document.getElementById('tenantsTable');
+                if (!tenants.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);">No tenants found</td></tr>'; return; }
+                tbody.innerHTML = tenants.map(function(t) {
+                    var statusBadge = t.status === 'active' ? 'badge-success' : t.status === 'suspended' ? 'badge-danger' : 'badge-warning';
+                    var subBadge = t.sub_status === 'active' ? 'badge-success' : t.sub_status === 'trial' ? 'badge-warning' : 'badge-danger';
+                    return '<tr>' +
+                        '<td>' + t.id + '</td>' +
+                        '<td><strong>' + (t.name || '') + '</strong></td>' +
+                        '<td>' + (t.email || '-') + '</td>' +
+                        '<td>' + (t.phone || '-') + '</td>' +
+                        '<td><span class="badge badge-info">' + (t.plan_slug || '-') + '</span></td>' +
+                        '<td><span class="badge ' + subBadge + '">' + (t.sub_status || 'none') + '</span></td>' +
+                        '<td>' + (t.created_at ? new Date(t.created_at).toLocaleDateString() : '-') + '</td>' +
+                        '<td>' +
+                            '<button class="btn btn-outline btn-sm" onclick="editTenant(' + t.id + ', \'' + (t.name || '').replace(/'/g, "\\'") + '\', \'' + (t.address || '').replace(/'/g, "\\'") + '\', \'' + (t.phone || '').replace(/'/g, "\\'") + '\', \'' + (t.email || '').replace(/'/g, "\\'") + '\', \'' + (t.status || 'active') + '\')" title="Edit"><i class="fas fa-edit"></i></button> ' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteTenant(' + t.id + ')" title="Delete"><i class="fas fa-trash"></i></button>' +
+                        '</td>' +
+                        '</tr>';
+                }).join('');
+            } catch (e) {
+                showToast(e.message || 'Failed to load tenants', 'error');
+            }
+        }
+
+        var editingTenantId = null;
+        function showAddTenant() {
+            editingTenantId = null;
+            document.getElementById('tenantModalTitle').textContent = 'Add Tenant';
+            document.getElementById('tenantName').value = '';
+            document.getElementById('tenantAddress').value = '';
+            document.getElementById('tenantPhone').value = '';
+            document.getElementById('tenantEmail').value = '';
+            document.getElementById('tenantStatus').value = 'active';
+            openModal('tenantModal');
+        }
+
+        function editTenant(id, name, address, phone, email, status) {
+            editingTenantId = id;
+            document.getElementById('tenantModalTitle').textContent = 'Edit Tenant';
+            document.getElementById('tenantName').value = name;
+            document.getElementById('tenantAddress').value = address;
+            document.getElementById('tenantPhone').value = phone;
+            document.getElementById('tenantEmail').value = email;
+            document.getElementById('tenantStatus').value = status;
+            openModal('tenantModal');
+        }
+
+        async function saveTenant() {
+            var key = getKey(); if (!key) return;
+            var data = {
+                name: document.getElementById('tenantName').value.trim(),
+                address: document.getElementById('tenantAddress').value.trim(),
+                phone: document.getElementById('tenantPhone').value.trim(),
+                email: document.getElementById('tenantEmail').value.trim(),
+                status: document.getElementById('tenantStatus').value
+            };
+            if (!data.name) return showToast('Name is required', 'error');
+            try {
+                if (editingTenantId) {
+                    await API.updateAdminTenant(editingTenantId, data, key);
+                    showToast('Tenant updated', 'success');
+                } else {
+                    await API.updateAdminTenant(editingTenantId, data, key);
+                    showToast('Tenant updated', 'success');
+                }
+                closeModal('tenantModal');
+                loadTenants();
+            } catch (e) {
+                showToast(e.message || 'Save failed', 'error');
+            }
+        }
+
+        async function deleteTenant(id) {
+            if (!confirm('Delete this tenant? This cannot be undone.')) return;
+            var key = getKey(); if (!key) return;
+            try {
+                await API.deleteAdminTenant(id, key);
+                showToast('Tenant deleted', 'success');
+                loadTenants();
+            } catch (e) {
+                showToast(e.message || 'Delete failed', 'error');
+            }
+        }
+
+        async function loadPlans() {
+            var key = getKey(); if (!key) return;
+            try {
+                var plans = await API.getAdminPlans(key);
+                var tbody = document.getElementById('plansTable');
+                if (!plans.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);">No plans found</td></tr>'; return; }
+                tbody.innerHTML = plans.map(function(p) {
+                    return '<tr>' +
+                        '<td>' + p.id + '</td>' +
+                        '<td><strong>' + (p.name || '') + '</strong></td>' +
+                        '<td>' + (p.slug || '') + '</td>' +
+                        '<td>' + (p.price_monthly || 0) + '</td>' +
+                        '<td>' + (p.price_yearly || 0) + '</td>' +
+                        '<td>' + (p.max_users || 0) + '</td>' +
+                        '<td>' + (p.max_products || 0) + '</td>' +
+                        '<td>' + (p.max_branches || 0) + '</td>' +
+                        '<td><span class="badge ' + (p.is_active ? 'badge-success' : 'badge-danger') + '">' + (p.is_active ? 'Yes' : 'No') + '</span></td>' +
+                        '<td>' +
+                            '<button class="btn btn-outline btn-sm" onclick="editPlan(' + p.id + ', \'' + (p.name || '').replace(/'/g, "\\'") + '\', \'' + (p.slug || '').replace(/'/g, "\\'") + '\', \'' + (p.description || '').replace(/'/g, "\\'") + '\', ' + (p.price_monthly || 0) + ', ' + (p.price_yearly || 0) + ', ' + (p.max_users || 0) + ', ' + (p.max_products || 0) + ', ' + (p.max_branches || 0) + ', ' + (p.is_active || 0) + ')" title="Edit"><i class="fas fa-edit"></i></button> ' +
+                            '<button class="btn btn-danger btn-sm" onclick="deletePlan(' + p.id + ')" title="Delete"><i class="fas fa-trash"></i></button>' +
+                        '</td>' +
+                        '</tr>';
+                }).join('');
+            } catch (e) {
+                showToast(e.message || 'Failed to load plans', 'error');
+            }
+        }
+
+        var editingPlanId = null;
+        function showAddPlan() {
+            editingPlanId = null;
+            document.getElementById('planModalTitle').textContent = 'Add Plan';
+            document.getElementById('planName').value = '';
+            document.getElementById('planSlug').value = '';
+            document.getElementById('planDesc').value = '';
+            document.getElementById('planPriceMonthly').value = 0;
+            document.getElementById('planPriceYearly').value = 0;
+            document.getElementById('planMaxUsers').value = 5;
+            document.getElementById('planMaxProducts').value = 100;
+            document.getElementById('planMaxBranches').value = 1;
+            document.getElementById('planActive').value = 1;
+            openModal('planModal');
+        }
+
+        function editPlan(id, name, slug, desc, priceMonthly, priceYearly, maxUsers, maxProducts, maxBranches, isActive) {
+            editingPlanId = id;
+            document.getElementById('planModalTitle').textContent = 'Edit Plan';
+            document.getElementById('planName').value = name;
+            document.getElementById('planSlug').value = slug;
+            document.getElementById('planDesc').value = desc;
+            document.getElementById('planPriceMonthly').value = priceMonthly;
+            document.getElementById('planPriceYearly').value = priceYearly;
+            document.getElementById('planMaxUsers').value = maxUsers;
+            document.getElementById('planMaxProducts').value = maxProducts;
+            document.getElementById('planMaxBranches').value = maxBranches;
+            document.getElementById('planActive').value = isActive;
+            openModal('planModal');
+        }
+
+        async function savePlan() {
+            var key = getKey(); if (!key) return;
+            var data = {
+                name: document.getElementById('planName').value.trim(),
+                slug: document.getElementById('planSlug').value.trim(),
+                description: document.getElementById('planDesc').value.trim(),
+                price_monthly: parseFloat(document.getElementById('planPriceMonthly').value) || 0,
+                price_yearly: parseFloat(document.getElementById('planPriceYearly').value) || 0,
+                max_users: parseInt(document.getElementById('planMaxUsers').value) || 5,
+                max_products: parseInt(document.getElementById('planMaxProducts').value) || 100,
+                max_branches: parseInt(document.getElementById('planMaxBranches').value) || 1,
+                is_active: parseInt(document.getElementById('planActive').value) || 1
+            };
+            if (!data.name || !data.slug) return showToast('Name and slug are required', 'error');
+            try {
+                if (editingPlanId) {
+                    await API.updateAdminPlan(editingPlanId, data, key);
+                    showToast('Plan updated', 'success');
+                } else {
+                    await API.saveAdminPlan(data, key);
+                    showToast('Plan created', 'success');
+                }
+                closeModal('planModal');
+                loadPlans();
+            } catch (e) {
+                showToast(e.message || 'Save failed', 'error');
+            }
+        }
+
+        async function deletePlan(id) {
+            if (!confirm('Delete this plan?')) return;
+            var key = getKey(); if (!key) return;
+            try {
+                await API.deleteAdminPlan(id, key);
+                showToast('Plan deleted', 'success');
+                loadPlans();
+            } catch (e) {
+                showToast(e.message || 'Delete failed', 'error');
+            }
+        }
+
+        (function init() {
+            loadTenants();
+            loadPlans();
+        })();
+    </script>
+</body>
+</html>

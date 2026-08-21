@@ -84,6 +84,7 @@ var POS = (function() {
         'drug-categories.html': { label: 'Drug Categories', icon: 'fa-tags' },
         'payments.html': { label: 'Payments', icon: 'fa-credit-card' },
         'locations.html': { label: 'Locations', icon: 'fa-store' },
+        'subscription.html': { label: 'Subscription & Billing', icon: 'fa-crown' },
         'messages.html': { label: 'Messages', icon: 'fa-envelope' },
         'config.html': { label: 'Store Config', icon: 'fa-cog' },
         'login.html': { label: 'Logout', icon: 'fa-sign-out-alt' }
