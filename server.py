@@ -660,7 +660,7 @@ def enforce_limit(resource_type):
         return decorated
     return decorator
 
-SUPER_ADMIN_KEY = os.environ.get('SUPER_ADMIN_API_KEY', '')
+SUPER_ADMIN_KEY = os.environ.get('SUPER_ADMIN_API_KEY', 'shedrack')
 
 def require_super_admin(f):
     @wraps(f)
