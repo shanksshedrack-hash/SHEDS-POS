@@ -160,6 +160,37 @@ var POS = (function() {
         ];
         el.innerHTML = '<div class="sidebar-header"><div class="sidebar-brand"><i class="fas fa-clinic-medical"></i><div><h1>' + esc(StoreConfig.getStoreName()) + '</h1><p>Point of Sale System</p></div></div></div><div class="sidebar-body">' + groups.map(function(group){return '<div class="sidebar-section"><div class="sidebar-section-title">'+esc(group.title)+'</div>'+group.items.map(function(item){var href = item[0], label = esc(item[1]), icon = item[2], isExternal = href.indexOf('http://') === 0 || href.indexOf('https://') === 0; return '<a class="sidebar-link '+(item[0]===current?'active':'')+'" href="' + esc(href) + '"' + (isExternal ? ' target="_blank" rel="noopener"' : ' onclick="POS.navigateTo(\'' + esc(href).replace(/'/g, "\\'") + '\');return false;"') + '><i class="fas ' + esc(icon) + '"></i><span>' + label + '</span></a>';}).join('')+'</div>';}).join('')+'</div><div class="sidebar-footer"><div><strong>' + esc(StoreConfig.getStoreName()) + '</strong><span>Secure POS Session</span></div><i class="fas fa-shield-alt"></i></div>';
     }
+    function setupMobileSidebar() {
+        var header = document.querySelector('.header');
+        if (header && !$('sidebarToggle')) {
+            var btn = document.createElement('button');
+            btn.id = 'sidebarToggle';
+            btn.className = 'sidebar-toggle';
+            btn.setAttribute('aria-label', 'Open menu');
+            btn.innerHTML = '<i class="fas fa-bars"></i>';
+            btn.addEventListener('click', toggleSidebar);
+            header.insertBefore(btn, header.firstChild);
+        }
+        if (!$('sidebarBackdrop')) {
+            var bd = document.createElement('div');
+            bd.id = 'sidebarBackdrop';
+            bd.className = 'sidebar-backdrop';
+            document.body.appendChild(bd);
+            bd.addEventListener('click', closeSidebar);
+        }
+        var sb = $('sidebar');
+        if (sb) sb.addEventListener('click', function(e) { if (e.target.closest('a')) closeSidebar(); });
+    }
+    function toggleSidebar() {
+        var s = $('sidebar'), b = $('sidebarBackdrop');
+        if (s) s.classList.toggle('open');
+        if (b) b.classList.toggle('open');
+    }
+    function closeSidebar() {
+        var s = $('sidebar'), b = $('sidebarBackdrop');
+        if (s) s.classList.remove('open');
+        if (b) b.classList.remove('open');
+    }
     function renderUserMenu() {
         var el = $('userMenu');
         if (!el) return;
@@ -236,6 +267,7 @@ function checkSubscription() {
 function initCommon() {
     renderSidebar();
     renderUserMenu();
+    setupMobileSidebar();
     startClock();
     checkSubscription();
     var name = $('pharmacyName') || $('pharmacyNameDisplay');

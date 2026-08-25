@@ -114,7 +114,10 @@ tr:hover{background:#f8fafc}
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.calendar-day{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;min-height:92px}.calendar-day .date{font-weight:900}.calendar-day small{display:block;color:var(--muted);margin-top:5px;font-size:11px}
 .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#f1f5f9;color:#334155;font-size:12px;font-weight:800}
 .mini-list{display:flex;flex-direction:column;gap:10px}.mini-item{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px}.mini-item strong{display:block;color:#111827}.mini-item small{display:block;color:var(--muted);margin-top:3px}
-@media(max-width:900px){.sidebar{display:none}.main-content{margin:0}.header{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.search-input{min-width:0;width:100%}.kpi-grid{grid-template-columns:1fr 1fr}}
+.sidebar-toggle{display:none;border:0;background:rgba(255,255,255,.18);color:#fff;width:40px;height:40px;border-radius:10px;font-size:18px;cursor:pointer;align-items:center;justify-content:center;margin-right:6px}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,23,.5);z-index:2400}
+.sidebar-backdrop.open{display:block}
+@media(max-width:900px){.sidebar{position:fixed;top:0;left:0;z-index:2500;height:100%;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 50px rgba(0,0,0,.45)}.sidebar.open{transform:translateX(0)}.sidebar-toggle{display:inline-flex}.main-content{margin:0}.header{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.search-input{min-width:0;width:100%}.kpi-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.kpi-grid{grid-template-columns:1fr}.btn{width:100%}.page-head,.toolbar,.filters,.actions{align-items:stretch;flex-direction:column}}
 .customer-profile-panel{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:14px;display:flex;flex-direction:column;gap:12px}
 .cp-header{display:flex;align-items:center;gap:12px;position:relative}
