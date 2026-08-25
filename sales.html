@@ -126,7 +126,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 .float-bar{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
 .btn-sm{padding:7px 12px;font-size:12px;border-radius:6px;}
 @media(max-width:1024px){.pos-container{flex-direction:column;}.cart-panel{width:100%;}.products-header{flex-wrap:wrap;gap:10px;}.products-header input{flex:1 1 100%;}.products-header .btn{flex:1 1 calc(50% - 5px);}.product-dropdown{right:0;max-height:280px;}.sales-table{font-size:12px;}.sales-table th,.sales-table td{padding:8px 6px;}.cart-panel{padding:14px;}.totals-row{font-size:13px;}.payment-panel select,.payment-panel input{padding:10px;font-size:13px;}.quick-tender{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:768px){.sidebar{display:none;}}
+@media(max-width:900px){.sidebar{position:fixed;top:0;left:0;z-index:2500;height:100%;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 50px rgba(0,0,0,.45)}.sidebar.open{transform:translateX(0)}.sidebar-toggle{display:inline-flex}}
 @media(max-width:480px){.products-header .btn{flex-basis:100%;}.cart-items{max-height:120px;}.action-buttons{grid-template-columns:1fr;}.customer-profile-meta{grid-template-columns:1fr;}}
 </style>
 </head>

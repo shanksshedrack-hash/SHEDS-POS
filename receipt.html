@@ -70,7 +70,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 .no-receipt{text-align:center;padding:60px 20px;color:var(--text-soft);}
 .no-receipt i{font-size:48px;color:#d1d5db;margin-bottom:16px;display:block;}
 .no-receipt h3{font-size:18px;margin-bottom:8px;color:var(--text);}
-@media(max-width:768px){.sidebar{display:none;}.receipt-meta{grid-template-columns:1fr;}.actions-bar{flex-direction:column;}.actions-bar .btn{min-width:auto;}}
+@media(max-width:768px){.sidebar{position:fixed;top:0;left:0;z-index:2500;height:100%;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 50px rgba(0,0,0,.45)}.sidebar.open{transform:translateX(0)}.sidebar-toggle{display:inline-flex}.receipt-meta{grid-template-columns:1fr;}.actions-bar{flex-direction:column;}.actions-bar .btn{min-width:auto;}}
 @media print{body{background:#fff;}.sidebar,.header,.actions-bar,.no-receipt-actions{display:none!important;}.main{padding:0;margin:0;}.receipt-container{max-width:100%;}.receipt-paper{border-radius:0;box-shadow:none;}}
 </style>
 </head>
