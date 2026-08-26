@@ -257,12 +257,6 @@ var API = (function() {
         getAuditLog: function() { return this.get('/audit-log'); },
         saveAuditLog: function(data) { return this.post('/audit-log', data); },
 
-        // Subscription
-        getSubscriptionPlans: function() { return this.get('/subscription/plans'); },
-        getCurrentSubscription: function() { return this.get('/subscription/current'); },
-        upgradeSubscription: function(planId) { return this.post('/subscription/upgrade', { plan_id: planId }); },
-        cancelSubscription: function() { return this.post('/subscription/cancel'); },
-        getSubscriptionUsage: function() { return this.get('/subscription/usage'); },
 
         // Branches
         getBranches: function() { return this.get('/branches'); },

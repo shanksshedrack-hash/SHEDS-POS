@@ -84,7 +84,7 @@ var POS = (function() {
         'drug-categories.html': { label: 'Drug Categories', icon: 'fa-tags' },
         'payments.html': { label: 'Payments', icon: 'fa-credit-card' },
         'locations.html': { label: 'Locations', icon: 'fa-store' },
-        'subscription.html': { label: 'Subscription & Billing', icon: 'fa-crown' },
+
         'messages.html': { label: 'Messages', icon: 'fa-envelope' },
         'config.html': { label: 'Store Config', icon: 'fa-cog' },
         'login.html': { label: 'Logout', icon: 'fa-sign-out-alt' }
@@ -154,7 +154,7 @@ var POS = (function() {
             {title:'Main',items:[['index.html','Home','fa-home'],['dashboard.html','Dashboard','fa-home'],['sales.html','SALES','fa-shopping-cart'],['suspended-sales.html','Suspended Sales','fa-pause'],['variations.html','Add Product','fa-plus-circle'],['inventory.html','Inventory','fa-boxes'],['receiving.html','Receiving','fa-file-import'],['reports.html','Reports','fa-chart-bar']]},
             {title:'Catalogue',items:[['customers.html','Customers','fa-users'],['suppliers.html','Suppliers','fa-truck'],['locations.html','Locations','fa-store'],['product-variations.html','Product Variations','fa-layer-group']]},
             {title:'Pharmacy',items:[['prescriptions.html','Prescriptions / Rx','fa-prescription'],['expiry-alerts.html','Expiry & Batch Alerts','fa-triangle-exclamation'],['drug-categories.html','Drug Categories','fa-tags']]},
-            {title:'Finance',items:[['payments.html','Payments','fa-credit-card'],['store_account_payment.html','Store Account','fa-wallet'],['bank-reconciliation.html','Bank Reconciliation','fa-building-columns'],['tax-settings.html','Tax & Vat','fa-percent'],['promo-engine.html','Promos & Discounts','fa-tags'],['expenses.html','Expenses','fa-receipt'],['invoices.html','Invoices','fa-file-invoice'],['purchase-orders.html','Purchase Orders','fa-file-invoice-dollar'],['subscription.html','Subscription Fee','fa-calendar-check']]},
+            {title:'Finance',items:[['payments.html','Payments','fa-credit-card'],['store_account_payment.html','Store Account','fa-wallet'],['bank-reconciliation.html','Bank Reconciliation','fa-building-columns'],['tax-settings.html','Tax & Vat','fa-percent'],['promo-engine.html','Promos & Discounts','fa-tags'],['expenses.html','Expenses','fa-receipt'],['invoices.html','Invoices','fa-file-invoice'],['purchase-orders.html','Purchase Orders','fa-file-invoice-dollar']]},
             {title:'Operations',items:[['employees.html','Employees','fa-user-tie'],['user-roles.html','User Roles','fa-user-shield'],['appointments.html','Appointments','fa-calendar'],['suspended-sales.html','Suspended Sales','fa-pause'],['receipt.html','Receipt','fa-receipt'],['todays-receipts.html','Today\'s Receipts','fa-receipt'],['audit.html','Audit Log','fa-clipboard-list'],['giftcards.html','Gift Cards','fa-gift'],['deliveries.html','Deliveries','fa-truck-loading'],['cashier-closeout.html','Cashier Closeout','fa-calculator'],['daily-summary.html','Daily Sales Summary','fa-calendar-day'],['sales-returns.html','Sales Returns','fa-rotate-left'],['stock-transfer.html','Stock Transfer','fa-truck-ramp-box'],['messages.html','Messages','fa-envelope']]},
             {title:'Reports',items:[['reports.html','Reports','fa-chart-bar'],['audit-log.html','Audit Log','fa-clipboard-list'],['backups.html','System Backups','fa-download'],['config.html','Store Config','fa-cog'],['login.html','Logout','fa-sign-out-alt']]}
         ];
@@ -239,37 +239,11 @@ function startClock() {
     update();
     setInterval(update, 1000);
 }
-function checkSubscription() {
-    var page = window.location.pathname.split('/').pop();
-    if (window.location.protocol === 'file:') return;
-    if (['subscription.html', 'login.html', 'create-account.html'].indexOf(page) !== -1) return;
-    var sub = null;
-    var trial = null;
-    try { 
-        sub = JSON.parse(localStorage.getItem('danzona_subscription') || 'null'); 
-        trial = JSON.parse(localStorage.getItem('danzona_trial') || 'null');
-    } catch(e) { sub = null; trial = null; }
-    
-    var isActive = sub && sub.status === 'active';
-    var isTrial = trial && trial.status === 'active' && new Date(trial.endDate) >= new Date();
-    
-    if (isTrial) {
-        return;
-    } else if (!isActive) {
-        var overlay = document.createElement('div');
-        overlay.id = 'subscriptionLock';
-        overlay.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#0f172a,#1e293b);z-index:99999;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Inter,Arial,sans-serif;';
-        overlay.innerHTML = '<div style="text-align:center;max-width:480px;padding:40px;"><div style="font-size:60px;margin-bottom:20px;"><i class="fas fa-lock" style="color:#ef4444;"></i></div><h1 style="font-size:28px;font-weight:900;margin-bottom:12px;">Subscription Required</h1><p style="color:#94a3b8;font-size:15px;margin-bottom:24px;">Your free trial has ended. Please subscribe to continue using ' + esc(StoreConfig.getStoreName()) + '.</p><button onclick="window.location.href=\'subscription.html\'" style="background:#10b981;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><i class="fas fa-calendar-check"></i> Go to Subscription</button></div>';
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
-    }
-}
 function initCommon() {
     renderSidebar();
     renderUserMenu();
     setupMobileSidebar();
     startClock();
-    checkSubscription();
     var name = $('pharmacyName') || $('pharmacyNameDisplay');
     if (name && API.getPharmacyName) name.innerHTML = '<i class="fas fa-clinic-medical"></i> ' + esc(API.getPharmacyName() || 'SHEDS POS');
 }
