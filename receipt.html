@@ -89,8 +89,38 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 </div>
 <div class="toast" id="toast"></div>
 
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fas fa-edit"></i> Edit Invoice</h3><button class="modal-close" onclick="closeEdit()">&times;</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>Customer Name</label><input id="edCustomer" class="form-control"></div>
+      <div class="form-group"><label>Payment Method</label>
+        <select id="edPayment" class="form-control">
+          <option value="cash">Cash</option>
+          <option value="store_account">Store Account</option>
+          <option value="card">Card</option>
+          <option value="pos">POS</option>
+          <option value="bank_transfer">Bank Transfer</option>
+          <option value="giftcard">Gift Card</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Discount Amount</label><input id="edDiscount" type="number" min="0" step="0.01" class="form-control"></div>
+      <div class="form-group"><label>New Total</label><input id="edTotal" class="form-control" disabled></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="edNotes" class="form-control" placeholder="Invoice notes / comments"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Save Invoice</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var currentReceipt = null;
+var currentSaleId = null;
+var editingSale = null;
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
 function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
@@ -101,6 +131,7 @@ function navigateTo(p){window.location.href=p;}
 function getPaymentLabel(m){if(!m)return 'Cash';var map={cash:'Cash',store_account:'Store Account',card:'Card',pos:'POS',bank_transfer:'Bank Transfer',giftcard:'Gift Card'};return map[m]||m;}
 
 function renderReceipt(r){
+  currentSaleId = (r && r.sale_id != null && /^\d+$/.test(String(r.sale_id))) ? String(r.sale_id) : null;
   if(!r){
     $('receiptContainer').innerHTML='<div class="no-receipt"><i class="fas fa-file-invoice"></i><h3>No Receipt Found</h3><p>There is no recent receipt to display. Complete a sale to generate a receipt.</p><div class="no-receipt-actions" style="margin-top:20px;"><button class="btn btn-primary" onclick="navigateTo(\'sales.html\')" style="padding:12px 24px;"><i class="fas fa-shopping-cart"></i> Go to Sales</button></div></div>';
     return;
@@ -159,6 +190,7 @@ function renderReceipt(r){
   html+='</div></div>';
   html+='<div class="actions-bar">';
   html+='<button class="btn btn-primary" onclick="printCurrentReceipt()"><i class="fas fa-print"></i> Print Receipt</button>';
+  html+='<button class="btn btn-outline" onclick="openEdit()"><i class="fas fa-edit"></i> Edit Invoice</button>';
   html+='<button class="btn btn-outline" onclick="navigateTo(\'sales.html\')"><i class="fas fa-shopping-cart"></i> New Sale</button>';
   html+='</div>';
   $('receiptContainer').innerHTML=html;
@@ -213,6 +245,70 @@ function printCurrentReceipt(){
   setTimeout(function(){w.focus();w.print();setTimeout(function(){w.close();},1000);},300);
 }
 
+function mapSaleToReceipt(s){
+  return {
+    sale_id: s.id,
+    created_at: s.date,
+    business_name: API.getPharmacyName ? API.getPharmacyName() : (StoreConfig.getStoreName ? StoreConfig.getStoreName() : 'SHEDS POS'),
+    business_address: '',
+    employee: s.cashier || 'Cashier',
+    customer_name: s.customer_name || 'Walk-in',
+    items: s.items || [],
+    subtotal: s.subtotal,
+    tax_amount: s.tax,
+    total: s.total,
+    cash_received: s.amount_tendered,
+    change_due: s.change,
+    payment_method: s.payment_method,
+    comments: s.notes || '',
+    notes: s.notes || ''
+  };
+}
+
+function round2(n){return Math.round((parseFloat(n)||0)*100)/100;}
+
+function openEdit(){
+  if(!currentSaleId){showToast('This receipt was not saved to the server, so it cannot be edited online.',true);return;}
+  API.get('/sales/'+currentSaleId).then(function(s){
+    editingSale=s;
+    currentSaleId=String(s.id);
+    $('edCustomer').value=s.customer_name||'';
+    $('edPayment').value=s.payment_method||'cash';
+    $('edDiscount').value=parseFloat(s.discount_amount)||0;
+    $('edNotes').value=s.notes||'';
+    updateEditTotal();
+    POS.openModal('editModal');
+  }).catch(function(e){showToast('Could not load invoice: '+(e.message||'error'),true);});
+}
+
+function updateEditTotal(){
+  if(!editingSale)return;
+  var sub=parseFloat(editingSale.subtotal)||0;
+  var disc=parseFloat($('edDiscount').value)||0;
+  var tax=parseFloat(editingSale.tax)||0;
+  $('edTotal').value=fmt(round2(sub-disc+tax));
+}
+
+function closeEdit(){POS.closeModal('editModal');}
+
+function saveEdit(){
+  if(!currentSaleId)return;
+  var data={
+    customer_name:$('edCustomer').value.trim(),
+    payment_method:$('edPayment').value,
+    discount_amount:parseFloat($('edDiscount').value)||0,
+    notes:$('edNotes').value.trim()
+  };
+  API.put('/sales/'+currentSaleId,data).then(function(){
+    showToast('Invoice updated');
+    closeEdit();
+    API.get('/sales/'+currentSaleId).then(function(s){
+      currentReceipt=mapSaleToReceipt(s);
+      renderReceipt(currentReceipt);
+    }).catch(function(){});
+  }).catch(function(e){showToast('Update failed: '+(e.message||'error'),true);});
+}
+
 function loadReceipt(){
   try{currentReceipt=JSON.parse(localStorage.getItem('last_receipt')||'null');}catch(e){currentReceipt=null;}
   renderReceipt(currentReceipt);
@@ -221,6 +317,7 @@ function loadReceipt(){
 document.addEventListener('DOMContentLoaded',function(){
   POS.initCommon();
   loadReceipt();
+  var ed=$('edDiscount'); if(ed) ed.addEventListener('input',updateEditTotal);
 });
 </script>
 </body>
