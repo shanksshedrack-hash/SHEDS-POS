@@ -1344,12 +1344,12 @@ def update_sale(sid):
         data['items'] = json.dumps(data['items'])
     db = get_db()
     allowed = ['customer_id', 'customer_name', 'payment_method', 'discount_amount',
-               'tax', 'notes', 'cashier', 'amount_tendered', 'change', 'items']
+               'tax', 'notes', 'cashier', 'amount_tendered', 'change', 'items', 'subtotal']
     clean = {k: v for k, v in data.items() if k in allowed}
-    if 'discount_amount' in clean or 'tax' in clean:
+    if 'discount_amount' in clean or 'tax' in clean or 'subtotal' in clean:
         sale = db.execute('SELECT subtotal, discount_amount, tax, total FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
         if sale:
-            subtotal = float(sale['subtotal'] or 0)
+            subtotal = float(clean.get('subtotal', sale['subtotal'] or 0))
             disc = float(clean.get('discount_amount', sale['discount_amount'] or 0))
             tax = float(clean.get('tax', sale['tax'] or 0))
             clean['total'] = round(subtotal - disc + tax, 2)

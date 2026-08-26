@@ -114,7 +114,7 @@ function renderTable(){
       '<td><span class="tag '+getPaymentClass(s.payment_method)+'">'+getPaymentLabel(s.payment_method)+'</span></td>'+
       '<td><div class="action-btns">'+
         '<button class="icon-btn view" onclick="printReceipt('+s.id+')"><i class="fas fa-print"></i></button>'+
-        '<button class="icon-btn edit" onclick="openEdit('+s.id+')"><i class="fas fa-edit"></i></button>'+
+        '<button class="icon-btn edit" onclick="editInvoice('+s.id+')"><i class="fas fa-edit"></i></button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -172,16 +172,9 @@ function printReceipt(id){
   setTimeout(function(){w.focus();w.print();setTimeout(function(){w.close();},1000);},300);
 }
 
-function openEdit(id){
-  var s=findSale(id);
-  if(!s){showToast('Receipt not found',true);return;}
-  editingId=id;
-  $('edCustomer').value=s.customer_name||'';
-  $('edPayment').value=s.payment_method||'cash';
-  $('edDiscount').value=parseFloat(s.discount_amount)||0;
-  $('edNotes').value=s.notes||'';
-  updateEditTotal();
-  POS.openModal('editModal');
+function editInvoice(id){
+  if(!id){showToast('Receipt not found',true);return;}
+  navigateTo('sales.html?edit='+id);
 }
 function updateEditTotal(){
   var s=findSale(editingId);

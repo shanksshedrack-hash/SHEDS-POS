@@ -246,6 +246,7 @@ body{background:#f3f4f6;min-height:100vh;display:flex;}
 <div class="toast" id="toast"></div>
 <script>
 var allProducts=[],cart=loadCart(),selectedCustomer=loadCustomer(),searchTimer=null;
+var editingSaleId=null,editingOriginalItems=null,editingOriginalPayment=null,editingOriginalCustomerId=null,editingOriginalTotal=0,stockRestored=false;
 function $(id){return document.getElementById(id);}
 function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
@@ -263,7 +264,7 @@ function saveCustomer(){try{localStorage.setItem('salesCustomer',JSON.stringify(
 function loadCompletedSales(){try{return JSON.parse(localStorage.getItem('SHEDS_completed_sales')||'[]');}catch(e){return [];}}
 function saveCompletedSale(sale){try{var sales=loadCompletedSales();sales.unshift(sale);localStorage.setItem('SHEDS_completed_sales',JSON.stringify(sales));}catch(e){}}
 function loadProductsSync(){try{var saved=JSON.parse(localStorage.getItem('danzona_products')||'[]');if(Array.isArray(saved)&&saved.length){allProducts=saved;renderProducts(allProducts);return true;}}catch(e){}return false;}
-async function loadProducts(){try{allProducts=await API.getProducts()||[];}catch(e){allProducts=[];}renderProducts(allProducts);return allProducts;}
+async function loadProducts(){try{allProducts=await API.getProducts()||[];}catch(e){allProducts=[];}renderProducts(allProducts);if(editingSaleId)restoreEditStock();return allProducts;}
 function renderProducts(list){var grid=$('productsGrid');if(!list||list.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#6b7280;padding:40px;">No products found. <a href="variations.html" onclick="navigateTo(\'variations.html\')" style="color:#10b981;">Add a product</a></div>';return;}grid.innerHTML=list.map(function(p){var stock=parseFloat(p.stock)||0;var out=stock<=0;var price=productPrice(p);return '<div class="product-card'+(out?' out-of-stock':'')+'" onclick="showPackageSelector('+jsAttr(p.id)+','+jsAttr(p.name||'Unnamed')+')"><div class="product-name">'+esc(p.name||'Unnamed')+'</div><div class="product-price">'+fmt(price)+'</div><div class="product-sku">'+esc(p.sku||'')+'</div><div class="product-stock">'+(out?'Out of stock':'Stock: '+stock)+'</div></div>';}).join('');}
 function searchProducts(q){clearTimeout(searchTimer);searchTimer=setTimeout(async function(){var query=(q||'').trim();var dd=$('productDropdown');if(query.length<2){dd.style.display='none';return;}try{var fresh=await API.getProducts();if(fresh&&fresh.length){allProducts=fresh;localStorage.setItem('danzona_products',JSON.stringify(fresh));}}catch(e){}if(!allProducts.length){dd.innerHTML='<div style="padding:12px;color:#94a3b8;">No products found</div>';dd.style.display='block';return;}var ql=query.toLowerCase();var filtered=allProducts.filter(function(p){return(p.name||'').toLowerCase().indexOf(ql)>-1||(p.sku||'').toLowerCase().indexOf(ql)>-1||(p.pkg_type||p.pkgType||'').toLowerCase().indexOf(ql)>-1;});if(!filtered.length){dd.innerHTML='<div style="padding:12px;color:#94a3b8;">No products found</div>';dd.style.display='block';return;}dd.innerHTML=filtered.slice(0,20).map(function(p){var price=productPrice(p);return '<div onclick="addProductFromSearch('+jsAttr(p.id)+')" style="padding:12px;cursor:pointer;border-bottom:1px solid #f1f5f9;"><strong>'+esc(p.name||'Unnamed')+'</strong><br><small>'+esc(p.sku||'SKU: -')+' | '+fmt(price)+'</small></div>';}).join('');dd.style.display='block';},180);}
 function scanBarcode(){var code=$('barcodeInput').value.trim();if(!code){showToast('Scan or enter a barcode',true);return;}var found=lookupProductByBarcode(code);if(found){addToCart(found.id,found.name,productPrice(found),1,found.default_pkg_sale||found.pkg_type||found.pkgType||'pkt');showToast('Added: '+found.name);$('barcodeInput').value='';$('barcodeInput').classList.add('scan-flash');setTimeout(function(){$('barcodeInput').classList.remove('scan-flash');},400);}else{showToast('Product not found: '+code,true);$('barcodeInput').classList.add('scan-flash');setTimeout(function(){$('barcodeInput').classList.remove('scan-flash');},600);}}
@@ -293,6 +294,59 @@ function openSelectedCustomer(){if(selectedCustomer&&selectedCustomer.id){naviga
 function editSelectedCustomer(){openSelectedCustomer();}
 function detachCustomer(){selectedCustomer=null;try{localStorage.removeItem('salesCustomer');}catch(e){}renderCustomerProfile();}
 function clearCart(){if(!cart.length)return;if(confirm('Clear cart?')){cart=[];selectedCustomer=null;saveCart();$('customerSearch').value='';$('amountTendered').value='';$('saleNotes').value='';renderCart();renderCustomerProfile();showToast('Cart cleared');}}
+async function loadSaleForEdit(id){
+  try{
+    var s=await API.get('/sales/'+id);
+    editingSaleId=String(s.id);
+    editingOriginalItems=s.items||[];
+    editingOriginalPayment=s.payment_method;
+    editingOriginalCustomerId=s.customer_id||null;
+    editingOriginalTotal=parseFloat(s.total)||0;
+    cart=(s.items||[]).map(function(it){
+      return {
+        product_id: it.product_id!=null?it.product_id:('ext_'+Math.random().toString(36).slice(2)),
+        name: it.name||'Product',
+        price: parseFloat(it.unit_price!=null?it.unit_price:it.price)||0,
+        qty: parseFloat(it.qty)||1,
+        discount: parseFloat(it.discount)||0,
+        pkgType: it.pkg_type||'pkt',
+        sku: it.sku||''
+      };
+    });
+    if(s.customer_id){ selectedCustomer={id:s.customer_id,name:s.customer_name||'Walk-in'}; saveCustomer(); }
+    else if(s.customer_name && s.customer_name!=='Walk-in'){ selectedCustomer={id:null,name:s.customer_name}; saveCustomer(); }
+    else { selectedCustomer=null; }
+    if(s.payment_method) setPaymentMethod(s.payment_method,null);
+    var ne=$('saleNotes'); if(ne) ne.value=s.notes||'';
+    saveCart(); renderCart(); renderCustomerProfile(); updateTotals();
+    showEditBanner(s.id);
+    restoreEditStock();
+  }catch(e){ showToast('Could not load invoice for editing: '+(e.message||'error'),true); }
+}
+function restoreEditStock(){
+  if(stockRestored) return; stockRestored=true;
+  (editingOriginalItems||[]).forEach(function(it){
+    var p=getProduct(it.product_id);
+    if(p){ p.stock=(parseFloat(p.stock)||0)+(parseFloat(it.qty)||0); }
+  });
+  try{ localStorage.setItem('danzona_products',JSON.stringify(allProducts)); }catch(e){}
+}
+function showEditBanner(id){
+  var b=document.getElementById('editBanner');
+  if(!b){ b=document.createElement('div'); b.id='editBanner'; document.body.appendChild(b); }
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:5000;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.2);font-size:14px;';
+  b.innerHTML='<span><i class="fas fa-edit"></i> Editing Invoice #'+id+' &mdash; add or remove items, then complete the sale to save.</span><button onclick="cancelEdit()" style="border:0;background:rgba(255,255,255,.25);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;cursor:pointer;white-space:nowrap;"><i class="fas fa-times"></i> Cancel</button>';
+}
+function cancelEdit(){
+  editingSaleId=null; editingOriginalItems=null; editingOriginalPayment=null; editingOriginalCustomerId=null; editingOriginalTotal=0; stockRestored=false;
+  var b=document.getElementById('editBanner'); if(b) b.remove();
+  cart=[]; selectedCustomer=null; saveCart(); renderCart(); renderCustomerProfile();
+  navigateTo('todays-receipts.html');
+}
+async function adjustCustomerBalance(id,delta){
+  if(!id||!delta) return;
+  try{ var c=await API.get('/customers/'+id); var bal=Math.max(0,(parseFloat(c.balance)||0)+delta); await API.put('/customers/'+id,{balance:bal}); }catch(e){}
+}
 function updateFloatBar(){
   try{
     var shifts=[];try{shifts=JSON.parse(localStorage.getItem('danzona_shifts')||'[]');}catch(e){shifts=[];}
@@ -347,7 +401,24 @@ function closePkgModal(){var m=$('pkgModal');if(m)m.remove();}
 function saveAsPDF(){printReceipt();}
 function selectPkg(id,name,pkgId,price){addToCart(id,name,price,1,pkgId);closePkgModal();showToast('Added '+name+' ('+pkgId+')');}
 function printReceipt(){if(!cart.length){showToast('Cart empty',true);return;}var sub=cart.reduce(function(s,x){return s+(parseFloat(x.price)||0)*(parseFloat(x.qty)||0);},0);var disc=cart.reduce(function(s,x){return s+(parseFloat(x.discount)||0);},0);var total=sub-disc;var tendered=parseFloat($('amountTendered').value)||0;var pm=$('paymentMethod').value;var pt=POS.getPrinterType();var w=window.open('','_blank',pt==='large'?'width=900,height=1100':'width=500,height=750');var html=pt==='large'?POS.buildLargeReceipt(cart,sub,disc,total,tendered,pm):POS.buildSmallReceipt(cart,sub,disc,total,tendered,pm);w.document.write(html);w.document.close();setTimeout(function(){w.focus();w.print();},200);}
-async function checkout(){if(!cart.length){showToast('Cart empty',true);return;}var sub=cart.reduce(function(s,x){return s+(parseFloat(x.price)||0)*(parseFloat(x.qty)||0);},0);var disc=cart.reduce(function(s,x){return s+(parseFloat(x.discount)||0);},0);var taxRate=0;try{taxRate=StoreConfig.get('taxEnabled')?(parseFloat(StoreConfig.get('taxRate'))||0)/100:0;}catch(e){taxRate=0;}var tax=sub*taxRate;var total=sub+tax-disc;var tendered=parseFloat($('amountTendered').value)||0;var paymentMethod=$('paymentMethod').value;if(paymentMethod==='store_account'&&!selectedCustomer){showToast('Select a customer for store account sale',true);return;}if(paymentMethod==='cash'&&tendered<total){showToast('Amount tendered must be at least total',true);return;}var data={date:new Date().toISOString(),customer_id:selectedCustomer?selectedCustomer.id:null,customer_name:selectedCustomer?selectedCustomer.name:'Walk-in',items:cart.map(function(x){return{product_id:x.product_id,name:x.name,qty:parseFloat(x.qty)||0,unit_price:parseFloat(x.price)||0,discount:parseFloat(x.discount)||0,pkg_type:x.pkgType||'pkt',line_total:(parseFloat(x.price)||0)*(parseFloat(x.qty)||0)-(parseFloat(x.discount)||0)};}),subtotal:sub,discount_amount:disc,tax:tax,total:total,payment_method:paymentMethod,amount_tendered:paymentMethod==='store_account'?total:tendered,change:Math.max(0,tendered-total),cashier:API.getUserName()||'Cashier',notes:$('saleNotes').value};  var res=await API.saveSale(data);
+async function checkout(){if(!cart.length){showToast('Cart empty',true);return;}var sub=cart.reduce(function(s,x){return s+(parseFloat(x.price)||0)*(parseFloat(x.qty)||0);},0);var disc=cart.reduce(function(s,x){return s+(parseFloat(x.discount)||0);},0);var taxRate=0;try{taxRate=StoreConfig.get('taxEnabled')?(parseFloat(StoreConfig.get('taxRate'))||0)/100:0;}catch(e){taxRate=0;}var tax=sub*taxRate;var total=sub+tax-disc;var tendered=parseFloat($('amountTendered').value)||0;var paymentMethod=$('paymentMethod').value;if(paymentMethod==='store_account'&&!selectedCustomer){showToast('Select a customer for store account sale',true);return;}if(paymentMethod==='cash'&&tendered<total){showToast('Amount tendered must be at least total',true);return;}var data={date:new Date().toISOString(),customer_id:selectedCustomer?selectedCustomer.id:null,customer_name:selectedCustomer?selectedCustomer.name:'Walk-in',items:cart.map(function(x){return{product_id:x.product_id,name:x.name,qty:parseFloat(x.qty)||0,unit_price:parseFloat(x.price)||0,discount:parseFloat(x.discount)||0,pkg_type:x.pkgType||'pkt',line_total:(parseFloat(x.price)||0)*(parseFloat(x.qty)||0)-(parseFloat(x.discount)||0)};}),subtotal:sub,discount_amount:disc,tax:tax,total:total,payment_method:paymentMethod,amount_tendered:paymentMethod==='store_account'?total:tendered,change:Math.max(0,tendered-total),cashier:API.getUserName()||'Cashier',notes:$('saleNotes').value};  if(editingSaleId){
+    try{
+      if(editingOriginalPayment==='store_account' && editingOriginalCustomerId){ await adjustCustomerBalance(editingOriginalCustomerId, -(editingOriginalTotal||0)); }
+      await API.put('/sales/'+editingSaleId, data);
+      if(data.payment_method==='store_account' && data.customer_id){ await adjustCustomerBalance(data.customer_id, (data.total||0)); }
+      cart.forEach(function(x){var p=getProduct(x.product_id);if(p){p.stock=Math.max(0,(parseFloat(p.stock)||0)-parseFloat(x.qty||0));}});
+      localStorage.setItem('danzona_products',JSON.stringify(allProducts));
+      var r2={sale_id:editingSaleId,created_at:new Date().toISOString(),business_name:API.getPharmacyName()||StoreConfig.getStoreName(),business_address:'',employee:API.getUserName()||'Cashier',customer_name:data.customer_name,payment_method:data.payment_method,items:data.items,subtotal:data.subtotal,discount_amount:data.discount_amount,tax_amount:data.tax,total:data.total,cash_received:data.amount_tendered,change_due:data.change,comments:data.notes,notes:data.notes};
+      localStorage.setItem('last_receipt',JSON.stringify(r2));
+      showToast('Invoice updated #'+editingSaleId);
+      editingSaleId=null;editingOriginalItems=null;editingOriginalPayment=null;editingOriginalCustomerId=null;editingOriginalTotal=0;stockRestored=false;
+      var b=document.getElementById('editBanner'); if(b) b.remove();
+      cart=[];selectedCustomer=null;saveCart();if($('customerSearch'))$('customerSearch').value='';if($('amountTendered'))$('amountTendered').value='';if($('saleNotes'))$('saleNotes').value='';if($('paymentMethod'))$('paymentMethod').value='cash';
+      navigateTo('receipt.html');
+      return;
+    }catch(e){ showToast('Update failed: '+(e.message||'error'),true); return; }
+  }
+  var res=await API.saveSale(data);
   showToast('Sale completed! #'+(res&&res.id?res.id:res));
   saveCompletedSale(data);
   cart.forEach(function(x){var p=getProduct(x.product_id);if(p){p.stock=Math.max(0,(parseFloat(p.stock)||0)-parseFloat(x.qty||0));}});localStorage.setItem('danzona_products',JSON.stringify(allProducts));var receipt={sale_id:res&&res.id?res.id:'POS '+Date.now(),created_at:new Date().toISOString(),business_name:API.getPharmacyName()||StoreConfig.getStoreName(),business_address:localStorage.getItem('SHEDS_pharmacy_address')||'',employee:API.getUserName()||'Cashier',customer_name:selectedCustomer?selectedCustomer.name:'Walk-in',items:cart.map(function(x){return{product_id:x.product_id,name:x.name,qty:parseFloat(x.qty)||0,unit_price:parseFloat(x.price)||0,discount:parseFloat(x.discount)||0,pkg_type:x.pkgType||'pkt',sku:x.sku||''};}),subtotal:sub,tax_amount:tax,total:total,cash_received:paymentMethod==='store_account'?total:tendered,change_due:Math.max(0,tendered-total),payment_method:paymentMethod,comments:$('showComments').checked?($('saleNotes').value||''):'',notes:$('saleNotes').value||''};localStorage.setItem('last_receipt',JSON.stringify(receipt));cart=[];selectedCustomer=null;saveCart();$('customerSearch').value='';$('amountTendered').value='';$('saleNotes').value='';$('paymentMethod').value='cash';document.querySelectorAll('.payment-method').forEach(function(b){b.classList.toggle('active',b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("setPaymentMethod('cash',this)")>-1);});renderCart();renderCustomerProfile();showToast('Sale completed');navigateTo('receipt.html');}
@@ -355,7 +426,7 @@ function showQuickAddModal(){var pkgOptions=['pkt:Packet','strip:Strip','bottle:
 function closeQuickAddModal(){var m=$('quickAddModal');if(m)m.remove();}
 function quickAddProduct(){var name=$('qaName').value.trim();var price=parseFloat($('qaPrice').value)||0;if(!name||price<=0){showToast('Enter product name and price',true);return;}var qty=parseFloat($('qaQty').value)||1;var pkg=$('qaPkg').value||'pkt';var product={id:'quick_'+Date.now(),name:name,price:price,stock:parseFloat($('qaStock').value)||0,sku:$('qaSku').value.trim()};addToCart(product.id,product.name,product.price,qty,pkg);closeQuickAddModal();showToast('Product added to cart');}
 function quickAddAndCheckout(){var name=$('qaName').value.trim();var price=parseFloat($('qaPrice').value)||0;if(!name||price<=0){showToast('Enter product name and price',true);return;}var qty=parseFloat($('qaQty').value)||1;var pkg=$('qaPkg').value||'pkt';var useStoreAccount=$('qaStoreAccount').checked;var product={id:'quick_'+Date.now(),name:name,price:price,stock:parseFloat($('qaStock').value)||0,sku:$('qaSku').value.trim()};addToCart(product.id,product.name,product.price,qty,pkg);if(useStoreAccount){if(!selectedCustomer){showToast('Select a customer for store account sale',true);return;}$('paymentMethod').value='store_account';}closeQuickAddModal();checkout();}
-document.addEventListener('DOMContentLoaded',function(){if(!API.isLoggedIn()){var demo=new URLSearchParams(window.location.search).get('demo');if(demo!=='1'){window.location.href='login.html';return;}}POS.initCommon();renderCart();renderCustomerProfile();loadProducts();updateFloatBar();$('productsGrid').classList.add('hidden');updateGridButton(false);$('productSearch').addEventListener('input',function(e){searchProducts(e.target.value);});$('productSearch').addEventListener('keydown',function(e){if(e.key==='Enter'){var first=$('productDropdown').querySelector('div[onclick]');if(first)first.click();}});$('barcodeInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();scanBarcode();}});$('barcodeInput').addEventListener('input',function(){this.classList.remove('scan-flash');});$('customerSearch').addEventListener('input',function(e){searchCustomers(e.target.value);});$('amountTendered').addEventListener('input',updateChange);document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;if(e.key==='F1')$('productSearch').focus();if(e.key==='F2')$('customerSearch').focus();if(e.key==='F3')$('amountTendered').focus();if(e.key==='F5')showAllProducts();if(e.key==='F8')clearCart();if(e.key==='F9')printReceipt();});document.addEventListener('click',function(e){if(!e.target.closest('.user-menu'))closeMenu();var dd=$('customerDropdown');if(dd&&!e.target.closest('#customerSearch'))dd.style.display='none';var pdd=$('productDropdown');if(pdd&&!e.target.closest('#productSearch')&&!e.target.closest('#productDropdown'))pdd.style.display='none';});if(!localStorage.getItem('danzona_customers')){localStorage.setItem('danzona_customers','[{"id":1,"firstName":"John","lastName":"Doe","phone":"08012345678","balance":5000},{"id":2,"firstName":"Jane","lastName":"Smith","phone":"08087654321","balance":12000}]');}if(!localStorage.getItem('danzona_products')){localStorage.setItem('danzona_products','[{"id":1,"name":"Paracetamol","sku":"PTM-001","selling_price":500,"stock":100,"packaging_types":[{"id":"pkt","name":"Packet","price":500},{"id":"strip","name":"Strip","price":5000}]},{"id":2,"name":"Amoxicillin","sku":"AMX-002","selling_price":1500,"stock":50,"packaging_types":[{"id":"bottle","name":"Bottle","price":1500},{"id":"box","name":"Box","price":14000}]}]');}});
+document.addEventListener('DOMContentLoaded',function(){if(!API.isLoggedIn()){var demo=new URLSearchParams(window.location.search).get('demo');if(demo!=='1'){window.location.href='login.html';return;}}POS.initCommon();renderCart();renderCustomerProfile();loadProducts();updateFloatBar();var editId=new URLSearchParams(window.location.search).get('edit');if(editId){loadSaleForEdit(editId);}$('productsGrid').classList.add('hidden');updateGridButton(false);$('productSearch').addEventListener('input',function(e){searchProducts(e.target.value);});$('productSearch').addEventListener('keydown',function(e){if(e.key==='Enter'){var first=$('productDropdown').querySelector('div[onclick]');if(first)first.click();}});$('barcodeInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();scanBarcode();}});$('barcodeInput').addEventListener('input',function(){this.classList.remove('scan-flash');});$('customerSearch').addEventListener('input',function(e){searchCustomers(e.target.value);});$('amountTendered').addEventListener('input',updateChange);document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;if(e.key==='F1')$('productSearch').focus();if(e.key==='F2')$('customerSearch').focus();if(e.key==='F3')$('amountTendered').focus();if(e.key==='F5')showAllProducts();if(e.key==='F8')clearCart();if(e.key==='F9')printReceipt();});document.addEventListener('click',function(e){if(!e.target.closest('.user-menu'))closeMenu();var dd=$('customerDropdown');if(dd&&!e.target.closest('#customerSearch'))dd.style.display='none';var pdd=$('productDropdown');if(pdd&&!e.target.closest('#productSearch')&&!e.target.closest('#productDropdown'))pdd.style.display='none';});if(!localStorage.getItem('danzona_customers')){localStorage.setItem('danzona_customers','[{"id":1,"firstName":"John","lastName":"Doe","phone":"08012345678","balance":5000},{"id":2,"firstName":"Jane","lastName":"Smith","phone":"08087654321","balance":12000}]');}if(!localStorage.getItem('danzona_products')){localStorage.setItem('danzona_products','[{"id":1,"name":"Paracetamol","sku":"PTM-001","selling_price":500,"stock":100,"packaging_types":[{"id":"pkt","name":"Packet","price":500},{"id":"strip","name":"Strip","price":5000}]},{"id":2,"name":"Amoxicillin","sku":"AMX-002","selling_price":1500,"stock":50,"packaging_types":[{"id":"bottle","name":"Bottle","price":1500},{"id":"box","name":"Box","price":14000}]}]');}});
 </script>
 </body>
 </html>
