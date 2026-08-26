@@ -207,6 +207,14 @@
             <div class="kpi-sub">Credit sales</div>
           </div>
         </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fas fa-chart-line"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Day Profit</div>
+            <div class="kpi-value" id="dayProfit">₦0.00</div>
+            <div class="kpi-sub">Sales &minus; cost of goods</div>
+          </div>
+        </div>
       </div>
 
       <div class="grid-2">
@@ -295,7 +303,7 @@
 </div>
 <div class="toast" id="toast"></div>
 <script>
-var shiftSales = 0, cashSalesTotal = 0, digitalTotal = 0, storeAccountTotal = 0;
+var shiftSales = 0, cashSalesTotal = 0, digitalTotal = 0, storeAccountTotal = 0, dayProfit = 0, dayCOGS = 0;
 
 function fmt(n){ try { return StoreConfig.formatCurrency(n); } catch(e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', {minimumFractionDigits:2, maximumFractionDigits:2}); } }
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
@@ -336,6 +344,7 @@ function confirmCloseout(){
 
   var msg = 'Confirm closeout?\n\n' +
     'Shift Total: ' + fmt(shiftSales) + '\n' +
+    'Day Profit: ' + fmt(dayProfit) + '\n' +
     'Cash Variance: ' + fmt(variance) + '\n\n' +
     'This action will be logged.';
   if(!confirm(msg)) return;
@@ -346,6 +355,8 @@ function confirmCloseout(){
     cashSales: cashSalesTotal,
     digitalSales: digitalTotal,
     storeAccountSales: storeAccountTotal,
+    profit: dayProfit,
+    cogs: dayCOGS,
     openingFloat: opening,
     actualCash: actual,
     expectedCash: expected,
@@ -371,6 +382,7 @@ function renderSummary(){
   document.getElementById('cashSales').textContent = fmt(cashSalesTotal);
   document.getElementById('digitalSales').textContent = fmt(digitalTotal);
   document.getElementById('storeAccountSales').textContent = fmt(storeAccountTotal);
+  document.getElementById('dayProfit').textContent = fmt(dayProfit);
   document.getElementById('summaryCash').textContent = fmt(cashSalesTotal);
   document.getElementById('summaryCard').textContent = fmt(digitalTotal * 0.4);
   document.getElementById('summaryTransfer').textContent = fmt(digitalTotal * 0.3);
@@ -380,33 +392,50 @@ function renderSummary(){
   document.getElementById('summaryTotal').textContent = fmt(shiftSales);
 }
 
+function loadLocalSales(){
+  try {
+    var raw = localStorage.getItem('SHEDS_completed_sales') || localStorage.getItem('SHEDS_sales') || localStorage.getItem('sales') || '[]';
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){ return []; }
+}
+function buildCostMap(products){
+  var map = {};
+  (products||[]).forEach(function(p){ map[String(p.id)] = parseFloat(p.cost_price)||0; });
+  return map;
+}
+function loadLocalCostMap(){
+  try { return buildCostMap(JSON.parse(localStorage.getItem('danzona_products')||'[]')); } catch(e){ return {}; }
+}
 function loadShiftData(){
-  var sales = [];
   try {
     API.getSales().then(function(serverSales){
-      sales = serverSales || [];
-      if(!Array.isArray(sales)) sales = [];
-      calculateCloseout(sales);
+      var sales = (serverSales && Array.isArray(serverSales)) ? serverSales : loadLocalSales();
+      loadProductsForCloseout(sales);
     }).catch(function(err){
       POS.showToast('Failed to load sales from server: '+(err.message||'API error'), true);
-      try {
-        var raw = localStorage.getItem('SHEDS_completed_sales') || localStorage.getItem('SHEDS_sales') || localStorage.getItem('sales') || '[]';
-        sales = JSON.parse(raw);
-        if(!Array.isArray(sales)) sales = [];
-        calculateCloseout(sales);
-      } catch(e) { sales = []; calculateCloseout(sales); }
+      loadProductsForCloseout(loadLocalSales());
     });
-  } catch(e) { sales = []; calculateCloseout(sales); }
+  } catch(e) { loadProductsForCloseout([]); }
+}
+function loadProductsForCloseout(sales){
+  if(API.getProducts){
+    API.getProducts().then(function(p){ calculateCloseout(sales, buildCostMap(p)); })
+      .catch(function(){ calculateCloseout(sales, loadLocalCostMap()); });
+  } else {
+    calculateCloseout(sales, loadLocalCostMap());
+  }
 }
 
-function calculateCloseout(sales){
+function calculateCloseout(sales, costMap){
+  costMap = costMap || {};
   var today = new Date().toISOString().split('T')[0];
-  var filtered = sales.filter(function(s){
+  var filtered = (sales||[]).filter(function(s){
       var d = s.date ? String(s.date).split('T')[0] : '';
       return d === today;
   });
 
-  shiftSales = 0; cashSalesTotal = 0; digitalTotal = 0; storeAccountTotal = 0;
+  shiftSales = 0; cashSalesTotal = 0; digitalTotal = 0; storeAccountTotal = 0; dayCOGS = 0; dayProfit = 0;
   filtered.forEach(function(s){
     var total = parseFloat(s.total) || 0;
     var method = (s.payment_method || 'cash').toLowerCase();
@@ -414,7 +443,14 @@ function calculateCloseout(sales){
     if(method === 'cash') cashSalesTotal += total;
     else if(method === 'store_account') storeAccountTotal += total;
     else digitalTotal += total;
+
+    (s.items || []).forEach(function(it){
+      var pid = it.product_id != null ? String(it.product_id) : null;
+      var cost = (pid && costMap[pid] != null) ? costMap[pid] : 0;
+      dayCOGS += cost * (parseFloat(it.qty) || 0);
+    });
   });
+  dayProfit = shiftSales - dayCOGS;
 
   renderSummary();
   recalculate();
