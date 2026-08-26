@@ -1353,6 +1353,38 @@ def update_sale(sid):
             disc = float(clean.get('discount_amount', sale['discount_amount'] or 0))
             tax = float(clean.get('tax', sale['tax'] or 0))
             clean['total'] = round(subtotal - disc + tax, 2)
+    # Reconcile store-account customer balance so it always matches the invoice.
+    try:
+        old = db.execute('SELECT payment_method, customer_id, total FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
+        if old:
+            old_pm = (old['payment_method'] or 'cash')
+            old_cust = old['customer_id']
+            old_total = float(old['total'] or 0)
+            new_pm = clean.get('payment_method', old_pm)
+            new_cust = clean.get('customer_id', old_cust)
+            new_total = float(clean.get('total', old_total) or 0)
+
+            def change(cust_id, delta):
+                if not cust_id:
+                    return
+                c = db.execute('SELECT balance FROM customers WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, cust_id)).fetchone()
+                if not c:
+                    return
+                nb = max(0.0, (float(c['balance'] or 0)) + delta)
+                db.execute('UPDATE customers SET balance = ? WHERE pharmacy_id = ? AND id = ?', (nb, g.pharmacy_id, cust_id))
+
+            if old_pm == 'store_account' and new_pm == 'store_account':
+                if old_cust == new_cust:
+                    change(new_cust, new_total - old_total)
+                else:
+                    change(old_cust, -old_total)
+                    change(new_cust, new_total)
+            elif old_pm == 'store_account' and new_pm != 'store_account':
+                change(old_cust, -old_total)
+            elif old_pm != 'store_account' and new_pm == 'store_account':
+                change(new_cust, new_total)
+    except Exception as e:
+        app.logger.warning('store-account balance reconcile failed: %s' % e)
     return table_update('sales', sid, clean)
 
 # --- Customers ---

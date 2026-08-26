@@ -338,14 +338,17 @@ function showEditBanner(id){
   b.innerHTML='<span><i class="fas fa-edit"></i> Editing Invoice #'+id+' &mdash; add or remove items, then complete the sale to save.</span><button onclick="cancelEdit()" style="border:0;background:rgba(255,255,255,.25);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;cursor:pointer;white-space:nowrap;"><i class="fas fa-times"></i> Cancel</button>';
 }
 function cancelEdit(){
+  if(stockRestored){
+    (editingOriginalItems||[]).forEach(function(it){
+      var p=getProduct(it.product_id);
+      if(p){ p.stock=Math.max(0,(parseFloat(p.stock)||0)- (parseFloat(it.qty)||0)); }
+    });
+    try{ localStorage.setItem('danzona_products',JSON.stringify(allProducts)); }catch(e){}
+  }
   editingSaleId=null; editingOriginalItems=null; editingOriginalPayment=null; editingOriginalCustomerId=null; editingOriginalTotal=0; stockRestored=false;
   var b=document.getElementById('editBanner'); if(b) b.remove();
   cart=[]; selectedCustomer=null; saveCart(); renderCart(); renderCustomerProfile();
   navigateTo('todays-receipts.html');
-}
-async function adjustCustomerBalance(id,delta){
-  if(!id||!delta) return;
-  try{ var c=await API.get('/customers/'+id); var bal=Math.max(0,(parseFloat(c.balance)||0)+delta); await API.put('/customers/'+id,{balance:bal}); }catch(e){}
 }
 function updateFloatBar(){
   try{
@@ -403,9 +406,7 @@ function selectPkg(id,name,pkgId,price){addToCart(id,name,price,1,pkgId);closePk
 function printReceipt(){if(!cart.length){showToast('Cart empty',true);return;}var sub=cart.reduce(function(s,x){return s+(parseFloat(x.price)||0)*(parseFloat(x.qty)||0);},0);var disc=cart.reduce(function(s,x){return s+(parseFloat(x.discount)||0);},0);var total=sub-disc;var tendered=parseFloat($('amountTendered').value)||0;var pm=$('paymentMethod').value;var pt=POS.getPrinterType();var w=window.open('','_blank',pt==='large'?'width=900,height=1100':'width=500,height=750');var html=pt==='large'?POS.buildLargeReceipt(cart,sub,disc,total,tendered,pm):POS.buildSmallReceipt(cart,sub,disc,total,tendered,pm);w.document.write(html);w.document.close();setTimeout(function(){w.focus();w.print();},200);}
 async function checkout(){if(!cart.length){showToast('Cart empty',true);return;}var sub=cart.reduce(function(s,x){return s+(parseFloat(x.price)||0)*(parseFloat(x.qty)||0);},0);var disc=cart.reduce(function(s,x){return s+(parseFloat(x.discount)||0);},0);var taxRate=0;try{taxRate=StoreConfig.get('taxEnabled')?(parseFloat(StoreConfig.get('taxRate'))||0)/100:0;}catch(e){taxRate=0;}var tax=sub*taxRate;var total=sub+tax-disc;var tendered=parseFloat($('amountTendered').value)||0;var paymentMethod=$('paymentMethod').value;if(paymentMethod==='store_account'&&!selectedCustomer){showToast('Select a customer for store account sale',true);return;}if(paymentMethod==='cash'&&tendered<total){showToast('Amount tendered must be at least total',true);return;}var data={date:new Date().toISOString(),customer_id:selectedCustomer?selectedCustomer.id:null,customer_name:selectedCustomer?selectedCustomer.name:'Walk-in',items:cart.map(function(x){return{product_id:x.product_id,name:x.name,qty:parseFloat(x.qty)||0,unit_price:parseFloat(x.price)||0,discount:parseFloat(x.discount)||0,pkg_type:x.pkgType||'pkt',line_total:(parseFloat(x.price)||0)*(parseFloat(x.qty)||0)-(parseFloat(x.discount)||0)};}),subtotal:sub,discount_amount:disc,tax:tax,total:total,payment_method:paymentMethod,amount_tendered:paymentMethod==='store_account'?total:tendered,change:Math.max(0,tendered-total),cashier:API.getUserName()||'Cashier',notes:$('saleNotes').value};  if(editingSaleId){
     try{
-      if(editingOriginalPayment==='store_account' && editingOriginalCustomerId){ await adjustCustomerBalance(editingOriginalCustomerId, -(editingOriginalTotal||0)); }
       await API.put('/sales/'+editingSaleId, data);
-      if(data.payment_method==='store_account' && data.customer_id){ await adjustCustomerBalance(data.customer_id, (data.total||0)); }
       cart.forEach(function(x){var p=getProduct(x.product_id);if(p){p.stock=Math.max(0,(parseFloat(p.stock)||0)-parseFloat(x.qty||0));}});
       localStorage.setItem('danzona_products',JSON.stringify(allProducts));
       var r2={sale_id:editingSaleId,created_at:new Date().toISOString(),business_name:API.getPharmacyName()||StoreConfig.getStoreName(),business_address:'',employee:API.getUserName()||'Cashier',customer_name:data.customer_name,payment_method:data.payment_method,items:data.items,subtotal:data.subtotal,discount_amount:data.discount_amount,tax_amount:data.tax,total:data.total,cash_received:data.amount_tendered,change_due:data.change,comments:data.notes,notes:data.notes};
