@@ -106,6 +106,18 @@ function renderTable(){
   $('receiptsBody').innerHTML=rows.map(function(s){
     var items=s.items||[];
     var itemCount=items.length;
+    var isVoid=(s.status||'completed')==='void';
+    if(isVoid){
+      return '<tr style="opacity:.6">'+
+        '<td class="receipt-no">POS-'+s.id+'</td>'+
+        '<td>'+formatDate(s.date)+'</td>'+
+        '<td>'+esc(s.customer_name||'Walk-in')+'</td>'+
+        '<td style="text-align:center">'+itemCount+'</td>'+
+        '<td style="text-align:right;font-weight:800">'+fmt(s.total)+'</td>'+
+        '<td><span class="tag tag-muted" style="background:#fee2e2;color:#991b1b;">VOID</span></td>'+
+        '<td><span style="color:#94a3b8;font-size:12px;">Voided</span></td>'+
+      '</tr>';
+    }
     return '<tr>'+
       '<td class="receipt-no">POS-'+s.id+'</td>'+
       '<td>'+formatDate(s.date)+'</td>'+
@@ -116,6 +128,7 @@ function renderTable(){
       '<td><div class="action-btns">'+
         '<button class="icon-btn view" onclick="printReceipt('+s.id+')"><i class="fas fa-print"></i></button>'+
         '<button class="icon-btn edit" onclick="editInvoice('+s.id+')"><i class="fas fa-edit"></i></button>'+
+        '<button class="icon-btn delete" onclick="voidInvoice('+s.id+')"><i class="fas fa-ban"></i></button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -150,6 +163,15 @@ function printReceipt(id){
 function editInvoice(id){
   if(!id){showToast('Receipt not found',true);return;}
   navigateTo('sales.html?edit='+id);
+}
+
+function voidInvoice(id){
+  if(!id){showToast('Receipt not found',true);return;}
+  if(!confirm('Void this invoice? Stock and customer balance will be reversed.'))return;
+  API.post('/sales/'+id+'/void',{}).then(function(){
+    showToast('Invoice voided');
+    loadReceipts();
+  }).catch(function(e){showToast('Void failed: '+(e.message||'error'),true);});
 }
 function updateEditTotal(){
   var s=findSale(editingId);

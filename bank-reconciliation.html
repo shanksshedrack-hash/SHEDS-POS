@@ -132,7 +132,10 @@ function renderBank(){
 }
 function removeRec(id){ if(!confirm('Remove record?')) return; bankRecs=bankRecs.filter(function(b){return b.id!==id;}); try{ localStorage.setItem('SHEDS_bank_recs',JSON.stringify(bankRecs)); }catch(e){} renderBank(); showToast('Removed'); }
 function loadBank(){ try{ bankRecs=JSON.parse(localStorage.getItem('SHEDS_bank_recs')||'[]'); if(!Array.isArray(bankRecs)) bankRecs=[]; }catch(e){ bankRecs=[]; } renderBank(); }
-function logAction(action, ref, note){ var user=API.getUserName?API.getUserName():'System'; var entry={date:new Date().toISOString(),user:user,action:action,ref:ref,note:note}; try{ var existing=JSON.parse(localStorage.getItem('SHEDS_audit')||'[]'); existing.unshift(entry); localStorage.setItem('SHEDS_audit',JSON.stringify(existing.slice(0,1000))); }catch(e){} }
+function logAction(action, ref, note){
+    var user=API.getUserName?API.getUserName():'System';
+    API.post('/audit-log',{action:action,entity:'bank_record',entity_id:String(ref||''),details:note||'',user:user}).catch(function(){});
+}
 document.addEventListener('DOMContentLoaded', function(){ if(!POS.requireAuth()) return; $('bankDate').value=new Date().toISOString().split('T')[0]; loadBank(); });
 </script>
 </body>

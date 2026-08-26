@@ -103,7 +103,7 @@ function createBackup(){
     var label=$('backupName').value.trim() || new Date().toLocaleString('en-NG');
     var include=$('backupInclude').value;
     var data={};
-    var keys=['danzona_products','danzona_customers','danzona_suppliers','danzona_sales','danzona_inventory','danzona_expenses','danzona_employees','danzona_audit'];
+    var keys=['danzona_products','danzona_customers','danzona_suppliers','danzona_sales','danzona_inventory','danzona_expenses','danzona_employees'];
     var count=0;
     keys.forEach(function(k){
         try{ var v=localStorage.getItem(k); if(v){ data[k]=JSON.parse(v); count+=Array.isArray(data[k])?data[k].length:1; } }catch(e){}
@@ -122,7 +122,7 @@ function createBackup(){
 function saveToLocal(){
     var label=$('backupName').value.trim() || new Date().toLocaleString('en-NG');
     var data={};
-    var keys=['danzona_products','danzona_customers','danzona_suppliers','danzona_sales','danzona_inventory','danzona_expenses','danzona_employees','danzona_audit'];
+    var keys=['danzona_products','danzona_customers','danzona_suppliers','danzona_sales','danzona_inventory','danzona_expenses','danzona_employees'];
     var count=0;
     keys.forEach(function(k){
         try{ var v=localStorage.getItem(k); if(v){ data[k]=JSON.parse(v); count+=Array.isArray(data[k])?data[k].length:1; } }catch(e){}

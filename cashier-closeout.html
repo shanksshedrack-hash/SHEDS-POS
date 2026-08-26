@@ -170,6 +170,7 @@
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-outline btn-sm" onclick="recalculate()"><i class="fas fa-sync-alt"></i> Recalculate</button>
+          <button class="btn btn-secondary btn-sm" onclick="printZReport()"><i class="fas fa-print"></i> Z-Report</button>
           <button class="btn btn-primary btn-sm" onclick="confirmCloseout()"><i class="fas fa-check-circle"></i> Confirm Closeout</button>
         </div>
       </div>
@@ -214,6 +215,16 @@
             <div class="kpi-value" id="dayProfit">₦0.00</div>
             <div class="kpi-sub">Sales &minus; cost of goods</div>
           </div>
+        </div>
+      </div>
+
+      <div class="panel" id="alertsPanel" style="display:none;">
+        <div class="table-top"><div><strong><i class="fas fa-triangle-exclamation"></i> Stock &amp; Expiry Alerts</strong> <span id="alertsCount" style="margin-left:8px;"></span></div></div>
+        <div class="table-wrap">
+          <table class="tx-table">
+            <thead><tr><th>Product</th><th>Stock</th><th>Reorder</th><th>Expiry</th><th>Alert</th></tr></thead>
+            <tbody id="alertsBody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -432,7 +443,7 @@ function calculateCloseout(sales, costMap){
   var today = new Date().toISOString().split('T')[0];
   var filtered = (sales||[]).filter(function(s){
       var d = s.date ? String(s.date).split('T')[0] : '';
-      return d === today;
+      return d === today && (s.status || 'completed') !== 'void';
   });
 
   shiftSales = 0; cashSalesTotal = 0; digitalTotal = 0; storeAccountTotal = 0; dayCOGS = 0; dayProfit = 0;

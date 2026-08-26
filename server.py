@@ -164,6 +164,22 @@ def init_db():
         db.execute('ALTER TABLE customers ADD COLUMN balance REAL DEFAULT 0')
     except Exception:
         pass
+    try:
+        db.execute('ALTER TABLE sales ADD COLUMN status TEXT DEFAULT \'completed\'')
+    except Exception:
+        pass
+    db.execute(f'''
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id {id_col()},
+            pharmacy_id INTEGER NOT NULL,
+            action TEXT,
+            entity TEXT,
+            entity_id TEXT,
+            details TEXT,
+            user TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     # Employees per pharmacy
     db.execute(f'''
         CREATE TABLE IF NOT EXISTS employees (
@@ -1353,15 +1369,17 @@ def update_sale(sid):
             disc = float(clean.get('discount_amount', sale['discount_amount'] or 0))
             tax = float(clean.get('tax', sale['tax'] or 0))
             clean['total'] = round(subtotal - disc + tax, 2)
-    # Reconcile store-account customer balance so it always matches the invoice.
+    # Reconcile store-account customer balance + record an audit trail.
     try:
-        old = db.execute('SELECT payment_method, customer_id, total FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
+        old = db.execute('SELECT payment_method, customer_id, customer_name, total FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
         if old:
             old_pm = (old['payment_method'] or 'cash')
             old_cust = old['customer_id']
+            old_cname = old['customer_name']
             old_total = float(old['total'] or 0)
             new_pm = clean.get('payment_method', old_pm)
             new_cust = clean.get('customer_id', old_cust)
+            new_cname = clean.get('customer_name', old_cname)
             new_total = float(clean.get('total', old_total) or 0)
 
             def change(cust_id, delta):
@@ -1383,9 +1401,59 @@ def update_sale(sid):
                 change(old_cust, -old_total)
             elif old_pm != 'store_account' and new_pm == 'store_account':
                 change(new_cust, new_total)
+
+            details = json.dumps({
+                'old_total': old_total, 'new_total': new_total,
+                'old_customer': old_cname, 'new_customer': new_cname,
+                'old_payment': old_pm, 'new_payment': new_pm
+            })
+            db.execute('INSERT INTO audit_log (pharmacy_id, action, entity, entity_id, details, user) VALUES (?,?,?,?,?,?)',
+                       (g.pharmacy_id, 'edit_sale', 'sale', str(sid), details, request.headers.get('X-Username')))
     except Exception as e:
         app.logger.warning('store-account balance reconcile failed: %s' % e)
     return table_update('sales', sid, clean)
+
+@app.route('/api/sales/<int:sid>/void', methods=['POST'])
+@require_auth
+def void_sale(sid):
+    db = get_db()
+    sale = db.execute('SELECT * FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
+    if not sale:
+        return jsonify({'error': 'Sale not found'}), 404
+    if sale['status'] == 'void':
+        return jsonify({'error': 'Already voided'}), 400
+    items = sale['items']
+    if isinstance(items, str):
+        try:
+            items = json.loads(items)
+        except Exception:
+            items = []
+    for it in (items or []):
+        pid = it.get('product_id')
+        qty = float(it.get('qty') or 0)
+        if pid:
+            p = db.execute('SELECT stock FROM products WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, pid)).fetchone()
+            if p:
+                db.execute('UPDATE products SET stock = ? WHERE pharmacy_id = ? AND id = ?',
+                           (float(p['stock'] or 0) + qty, g.pharmacy_id, pid))
+    if sale['payment_method'] == 'store_account' and sale['customer_id']:
+        c = db.execute('SELECT balance FROM customers WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sale['customer_id'])).fetchone()
+        if c:
+            db.execute('UPDATE customers SET balance = ? WHERE pharmacy_id = ? AND id = ?',
+                       (max(0.0, float(c['balance'] or 0) - float(sale['total'] or 0)), g.pharmacy_id, sale['customer_id']))
+    db.execute('UPDATE sales SET status = ? WHERE pharmacy_id = ? AND id = ?', ('void', g.pharmacy_id, sid))
+    details = json.dumps({'total': sale['total'], 'customer': sale['customer_name'], 'payment': sale['payment_method']})
+    db.execute('INSERT INTO audit_log (pharmacy_id, action, entity, entity_id, details, user) VALUES (?,?,?,?,?,?)',
+               (g.pharmacy_id, 'void_sale', 'sale', str(sid), details, request.headers.get('X-Username')))
+    db.commit()
+    return jsonify({'id': sid, 'status': 'void', 'updated': True})
+
+@app.route('/api/audit', methods=['GET'])
+@require_auth
+def get_audit():
+    db = get_db()
+    rows = db.execute('SELECT * FROM audit_log WHERE pharmacy_id = ? ORDER BY created_at DESC LIMIT 300', (g.pharmacy_id,)).fetchall()
+    return jsonify([dict(r) for r in rows])
 
 # --- Customers ---
 @app.route('/api/customers', methods=['GET'])

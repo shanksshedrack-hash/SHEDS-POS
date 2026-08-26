@@ -108,6 +108,7 @@ function renderReceipt(r){
     $('receiptContainer').innerHTML='<div class="no-receipt"><i class="fas fa-file-invoice"></i><h3>No Receipt Found</h3><p>There is no recent receipt to display. Complete a sale to generate a receipt.</p><div class="no-receipt-actions" style="margin-top:20px;"><button class="btn btn-primary" onclick="navigateTo(\'sales.html\')" style="padding:12px 24px;"><i class="fas fa-shopping-cart"></i> Go to Sales</button></div></div>';
     return;
   }
+  var voidBadge = (r && r.status==='void') ? '<div style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:10px;padding:10px;margin-bottom:14px;text-align:center;font-weight:800;"><i class="fas fa-ban"></i> THIS INVOICE HAS BEEN VOIDED</div>' : '';
   var storeName=esc(r.business_name||StoreConfig.getPharmacyName()||'SHEDS POS');
   var storeAddress=esc(r.business_address||StoreConfig.get('storeAddress')||'');
   var storePhone=esc(StoreConfig.get('phoneNumber')||'');
@@ -125,7 +126,7 @@ function renderReceipt(r){
   var items=r.items||[];
   var comments=esc(r.comments||r.notes||'');
 
-  var html='<div class="receipt-paper" id="receiptPaper">';
+  var html=voidBadge+'<div class="receipt-paper" id="receiptPaper">';
   html+='<div class="receipt-header"><h1>'+storeName+'</h1>';
   if(storeAddress)html+='<p>'+storeAddress+'</p>';
   if(storePhone)html+='<p><i class="fas fa-phone" style="margin-right:6px;"></i>'+storePhone+'</p>';
@@ -163,6 +164,7 @@ function renderReceipt(r){
   html+='<div class="actions-bar">';
   html+='<button class="btn btn-primary" onclick="printCurrentReceipt()"><i class="fas fa-print"></i> Print Receipt</button>';
   html+='<button class="btn btn-outline" onclick="editInvoice()"><i class="fas fa-edit"></i> Edit Invoice</button>';
+  html+='<button class="btn btn-danger" onclick="voidInvoice()"><i class="fas fa-ban"></i> Void Invoice</button>';
   html+='<button class="btn btn-outline" onclick="navigateTo(\'sales.html\')"><i class="fas fa-shopping-cart"></i> New Sale</button>';
   html+='</div>';
   $('receiptContainer').innerHTML=html;
@@ -220,6 +222,18 @@ function printCurrentReceipt(){
 function editInvoice(){
   if(!currentSaleId){showToast('This receipt was not saved to the server, so it cannot be edited online.',true);return;}
   navigateTo('sales.html?edit='+currentSaleId);
+}
+
+function voidInvoice(){
+  if(!currentSaleId){showToast('This receipt was not saved to the server, so it cannot be voided.',true);return;}
+  if(currentReceipt && currentReceipt.status==='void'){showToast('Invoice already voided',true);return;}
+  if(!confirm('Void this invoice? Stock and customer balance will be reversed, and the sale excluded from reports.'))return;
+  API.post('/sales/'+currentSaleId+'/void',{}).then(function(){
+    currentReceipt=currentReceipt||{};currentReceipt.status='void';
+    try{localStorage.setItem('last_receipt',JSON.stringify(currentReceipt));}catch(e){}
+    renderReceipt(currentReceipt);
+    showToast('Invoice voided');
+  }).catch(function(e){showToast('Void failed: '+(e.message||'error'),true);});
 }
 
 function loadReceipt(){

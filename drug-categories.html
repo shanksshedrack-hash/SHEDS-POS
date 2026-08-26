@@ -163,8 +163,7 @@ function loadCategories(){
 }
 function logAction(action, ref, note){
     var user=API.getUserName?API.getUserName():'System';
-    var entry={date:new Date().toISOString(), user:user, action:action, ref:ref, note:note};
-    try{ var existing=JSON.parse(localStorage.getItem('SHEDS_audit')||'[]'); existing.unshift(entry); localStorage.setItem('SHEDS_audit', JSON.stringify(existing.slice(0,1000))); }catch(e){}
+    API.post('/audit-log',{action:action,entity:'drug_category',entity_id:String(ref||''),details:note||'',user:user}).catch(function(){});
 }
 document.addEventListener('DOMContentLoaded', function(){ if(!POS.requireAuth()) return; loadCategories(); });
 </script>

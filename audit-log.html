@@ -55,10 +55,11 @@
                     <label>Action Type</label>
                     <select id="auditType" class="form-control" onchange="filterAudit()">
                         <option value="">All</option>
+                        <option value="void_sale">Void Sale</option>
+                        <option value="edit_sale">Edit Sale</option>
                         <option value="login">Login</option>
                         <option value="logout">Logout</option>
                         <option value="sale">Sale</option>
-                        <option value="edit">Edit</option>
                         <option value="return">Return</option>
                         <option value="transfer">Transfer</option>
                         <option value="order">Purchase Order</option>
@@ -94,56 +95,62 @@ function fmtDate(iso){ if(!iso) return '--'; var d=new Date(iso); return d.toLoc
 function esc(s){ return String(s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
 function showToast(m,err){ var t=$('toast'); t.textContent=m; t.className='toast'+(err?' error':''); t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3000); }
 function badgeFor(action){
+    if(action==='void_sale') return '<span class="badge badge-logout">Void Sale</span>';
+    if(action==='edit_sale') return '<span class="badge badge-edit">Edit Sale</span>';
     if(action==='login') return '<span class="badge badge-login">Login</span>';
     if(action==='logout') return '<span class="badge badge-logout">Logout</span>';
     if(action==='sale') return '<span class="badge badge-sale">Sale</span>';
-    if(action==='edit') return '<span class="badge badge-edit">Edit</span>';
     if(action==='return') return '<span class="badge badge-return">Return</span>';
     if(action==='transfer') return '<span class="badge badge-sale">Transfer</span>';
     if(action==='order') return '<span class="badge badge-edit">Order</span>';
     return '<span class="badge badge-edit">' + esc(action) + '</span>';
 }
-function logAction(action, ref, note){
-    var entry = { date: new Date().toISOString(), user: API.getUserName ? API.getUserName() : 'System', action: action, ref: ref || '-', note: note || '' };
-    auditEntries.unshift(entry);
-    if(auditEntries.length > 1000) auditEntries = auditEntries.slice(0, 1000);
-    try { localStorage.setItem('SHEDS_audit', JSON.stringify(auditEntries)); } catch(e){}
+function fmtMoney(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+function safeParse(s){try{return JSON.parse(s);}catch(e){return {};}}
+function loadAudit(){
+    var tbody=$('auditBody');
+    tbody.innerHTML='<tr><td colspan="5" class="empty-state">Loading…</td></tr>';
+    API.get('/audit').then(function(list){
+        auditEntries=list||[];
+        filterAudit();
+    }).catch(function(e){tbody.innerHTML='<tr><td colspan="5" class="empty-state">Failed to load audit: '+(e.message||'error')+'</td></tr>';});
 }
 function renderAudit(list){
-    var tbody = $('auditBody');
-    if(!list || !list.length){ tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No matching entries</td></tr>'; return; }
-    tbody.innerHTML = list.slice(0, 200).map(function(a){
-        return '<tr><td>' + esc(fmtDate(a.date)) + '</td><td>' + esc(a.user) + '</td><td>' + badgeFor(a.action) + '</td><td>' + esc(a.ref) + '</td><td>' + esc(a.note) + '</td></tr>';
+    var tbody=$('auditBody');
+    if(!list||!list.length){tbody.innerHTML='<tr><td colspan="5" class="empty-state">No matching entries</td></tr>';return;}
+    tbody.innerHTML=list.slice(0,200).map(function(a){
+        var d=a.details?safeParse(a.details):{};
+        var note='';
+        if(a.action==='void_sale') note='Total: '+fmtMoney(d.total)+', Customer: '+(d.customer||'-')+', Payment: '+(d.payment||'-');
+        else if(a.action==='edit_sale') note='Total: '+fmtMoney(d.old_total)+' → '+fmtMoney(d.new_total)+', Customer: '+(d.old_customer||'-')+' → '+(d.new_customer||'-');
+        else note=esc(a.entity||'')+(a.details?' - '+esc(a.details):'');
+        return '<tr><td>' + esc(fmtDate(a.created_at)) + '</td><td>' + esc(a.user||'system') + '</td><td>' + badgeFor(a.action) + '</td><td>' + esc(a.entity_id||'-') + '</td><td>' + note + '</td></tr>';
     }).join('');
 }
 function filterAudit(){
-    var from = $('auditFrom').value ? new Date($('auditFrom').value) : null;
-    var to = $('auditTo').value ? new Date($('auditTo').value) : null;
+    var from=$('auditFrom').value?new Date($('auditFrom').value):null;
+    var to=$('auditTo').value?new Date($('auditTo').value):null;
     if(to) to.setHours(23,59,59,999);
-    var type = ($('auditType').value || '').toLowerCase();
-    var user = ($('auditUser').value || '').toLowerCase();
-    var filtered = auditEntries.filter(function(a){
-        var d = new Date(a.date);
-        if(from && d < from) return false;
-        if(to && d > to) return false;
-        if(type && a.action !== type) return false;
-        if(user && !(a.user || '').toLowerCase().indexOf(user) > -1) return false;
+    var type=($('auditType').value||'').toLowerCase();
+    var user=($('auditUser').value||'').toLowerCase();
+    var filtered=auditEntries.filter(function(a){
+        var d=new Date(a.created_at);
+        if(from&&d<from) return false;
+        if(to&&d>to) return false;
+        if(type&&a.action!==type) return false;
+        if(user&&!(a.user||'').toLowerCase().indexOf(user)>-1) return false;
         return true;
     });
     renderAudit(filtered);
 }
 function exportAudit(){
-    if(!auditEntries.length){ showToast('No entries to export', true); return; }
-    var headers = 'Timestamp,User,Action,Reference,Note\n';
-    var rows = auditEntries.map(function(a){ return [fmtDate(a.date), a.user, a.action, a.ref, a.note].map(function(x){ return '"' + String(x||'').replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
-    var blob = new Blob([headers + rows], {type:'text/csv;charset=utf-8;'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a'); a.href = url; a.download = 'audit-log.csv'; a.click();
+    if(!auditEntries.length){showToast('No entries to export',true);return;}
+    var headers='Timestamp,User,Action,Entity,Entity ID,Details\n';
+    var rows=auditEntries.map(function(a){return [fmtDate(a.created_at),a.user||'',a.action,a.entity||'',a.entity_id||'',a.details||''].map(function(x){return '"'+String(x||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+    var blob=new Blob([headers+rows],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='audit-log.csv';a.click();
     URL.revokeObjectURL(url);
-}
-function loadAudit(){
-    try { auditEntries = JSON.parse(localStorage.getItem('SHEDS_audit') || '[]'); if(!Array.isArray(auditEntries)) auditEntries = []; } catch(e){ auditEntries = []; }
-    renderAudit(auditEntries);
 }
 document.addEventListener('DOMContentLoaded', function(){
     if(!POS.requireAuth()) return;
