@@ -230,6 +230,9 @@ function loadReceipt(){
 document.addEventListener('DOMContentLoaded',function(){
   POS.initCommon();
   loadReceipt();
+  if(new URLSearchParams(window.location.search).get('print')==='1'){
+    setTimeout(function(){ if(currentReceipt) printCurrentReceipt(); }, 400);
+  }
 });
 </script>
 </body>
