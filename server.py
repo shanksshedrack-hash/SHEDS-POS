@@ -1314,9 +1314,9 @@ def create_sale():
     if 'items' in data and isinstance(data['items'], list):
         data['items'] = json.dumps(data['items'])
     result = table_create('sales', data)
+    db = get_db()
     if result[1] == 201:
         if data.get('payment_method') == 'store_account' and data.get('customer_id'):
-            db = get_db()
             db.execute(
                 'UPDATE customers SET balance = balance + ? WHERE pharmacy_id = ? AND id = ?',
                 (data.get('total', 0), g.pharmacy_id, data['customer_id'])
@@ -1335,6 +1335,25 @@ def get_sale(sid):
     if row.get('items') and isinstance(row['items'], str):
         row['items'] = json.loads(row['items'])
     return jsonify(row)
+
+@app.route('/api/sales/<int:sid>', methods=['PUT'])
+@require_auth
+def update_sale(sid):
+    data = request.get_json()
+    if 'items' in data and isinstance(data['items'], list):
+        data['items'] = json.dumps(data['items'])
+    db = get_db()
+    allowed = ['customer_id', 'customer_name', 'payment_method', 'discount_amount',
+               'tax', 'notes', 'cashier', 'amount_tendered', 'change', 'items']
+    clean = {k: v for k, v in data.items() if k in allowed}
+    if 'discount_amount' in clean or 'tax' in clean:
+        sale = db.execute('SELECT subtotal, discount_amount, tax, total FROM sales WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, sid)).fetchone()
+        if sale:
+            subtotal = float(sale['subtotal'] or 0)
+            disc = float(clean.get('discount_amount', sale['discount_amount'] or 0))
+            tax = float(clean.get('tax', sale['tax'] or 0))
+            clean['total'] = round(subtotal - disc + tax, 2)
+    return table_update('sales', sid, clean)
 
 # --- Customers ---
 @app.route('/api/customers', methods=['GET'])

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Receipts - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
+<script src="api.js"></script>
+<script src="common.js"></script>
+<style>
+.date-bar{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.date-bar .form-group{margin:0}
+.receipt-no{font-weight:800;color:#0f172a}
+.empty-state{padding:40px;text-align:center;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:800}
+.tag-cash{background:#dcfce7;color:#166534}.tag-card{background:#dbeafe;color:#1d4ed8}.tag-store{background:#fef3c7;color:#92400e}.tag-pos{background:#ede9fe;color:#6d28d9}.tag-bank{background:#cffafe;color:#0e7490}.tag-gift{background:#ffe4e6;color:#9f1239}
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar"></div>
+<div class="main-content">
+  <div class="header"><h2><i class="fas fa-receipt"></i> Today's Receipts</h2><div id="userMenu"></div><div class="header-clock" id="topClock"></div></div>
+  <div class="content">
+    <div class="date-bar">
+      <div class="form-group"><label class="form-group label" style="font-size:12px;font-weight:850;color:#475569;">Date</label><input type="date" id="filterDate" class="form-control" style="width:auto;"></div>
+      <button class="btn btn-primary" onclick="loadReceipts()"><i class="fas fa-sync-alt"></i> Load</button>
+      <button class="btn btn-outline" onclick="setToday()"><i class="fas fa-calendar-day"></i> Today</button>
+    </div>
+    <div class="table-panel">
+      <div class="table-top"><strong><i class="fas fa-list"></i> Sales Receipts</strong><span id="countLabel"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Receipt #</th><th>Time</th><th>Customer</th><th style="text-align:center">Items</th><th style="text-align:right">Total</th><th>Payment</th><th>Actions</th></tr></thead>
+          <tbody id="receiptsBody"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header"><h3><i class="fas fa-edit"></i> Edit Invoice</h3><button class="modal-close" onclick="closeEdit()">&times;</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>Customer Name</label><input id="edCustomer" class="form-control"></div>
+      <div class="form-group"><label>Payment Method</label>
+        <select id="edPayment" class="form-control">
+          <option value="cash">Cash</option>
+          <option value="store_account">Store Account</option>
+          <option value="card">Card</option>
+          <option value="pos">POS</option>
+          <option value="bank_transfer">Bank Transfer</option>
+          <option value="giftcard">Gift Card</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Discount Amount (?)</label><input id="edDiscount" type="number" min="0" step="0.01" class="form-control"></div>
+      <div class="form-group"><label>New Total (auto)</label><input id="edTotal" class="form-control" disabled></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="edNotes" class="form-control" placeholder="Invoice notes / comments"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()"><i class="fas fa-save"></i> Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var allReceipts = [];
+var editingId = null;
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+function fmt(n){try{return StoreConfig.formatCurrency(n);}catch(e){return '₦'+(parseFloat(n)||0).toLocaleString('en-NG',{minimumFractionDigits:2});}}
+function formatDate(d){if(!d)return '-';try{return new Date(d).toLocaleString('en-NG',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return d;}}
+function showToast(m,err){var t=$('toast');t.textContent=m;t.className='toast'+(err?' error':'');t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
+function getPaymentLabel(m){if(!m)return 'Cash';var map={cash:'Cash',store_account:'Store Account',card:'Card',pos:'POS',bank_transfer:'Bank Transfer',giftcard:'Gift Card'};return map[m]||m;}
+function getPaymentClass(m){var map={cash:'tag-cash',store_account:'tag-store',card:'tag-card',pos:'tag-pos',bank_transfer:'tag-bank',giftcard:'tag-gift'};return map[m]||'tag-cash';}
+function setToday(){$('filterDate').value=POS.today();loadReceipts();}
+
+function loadReceipts(){
+  var tbody=$('receiptsBody');
+  tbody.innerHTML='<tr><td colspan="7" class="empty-state">Loading...</td></tr>';
+  API.getSales().then(function(list){
+    allReceipts=list||[];
+    renderTable();
+  }).catch(function(e){
+    tbody.innerHTML='<tr><td colspan="7" class="empty-state">Failed to load receipts: '+(e.message||'error')+'</td></tr>';
+  });
+}
+
+function renderTable(){
+  var dateFilter=$('filterDate').value;
+  var rows=allReceipts.filter(function(s){
+    if(!dateFilter)return true;
+    return (s.date||'').indexOf(dateFilter)===0;
+  });
+  rows.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  $('countLabel').textContent=rows.length+' receipt(s)';
+  if(!rows.length){$('receiptsBody').innerHTML='<tr><td colspan="7" class="empty-state">No receipts found for this date.</td></tr>';return;}
+  $('receiptsBody').innerHTML=rows.map(function(s){
+    var items=s.items||[];
+    var itemCount=items.length;
+    return '<tr>'+
+      '<td class="receipt-no">POS-'+s.id+'</td>'+
+      '<td>'+formatDate(s.date)+'</td>'+
+      '<td>'+esc(s.customer_name||'Walk-in')+'</td>'+
+      '<td style="text-align:center">'+itemCount+'</td>'+
+      '<td style="text-align:right;font-weight:800">'+fmt(s.total)+'</td>'+
+      '<td><span class="tag '+getPaymentClass(s.payment_method)+'">'+getPaymentLabel(s.payment_method)+'</span></td>'+
+      '<td><div class="action-btns">'+
+        '<button class="icon-btn view" onclick="printReceipt('+s.id+')"><i class="fas fa-print"></i></button>'+
+        '<button class="icon-btn edit" onclick="openEdit('+s.id+')"><i class="fas fa-edit"></i></button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function findSale(id){return allReceipts.find(function(s){return String(s.id)===String(id);});}
+
+function printReceipt(id){
+  var s=findSale(id);
+  if(!s){showToast('Receipt not found',true);return;}
+  var w=window.open('','_blank','width=800,height=1000');
+  if(!w){alert('Please allow popups to print receipts');return;}
+  var storeName=StoreConfig.getPharmacyName()||'SHEDS POS';
+  var storeAddress=StoreConfig.get('storeAddress')||'';
+  var storePhone=StoreConfig.get('phoneNumber')||'';
+  var footerText=StoreConfig.get('footerText')||'Thank you for choosing SHEDS POS!';
+  var receiptId='POS-'+s.id;
+  var date=formatDate(s.date);
+  var cashier=s.cashier||'Cashier';
+  var customer=s.customer_name||'Walk-in';
+  var pm=getPaymentLabel(s.payment_method);
+  var cashReceived=parseFloat(s.amount_tendered)||0;
+  var changeDue=parseFloat(s.change)||0;
+  var subtotal=parseFloat(s.subtotal)||0;
+  var tax=parseFloat(s.tax)||0;
+  var total=parseFloat(s.total)||0;
+  var items=s.items||[];
+  var comments=s.notes||'';
+  var ph='<!DOCTYPE html><html><head><title>Receipt - '+esc(storeName)+'</title><style>body{font-family:Inter,Arial,sans-serif;margin:0;padding:0;color:#000;background:#fff;}*{box-sizing:border-box;}@page{size:80mm auto;margin:0;}@media print{body{margin:0;padding:0;}}.r-wrap{max-width:380px;margin:0 auto;padding:16px;}.r-header{text-align:center;padding-bottom:12px;border-bottom:2px dashed #000;margin-bottom:12px;}.r-header h1{font-size:18px;font-weight:800;margin:0;}.r-header p{margin:2px 0;font-size:11px;}.r-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:12px;font-size:12px;}.r-meta div{padding:2px 0;}.r-section{margin-bottom:14px;}.r-section h3{font-size:12px;font-weight:700;text-transform:uppercase;border-bottom:1px dashed #000;padding-bottom:4px;margin-bottom:6px;}table{width:100%;border-collapse:collapse;font-size:12px;}th{text-align:left;padding:4px 0;border-bottom:1px solid #eee;}td{padding:4px 0;border-bottom:1px solid #f5f5f5;}.r-totals{border-top:2px dashed #000;padding-top:8px;margin-top:8px;}.r-total-row{display:flex;justify-content:space-between;padding:3px 0;font-size:13px;}.r-total-row.grand{font-size:16px;font-weight:800;border-top:1px solid #000;padding-top:6px;margin-top:4px;}.r-footer{text-align:center;margin-top:16px;padding-top:12px;border-top:2px dashed #000;font-size:11px;color:#555;}</style></head><body><div class="r-wrap">';
+  ph+='<div class="r-header"><h1>'+esc(storeName)+'</h1>';
+  if(storeAddress)ph+='<p>'+esc(storeAddress)+'</p>';
+  if(storePhone)ph+='<p>Phone: '+esc(storePhone)+'</p>';
+  ph+='</div>';
+  ph+='<div class="r-meta"><div><strong>Receipt:</strong> '+receiptId+'</div><div><strong>Date:</strong> '+date+'</div><div><strong>Cashier:</strong> '+esc(cashier)+'</div><div><strong>Customer:</strong> '+esc(customer)+'</div></div>';
+  ph+='<div class="r-section"><h3>Items</h3><table><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+  items.forEach(function(it){
+    var qty=parseFloat(it.qty)||0;
+    var price=parseFloat(it.unit_price||it.price)||0;
+    var disc=parseFloat(it.discount)||0;
+    var lineTotal=(price*qty)-disc;
+    ph+='<tr><td>'+esc(it.name||'Product')+'</td><td style="text-align:center">'+qty+'</td><td style="text-align:right">'+fmt(price)+'</td><td style="text-align:right">'+fmt(lineTotal)+'</td></tr>';
+  });
+  ph+='</tbody></table></div>';
+  ph+='<div class="r-totals"><div class="r-total-row"><span>Subtotal</span><span>'+fmt(subtotal)+'</span></div>';
+  if(tax>0)ph+='<div class="r-total-row"><span>Tax</span><span>'+fmt(tax)+'</span></div>';
+  ph+='<div class="r-total-row grand"><span>Total</span><span>'+fmt(total)+'</span></div>';
+  ph+='<div class="r-total-row"><span>'+pm+'</span><span>'+fmt(cashReceived)+'</span></div>';
+  if(changeDue>0)ph+='<div class="r-total-row"><span>Change</span><span>'+fmt(changeDue)+'</span></div>';
+  ph+='</div>';
+  if(comments)ph+='<div style="margin-top:10px;font-size:11px;color:#555;border-top:1px dashed #ccc;padding-top:8px;"><strong>Notes:</strong> '+esc(comments)+'</div>';
+  ph+='<div class="r-footer"><p>'+footerText+'</p><p style="margin-top:6px;font-size:10px;">Keep this receipt for returns and exchanges</p></div>';
+  ph+='</div></body></html>';
+  w.document.write(ph);
+  w.document.close();
+  setTimeout(function(){w.focus();w.print();setTimeout(function(){w.close();},1000);},300);
+}
+
+function openEdit(id){
+  var s=findSale(id);
+  if(!s){showToast('Receipt not found',true);return;}
+  editingId=id;
+  $('edCustomer').value=s.customer_name||'';
+  $('edPayment').value=s.payment_method||'cash';
+  $('edDiscount').value=parseFloat(s.discount_amount)||0;
+  $('edNotes').value=s.notes||'';
+  updateEditTotal();
+  POS.openModal('editModal');
+}
+function updateEditTotal(){
+  var s=findSale(editingId);
+  if(!s)return;
+  var subtotal=parseFloat(s.subtotal)||0;
+  var disc=parseFloat($('edDiscount').value)||0;
+  var tax=parseFloat(s.tax)||0;
+  $('edTotal').value=fmt(round2(subtotal-disc+tax));
+}
+function round2(n){return Math.round((parseFloat(n)||0)*100)/100;}
+function closeEdit(){editingId=null;POS.closeModal('editModal');}
+function saveEdit(){
+  if(!editingId){return;}
+  var data={
+    customer_name:$('edCustomer').value.trim(),
+    payment_method:$('edPayment').value,
+    discount_amount:parseFloat($('edDiscount').value)||0,
+    notes:$('edNotes').value.trim()
+  };
+  API.put('/sales/'+editingId,data).then(function(){
+    showToast('Invoice updated');
+    closeEdit();
+    loadReceipts();
+  }).catch(function(e){showToast('Update failed: '+(e.message||'error'),true);});
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  POS.initCommon();
+  setToday();
+  $('edDiscount').addEventListener('input',updateEditTotal);
+});
+</script>
+</body>
+</html>
