@@ -134,6 +134,10 @@ var API = (function() {
         saveSale: function(data) { return this.post('/sales', data); },
         getSale: function(id) { return this.get('/sales/' + id); },
 
+        // Receiving
+        getReceiving: function() { return this.get('/receiving'); },
+        saveReceiving: function(data) { return this.post('/receiving', data); },
+
         // Customers
         getCustomers: function() { return this.get('/customers'); },
         saveCustomer: function(data) { return this.post('/customers', data); },
