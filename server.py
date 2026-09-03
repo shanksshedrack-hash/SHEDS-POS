@@ -1008,84 +1008,99 @@ def list_receiving():
 @app.route('/api/receiving', methods=['POST'])
 @require_auth
 def create_receiving():
-    db = get_db()
-    data = request.get_json() or {}
-    items = data.get('items', [])
-    if not isinstance(items, list) or not items:
-        return jsonify({'error': 'items array is required'}), 400
-    supplier_id = data.get('supplier_id') or data.get('supplier')
-    supplier_name = data.get('supplier_name') or ''
-    if supplier_id and not supplier_name:
-        s = db.execute(
-            'SELECT name FROM suppliers WHERE pharmacy_id = ? AND id = ?',
-            (g.pharmacy_id, supplier_id)
-        ).fetchone()
-        if s:
-            supplier_name = s['name']
-    enriched_items = []
-    total = 0.0
-    for it in items:
-        pid = it.get('product_id') or it.get('id')
-        if not pid:
-            continue
-        prod = db.execute(
-            'SELECT id, name, sku, stock, cost_price, costPrice FROM products WHERE pharmacy_id = ? AND id = ?',
-            (g.pharmacy_id, pid)
-        ).fetchone()
-        if not prod:
-            continue
-        qty = float(it.get('qty') or 0)
-        if qty <= 0:
-            continue
-        unit_cost = float(it.get('cost_price') or prod['cost_price'] or prod['costPrice'] or 0)
-        new_stock = float(prod['stock'] or 0) + qty
-        db.execute(
-            'UPDATE products SET stock = ?, cost_price = ? WHERE pharmacy_id = ? AND id = ?',
-            (new_stock, unit_cost, g.pharmacy_id, pid)
-        )
-        line_total = unit_cost * qty
-        total += line_total
-        enriched_items.append({
-            'product_id': pid,
-            'name': prod['name'],
-            'sku': prod['sku'],
-            'qty': qty,
-            'cost_price': unit_cost,
-            'pkg_type': it.get('pkg_type') or it.get('pkgType'),
-            'expiry': it.get('expiry') or None,
-            'line_total': round(line_total, 2)
-        })
-    if not enriched_items:
-        return jsonify({'error': 'No valid items to receive'}), 400
-    cur = db.execute(
-        'INSERT INTO receiving (pharmacy_id, date, ref, supplier_id, supplier_name, items, total, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        (
-            g.pharmacy_id,
-            data.get('date') or datetime.utcnow().isoformat(),
-            data.get('ref') or '',
-            supplier_id,
-            supplier_name,
-            json.dumps(enriched_items),
-            round(total, 2),
-            data.get('notes') or '',
-            request.headers.get('X-Username')
-        )
-    )
-    db.execute(
-        'INSERT INTO audit_log (pharmacy_id, action, entity, entity_id, details, user) VALUES (?,?,?,?,?,?)',
-        (
-            g.pharmacy_id, 'create_receiving', 'receiving', str(cur.lastrowid),
-            json.dumps({'supplier': supplier_name, 'total': round(total, 2), 'items': len(enriched_items)}),
-            request.headers.get('X-Username')
-        )
-    )
-    db.commit()
-    record = dict(db.execute('SELECT * FROM receiving WHERE id = ?', (cur.lastrowid,)).fetchone())
     try:
-        record['items'] = json.loads(record['items'])
-    except Exception:
-        record['items'] = []
-    return jsonify(record), 201
+        db = get_db()
+        data = request.get_json() or {}
+        items = data.get('items', [])
+        if not isinstance(items, list) or not items:
+            return jsonify({'error': 'items array is required'}), 400
+        supplier_id = data.get('supplier_id') or data.get('supplier')
+        supplier_name = data.get('supplier_name') or ''
+        if supplier_id and not supplier_name:
+            s = db.execute(
+                'SELECT name FROM suppliers WHERE pharmacy_id = ? AND id = ?',
+                (g.pharmacy_id, supplier_id)
+            ).fetchone()
+            if s:
+                supplier_name = s['name']
+        enriched_items = []
+        total = 0.0
+        for it in items:
+            pid = it.get('product_id') or it.get('id')
+            if not pid:
+                continue
+            try:
+                pid = int(pid)
+            except (TypeError, ValueError):
+                continue
+            prod = db.execute(
+                'SELECT id, name, sku, stock, cost_price, costPrice FROM products WHERE pharmacy_id = ? AND id = ?',
+                (g.pharmacy_id, pid)
+            ).fetchone()
+            if not prod:
+                continue
+            qty = float(it.get('qty') or 0)
+            if qty <= 0:
+                continue
+            unit_cost = float(it.get('cost_price') or prod['cost_price'] or prod['costPrice'] or 0)
+            new_stock = float(prod['stock'] or 0) + qty
+            db.execute(
+                'UPDATE products SET stock = ?, cost_price = ? WHERE pharmacy_id = ? AND id = ?',
+                (new_stock, unit_cost, g.pharmacy_id, pid)
+            )
+            line_total = unit_cost * qty
+            total += line_total
+            enriched_items.append({
+                'product_id': pid,
+                'name': prod['name'],
+                'sku': prod['sku'],
+                'qty': qty,
+                'cost_price': unit_cost,
+                'pkg_type': it.get('pkg_type') or it.get('pkgType'),
+                'expiry': it.get('expiry') or None,
+                'line_total': round(line_total, 2)
+            })
+        if not enriched_items:
+            return jsonify({'error': 'No valid items to receive'}), 400
+        cur = db.execute(
+            'INSERT INTO receiving (pharmacy_id, date, ref, supplier_id, supplier_name, items, total, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            (
+                g.pharmacy_id,
+                data.get('date') or datetime.utcnow().isoformat(),
+                data.get('ref') or '',
+                supplier_id,
+                supplier_name,
+                json.dumps(enriched_items),
+                round(total, 2),
+                data.get('notes') or '',
+                request.headers.get('X-Username')
+            )
+        )
+        new_id = cur.lastrowid
+        try:
+            db.execute(
+                'INSERT INTO audit_log (pharmacy_id, action, entity, entity_id, details, user) VALUES (?,?,?,?,?,?)',
+                (
+                    g.pharmacy_id, 'create_receiving', 'receiving', str(new_id),
+                    json.dumps({'supplier': supplier_name, 'total': round(total, 2), 'items': len(enriched_items)}),
+                    request.headers.get('X-Username')
+                )
+            )
+        except Exception as audit_err:
+            app.logger.warning('audit log write failed: %s' % audit_err)
+        db.commit()
+        record = db.execute('SELECT * FROM receiving WHERE pharmacy_id = ? AND id = ?', (g.pharmacy_id, new_id)).fetchone()
+        if not record:
+            return jsonify({'id': new_id, 'status': 'ok'}), 201
+        result = dict(record)
+        try:
+            result['items'] = json.loads(result['items'])
+        except Exception:
+            result['items'] = []
+        return jsonify(result), 201
+    except Exception as e:
+        app.logger.exception('create_receiving failed')
+        return jsonify({'error': 'Server error: ' + str(e)}), 500
 
 # --- Sales ---
 @app.route('/api/sales', methods=['GET'])
