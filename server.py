@@ -1034,7 +1034,7 @@ def create_receiving():
             except (TypeError, ValueError):
                 continue
             prod = db.execute(
-                'SELECT id, name, sku, stock, cost_price, costPrice FROM products WHERE pharmacy_id = ? AND id = ?',
+                'SELECT id, name, sku, stock, cost_price FROM products WHERE pharmacy_id = ? AND id = ?',
                 (g.pharmacy_id, pid)
             ).fetchone()
             if not prod:
@@ -1042,7 +1042,7 @@ def create_receiving():
             qty = float(it.get('qty') or 0)
             if qty <= 0:
                 continue
-            unit_cost = float(it.get('cost_price') or prod['cost_price'] or prod['costPrice'] or 0)
+            unit_cost = float(it.get('cost_price') or prod['cost_price'] or 0)
             new_stock = float(prod['stock'] or 0) + qty
             db.execute(
                 'UPDATE products SET stock = ?, cost_price = ? WHERE pharmacy_id = ? AND id = ?',
