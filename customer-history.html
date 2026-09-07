@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Purchase History - SHEDS POS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="common.css">
+<script src="api.js"></script>
+<script src="common.js"></script>
+<style>
+.customer-hero{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #bbf7d0;border-radius:16px;padding:18px;margin-bottom:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.customer-hero .avatar{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#10b981,#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0;box-shadow:0 8px 18px rgba(16,185,129,.25)}
+.customer-hero .meta{flex:1;min-width:0}
+.customer-hero .meta h3{font-size:18px;font-weight:900;color:#111827;margin:0}
+.customer-hero .meta p{font-size:13px;color:var(--muted);margin-top:2px}
+.kpi-row{display:flex;gap:14px;flex-wrap:wrap}
+.kpi-pill{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 18px;box-shadow:0 4px 12px rgba(15,23,42,.06);display:flex;align-items:center;gap:10px;min-width:160px;flex:1}
+.kpi-pill .icon{width:34px;height:34px;border-radius:10px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px}
+.kpi-pill .label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.kpi-pill .value{font-size:18px;font-weight:900;color:#111827;margin-top:2px}
+.mini-bar{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:8px}
+.mini-bar .fill{height:100%;background:linear-gradient(135deg,#10b981,#2563eb);border-radius:999px;transition:width .4s ease}
+.search-box{position:relative}
+.search-box .results{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 40px rgba(15,23,42,.18);max-height:320px;overflow-y:auto;z-index:2000;margin-top:4px}
+.search-box .row{padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;gap:10px;align-items:center;transition:.15s}
+.search-box .row:last-child{border-bottom:none}
+.search-box .row:hover{background:var(--primary-soft)}
+.search-box .row .name{font-weight:800;color:#111827;font-size:13px}
+.search-box .row .meta{font-size:12px;color:var(--muted)}
+.search-box .row .total{font-weight:900;color:#111827;font-size:13px}
+.search-box .empty{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+.timeline{position:relative;padding-left:22px}
+.timeline:before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:#e5e7eb}
+.tl-item{position:relative;padding:0 0 18px 14px}
+.tl-item:before{content:'';position:absolute;left:-18px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px #ecfdf5}
+.tl-item.void:before{background:var(--danger);box-shadow:0 0 0 3px #fef2f2}
+.tl-action{font-weight:800;color:#111827;font-size:14px}
+.tl-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.tl-details{margin-top:6px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;color:#475569;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar"></div>
+<div class="main-content">
+  <div class="header">
+    <h2><i class="fas fa-user-clock"></i> Customer Purchase History</h2>
+    <div id="userMenu"></div>
+    <div class="header-clock" id="topClock"></div>
+  </div>
+  <div class="content">
+    <div class="panel">
+      <div class="form-row" style="grid-template-columns:1fr;align-items:flex-end">
+        <div class="form-group">
+          <label>Search Customer</label>
+          <div class="search-box">
+            <input type="text" id="customerSearch" class="form-control" placeholder="Type customer name to search..." autocomplete="off">
+          <div id="searchResults" class="results" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+    <div id="customerSummary"></div>
+    <div class="table-panel" id="historyPanel" style="display:none">
+      <div class="table-top">
+        <strong><i class="fas fa-clock-rotate-left"></i> Purchase History</strong>
+        <span id="historyCount">0 receipts</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Receipt</th>
+              <th>Items</th>
+              <th>Payment</th>
+              <th style="text-align:right">Amount</th>
+              <th style="width:120px">Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="6" class="empty-state">Search for a customer to view history.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var customers = [];
+var sales = [];
+var selectedCustomer = null;
+var customerSales = [];
+function $(id) { return document.getElementById(id); }
+function num(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function esc(s) { return POS.esc(s); }
+function fmt(n) { try { return StoreConfig.formatCurrency(n); } catch (e) { return '₦' + (parseFloat(n) || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 }); } }
+function initials(name) { return String(name || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0] || ''; }).join('').toUpperCase() || '?'; }
+async function init() {
+  await Promise.all([loadCustomers(), loadSales()]);
+  setupSearch();
+}
+async function loadCustomers() {
+  try { customers = await API.getCustomers() || []; }
+  catch (e) { customers = []; }
+}
+async function loadSales() {
+  try { sales = await API.getSales() || []; }
+  catch (e) { sales = []; }
+}
+function setupSearch() {
+  var input = $('customerSearch');
+  var results = $('searchResults');
+  input.addEventListener('input', function () {
+    var q = (input.value || '').toLowerCase().trim();
+    if (q.length < 1) { results.style.display = 'none'; return; }
+    var matches = customers.filter(function (c) {
+      var name = (c.fullName || (c.firstName || c.first_name || '') + ' ' + (c.lastName || c.last_name || '')).toLowerCase();
+      return name.indexOf(q) > -1 || String(c.id).indexOf(q) > -1;
+    }).slice(0, 10);
+    if (!matches.length) {
+      results.innerHTML = '<div class="empty">No customers match.</div>';
+      results.style.display = 'block';
+      return;
+    }
+    results.innerHTML = matches.map(function (c) {
+      var name = c.fullName || (c.firstName || c.first_name || '') + ' ' + (c.lastName || c.last_name || '');
+      var custSales = sales.filter(function (s) { return String(s.customer_id) === String(c.id); });
+      var total = custSales.reduce(function (sum, s) { return sum + num(s.total); }, 0);
+      return '<div class="row" onclick="selectCustomer(\'' + c.id + '\')">' +
+        '<div><div class="name">' + esc(name) + '</div><div class="meta">' + (c.phone ? '<i class="fas fa-phone"></i> ' + esc(c.phone) : '') + (c.email ? ' &middot; ' + esc(c.email) : '') + '</div></div>' +
+        '<div class="total">' + fmt(total) + '</div>' +
+      '</div>';
+    }).join('');
+    results.style.display = 'block';
+  });
+  document.addEventListener('click', function (e) {
+    if (!results.contains(e.target) && e.target !== input) results.style.display = 'none';
+  });
+}
+function selectCustomer(id) {
+  selectedCustomer = customers.find(function (c) { return String(c.id) === String(id); });
+  if (!selectedCustomer) return;
+  $('customerSearch').value = selectedCustomer.fullName || (selectedCustomer.firstName || selectedCustomer.first_name || '') + ' ' + (selectedCustomer.lastName || selectedCustomer.last_name || '');
+  $('searchResults').style.display = 'none';
+  renderCustomerSummary();
+}
+function renderCustomerSummary() {
+  if (!selectedCustomer) return;
+  var name = selectedCustomer.fullName || (selectedCustomer.firstName || selectedCustomer.first_name || '') + ' ' + (selectedCustomer.lastName || selectedCustomer.last_name || '');
+  customerSales = sales.filter(function (s) { return String(s.customer_id) === String(selectedCustomer.id); }).sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+  var total = customerSales.reduce(function (sum, s) { return sum + num(s.total); }, 0);
+  var last = customerSales.length ? customerSales[0].date : '-';
+  var first = customerSales.length ? customerSales[customerSales.length - 1].date : '-';
+  var avg = customerSales.length ? total / customerSales.length : 0;
+  $('customerSummary').innerHTML =
+    '<div class="customer-hero">' +
+      '<div class="avatar">' + esc(initials(name)) + '</div>' +
+      '<div class="meta">' +
+        '<h3>' + esc(name) + '</h3>' +
+        '<p>' + (selectedCustomer.phone ? '<i class="fas fa-phone"></i> ' + esc(selectedCustomer.phone) : '') + (selectedCustomer.email ? ' &middot; <i class="fas fa-envelope"></i> ' + esc(selectedCustomer.email) : '') + (selectedCustomer.address ? ' &middot; <i class="fas fa-map-marker-alt"></i> ' + esc(selectedCustomer.address) : '') + '</p>' +
+      '</div>' +
+      '<div class="kpi-row" style="flex:1;min-width:0">' +
+        '<div class="kpi-pill"><div class="icon"><i class="fas fa-coins"></i></div><div><div class="label">Total Spent</div><div class="value">' + fmt(total) + '</div></div></div>' +
+        '<div class="kpi-pill"><div class="icon"><i class="fas fa-receipt"></i></div><div><div class="label">Purchases</div><div class="value">' + customerSales.length + '</div></div></div>' +
+        '<div class="kpi-pill"><div class="icon"><i class="fas fa-calendar-check"></i></div><div><div class="label">First Purchase</div><div class="value" style="font-size:14px">' + POS.formatDate(first) + '</div></div></div>' +
+        '<div class="kpi-pill"><div class="icon"><i class="fas fa-calendar"></i></div><div><div class="label">Last Purchase</div><div class="value" style="font-size:14px">' + POS.formatDate(last) + '</div></div></div>' +
+      '</div>' +
+    '</div>';
+  renderHistory();
+}
+function renderHistory() {
+  var panel = $('historyPanel');
+  var tbody = $('historyBody');
+  $('historyCount').textContent = customerSales.length + ' receipt' + (customerSales.length === 1 ? '' : 's');
+  if (!customerSales.length) { panel.style.display = 'none'; tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No purchases found for this customer.</td></tr>'; return; }
+  panel.style.display = 'block';
+  tbody.innerHTML = customerSales.map(function (s) {
+    var itemCount = (s.items || []).reduce(function (sum, it) { return sum + num(it.qty); }, 0);
+    var isVoid = (s.status || 'completed') === 'void';
+    return '<tr style="' + (isVoid ? 'opacity:.6' : '') + '">' +
+      '<td>' + POS.formatDate(s.date) + '</td>' +
+      '<td><strong>POS-' + s.id + '</strong>' + (isVoid ? ' <span class="badge badge-danger">VOID</span>' : '') + '</td>' +
+      '<td>' + itemCount + ' item' + (itemCount === 1 ? '' : 's') + '</td>' +
+      '<td><span class="badge ' + (s.payment_method === 'store_account' ? 'badge-info' : s.payment_method === 'card' || s.payment_method === 'pos' ? 'badge-success' : 'badge-muted') + '">' + esc((s.payment_method || 'cash').toUpperCase()) + '</span></td>' +
+      '<td style="text-align:right;font-weight:800">' + fmt(s.total) + '</td>' +
+      '<td><div class="action-btns">' +
+        '<button class="icon-btn view" onclick="viewReceipt(' + s.id + ')" title="View"><i class="fas fa-eye"></i></button>' +
+        '<button class="icon-btn edit" onclick="printReceipt(' + s.id + ')" title="Print"><i class="fas fa-print"></i></button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+function viewReceipt(id) {
+  var s = sales.find(function (x) { return String(x.id) === String(id); });
+  if (!s) return;
+  var receipt = {
+    sale_id: s.id,
+    created_at: s.date,
+    business_name: API.getPharmacyName ? API.getPharmacyName() : StoreConfig.getPharmacyName() || 'SHEDS POS',
+    business_address: StoreConfig.get('storeAddress') || '',
+    employee: s.cashier || 'Cashier',
+    customer_name: s.customer_name || 'Walk-in',
+    items: s.items || [],
+    subtotal: s.subtotal,
+    tax_amount: s.tax,
+    total: s.total,
+    cash_received: s.amount_tendered,
+    change_due: s.change,
+    payment_method: s.payment_method,
+    comments: s.notes || '',
+    notes: s.notes || '',
+    status: s.status || 'completed'
+  };
+  try { localStorage.setItem('last_receipt', JSON.stringify(receipt)); } catch (e) {}
+  navigateTo('receipt.html');
+}
+function printReceipt(id) {
+  viewReceipt(id);
+  setTimeout(function () { if (typeof printCurrentReceipt === 'function') printCurrentReceipt(); }, 300);
+}
+document.addEventListener('DOMContentLoaded', function () {
+  if (!POS.requireAuth()) return;
+  POS.initCommon();
+  init();
+});
+</script>
+</body>
+</html>
