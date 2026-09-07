@@ -142,7 +142,7 @@ function printReceipt(id){
   var receipt={
     sale_id:s.id,
     created_at:s.date,
-    business_name:StoreConfig.getPharmacyName()||'SHEDS POS',
+    business_name:API.getPharmacyName?API.getPharmacyName():StoreConfig.getPharmacyName()||'SHEDS POS',
     business_address:StoreConfig.get('storeAddress')||'',
     employee:s.cashier||'Cashier',
     customer_name:s.customer_name||'Walk-in',
