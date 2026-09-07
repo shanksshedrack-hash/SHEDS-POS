@@ -1137,6 +1137,28 @@ def create_sale():
                 'UPDATE customers SET balance = balance + ? WHERE pharmacy_id = ? AND id = ?',
                 (data.get('total', 0), g.pharmacy_id, data['customer_id'])
             )
+        items = data.get('items') or []
+        if isinstance(items, str):
+            try:
+                items = json.loads(items)
+            except Exception:
+                items = []
+        if isinstance(items, list):
+            for it in items:
+                pid = it.get('product_id') or it.get('id')
+                if not pid:
+                    continue
+                try:
+                    pid = int(pid)
+                except (TypeError, ValueError):
+                    continue
+                qty = float(it.get('qty') or 0)
+                if qty <= 0:
+                    continue
+                db.execute(
+                    'UPDATE products SET stock = stock - ? WHERE pharmacy_id = ? AND id = ?',
+                    (qty, g.pharmacy_id, pid)
+                )
     db.commit()
     return result
 
